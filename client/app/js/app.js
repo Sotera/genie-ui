@@ -42,12 +42,12 @@ angular.module('loopbackApp', [
   'com.module.core',
   'com.module.about',
   'gennie.eventsMap',
-  'com.module.files',
+/*  'com.module.files',
   'com.module.events',
   'com.module.notes',
   'com.module.pages',
   'com.module.posts',
-  'com.module.products',
+  'com.module.products', */
   'com.module.sandbox',
   'com.module.settings',
   'com.module.users'
