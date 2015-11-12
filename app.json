@@ -1,0 +1,7 @@
+{
+  "name": "Amino",
+  "description": "Loopback Web Application starter framework",
+  "repository": "https://github.com/sotera/Amino",
+  "logo": "https://node-js-sample.herokuapp.com/node.svg",
+  "keywords": ["node", "angular", "loopback", "admin", "amino"]
+}

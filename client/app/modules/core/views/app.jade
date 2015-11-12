@@ -1,0 +1,25 @@
+header.header
+    a.logo( href="/")
+      img(src="/images/waveicon38.png" style="width: 25px;padding-bottom: 5px")
+      | {{ getSetting('appName') }}
+    navbar
+div
+  div.wrapper.row-offcanvas.row-offcanvas-left
+      aside.left-side.sidebar-offcanvas(class="{{getCollapsedStatus()}}")
+          section.sidebar
+              div.user-panel
+                  div.pull-left.image
+                      img(gravatar-src="currentUser.email" alt="User Image").img-circle
+                  div.pull-left.info
+                      p
+                        a(href="" ui-sref="app.users.profile") {{currentUser.firstName || currentUser.profiles[0].profile.name.givenName}}
+                      p
+                        small
+                          a( href="" ui-sref="app.users.profile") {{ currentUser.email }}
+              ul.sidebar-menu
+                  li(ng-repeat="item in menuoptions" ui-sref-active="active")
+                      a(href="" ui-sref="{{item.sref}}")
+                        i.fa.fa-fw(class="{{item.icon}}")
+                        |{{item.name | translate}}
+      aside.right-side.at-view-fade-in.at-view-fade-out(class="{{getStretchedStatus()}}" )
+        ui-view(style="background-color:red")

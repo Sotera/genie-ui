@@ -1,0 +1,26 @@
+nav.navbar.navbar-static-top( role="navigation")
+  a.navbar-btn.sidebar-toggle(data-toggle="offcanvas" ng-click="toggleSidebar()" role="button")
+    span.sr-only(translate) Toggle navigation
+    span.icon-bar
+    span.icon-bar
+    span.icon-bar
+  div.navbar-right
+    ul.nav.navbar-nav
+      li
+        a.ng-binding( href="/app" ui-sref="app.home" title="Dashboard")
+          i.fa.fa-fw.fa-dashboard
+      li.dropdown.user.user-menu
+        a.dropdown-toggle( data-toggle="dropdown")
+          i.glyphicon.glyphicon-user
+          span {{currentUser.firstName || currentUser.profiles[0].profile.name.givenName}}
+            i.caret
+        ul.dropdown-menu
+          li.user-header.bg-light-blue
+            img.img-circle(gravatar-src="currentUser.email" alt="User Image")
+            p {{currentUser.firstName || currentUser.profiles[0].profile.displayName}}
+            small {{currentUser.email}}
+          li.user-footer
+            div.pull-left
+              a.btn.btn-default.btn-flat(ui-sref="app.users.profile" translate) Profile
+            div.pull-right
+              a.btn.btn-default.btn-flat(ng-click="logout()" translate) Sign out

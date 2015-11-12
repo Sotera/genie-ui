@@ -1,0 +1,40 @@
+section.content-header
+  h1(translate) Welcome,
+    span( href="" ui-sref="app.users.profile")
+    | "{{currentUser.firstName || currentUser.profiles[0].profile.name.givenName}}"
+
+section.content
+  div.row
+    div.col-xs-12
+      tabset.nav-tabs-custom
+        tab( heading="{{ 'Dashboard' | translate }}")
+          div.row
+            small-box( name="{{ box.name }}" color="{{ box.color }}" icon="{{ box.icon }}"
+              quantity="{{ box.quantity }}" href="{{ box.href }}"
+              ng-repeat="box in boxes | orderBy:['-quantity', 'name']")
+        tab( heading="{{ 'Variables' | translate }}")
+          div.row
+            div.col-md-6
+              h4(translate)
+              | Current user
+              pre
+              | {{currentUser | json}}
+            div.col-md-6
+              h4( translate)
+              | Settings
+              pre
+              | {{settings | json}}
+        tab( heading="{{ 'Theme' | translate }}")
+          div.row
+            div.col-md-6
+              h4 {{ 'Theme' | translate }}
+                small  {{appTheme}}
+              div.btn-group(data-toggle="btn-toggle")
+                button.btn.btn-default( type="button" data-toggle="on" ng-repeat="theme in appThemes"
+                  ng-click="setSetting('appTheme', theme.class)") {{theme.name}}
+              h4 Layout
+                small
+                | {{appLayout}}
+              div.btn-group( data-toggle="btn-toggle")
+                button.btn.btn-default( type="button" data-toggle="on" ng-repeat="layout in appLayouts"
+                  ng-click="setSetting('appLayout', layout.class)") {{layout.name}}

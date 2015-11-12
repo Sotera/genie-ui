@@ -1,0 +1,187 @@
+header.header .logo {
+  float: left;
+  font-size: 20px;
+  line-height: 50px;
+  text-align: center;
+  padding: 0 10px;
+  width: 220px;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: 500;
+  height: 50px;
+  display: block;
+}
+
+nbsp {
+  width: 0.5em;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.custom {
+  width: 155px !important;
+  word-spacing: -6px;
+  white-space: normal;
+}
+
+.sortable {
+  cursor: pointer;
+}
+.sortable:after {
+  content: url(data:image/gif;base64,R0lGODlhCwALAJEAAAAAAP///xUVFf///yH5BAEAAAMALAAAAAALAAsAAAIUnC2nKLnT4or00PvyrQwrPzUZshQAOw==);
+  padding-left: 1em;
+}
+.st-sort-ascent:after {
+  content: '\25B2';
+}
+.st-sort-descent:after {
+  content: '\25BC';
+}
+
+/* Changes the form text area color to white instead of yellow (Chrome) */
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+}
+
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+}
+
+textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+}
+
+.form-box {
+  width: 385px;
+  padding-top: 5%;
+  margin: 0px auto 0 auto;
+}
+
+.form-box .header {
+  background: rgba(41, 58, 68, 0.9);
+  color: #ffffff;
+}
+
+.lockscreen {
+  background: rgba(255,255,255,1);
+  background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(246,246,246,1) 47%, rgba(237,237,237,1) 100%);
+  background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(255,255,255,1)), color-stop(47%, rgba(246,246,246,1)), color-stop(100%, rgba(237,237,237,1)));
+  background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(246,246,246,1) 47%, rgba(237,237,237,1) 100%);
+  background: -o-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(246,246,246,1) 47%, rgba(237,237,237,1) 100%);
+  background: -ms-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(246,246,246,1) 47%, rgba(237,237,237,1) 100%);
+  background: linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(246,246,246,1) 47%, rgba(237,237,237,1) 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ededed', GradientType=0 );
+}
+
+html,
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: subpixel-antialiased;
+  font-smoothing: subpixel-antialiased;
+  letter-spacing:.01px;
+}
+
+.pointer {
+  cursor: default;
+}
+
+.td-center {
+  text-align: center;
+}
+
+.label-ltgray {
+  color: #666;
+  background-color: #d4d4d4;
+  border: 1px solid #ccc;
+}
+
+.label + .label {
+  margin-left: 2px;
+}
+
+/* Dashboard related css */
+@media screen and (min-width: 992px) {
+  .left-side {
+    top: 50px;
+  }
+  /*Right side strech mode*/
+  .right-side.strech {
+    margin-left: 0px;
+  }
+  .right-side.strech > .content-header {
+    margin-top: 0px;
+  }
+  /* Left side collapse */
+  .left-side.collapse-left {
+    left: -220px;
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .relative {
+    position: absolute;
+  }
+}
+
+.small-box h4 {
+  font-size: 30px;
+  font-weight: bold;
+  margin: 0 0 10px 0;
+  white-space: nowrap;
+  padding: 0;
+}
+
+.small-box .icon {
+  position: absolute;
+  top: auto;
+  bottom: 5px;
+  right: 5px;
+  z-index: 0;
+  font-size: 90px;
+  color: rgba(0, 0, 0, 0.15);
+}
+
+.bg-blue8,
+.bg-blue9,
+.bg-blue10,
+.bg-blue11,
+.bg-blue12,
+.bg-blue13 {
+  color: #f9f9f9 !important;
+}
+.bg-blue8 {
+  background-color: #74b6ce !important;
+}
+.bg-blue9 {
+  background-color: #52accc !important;
+}
+.bg-blue10 {
+  background-color: #4796b3 !important;
+}
+.bg-blue11 {
+  background-color: #096484 !important;
+}
+.bg-blue12 {
+  background-color: #04a4cc !important;
+}
+.bg-blue13 {
+  background-color: #0074a2 !important;
+}
+
+/* isteven multiselect overrides */
+.multiSelect > button {
+  border: none;
+  font-size: 12px;
+  min-height : 30px !important;
+  color: #fff;
+  background-color: #3C8DBC;
+  background-image: none;
+}
+
+.multiSelect > button:hover {
+  background-color: #367FA9;
+  background-image: none;
+}
+
+.multiSelect .caret {
+  border-top: 4px solid #fff;
+}

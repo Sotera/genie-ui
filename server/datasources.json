@@ -1,0 +1,15 @@
+{
+  "db-mem": {
+    "name": "db-mem",
+    "connector": "memory",
+    "file": "db.json"
+  },
+  "db": {
+    "name": "db",
+    "host": "localhost",
+    "port": 27017,
+    "database": "amino",
+    "connectionTimeout": 10000,
+    "connector": "mongodb"
+  }
+}
