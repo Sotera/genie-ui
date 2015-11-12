@@ -1,4 +1,4 @@
-# The Amino Framework
+# GENNIE
 
 ```
 npm install  

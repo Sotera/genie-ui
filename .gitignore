@@ -1,0 +1,9 @@
+node_modules/
+*.log
+client/app/bower_components/
+providers.json
+.tmp/
+dist/
+.idea/
+client/app/index.html
+client/app/js/lb-services.js

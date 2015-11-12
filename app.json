@@ -1,7 +1,7 @@
 {
-  "name": "Amino",
-  "description": "Loopback Web Application starter framework",
-  "repository": "https://github.com/sotera/Amino",
+  "name": "GENNIE",
+  "description": "GENNIE UI",
+  "repository": "https://github.com/sotera/gennie-ui",
   "logo": "https://node-js-sample.herokuapp.com/node.svg",
-  "keywords": ["node", "angular", "loopback", "admin", "amino"]
+  "keywords": ["node", "angular", "loopback", "admin", "amino", "gennie"]
 }

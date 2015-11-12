@@ -8,7 +8,7 @@
     "name": "db",
     "host": "localhost",
     "port": 27017,
-    "database": "amino",
+    "database": "gennie",
     "connectionTimeout": 10000,
     "connector": "mongodb"
   }

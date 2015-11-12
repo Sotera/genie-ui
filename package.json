@@ -1,21 +1,21 @@
 {
-  "name": "Amino",
-  "subdomain": "Amino",
-  "description": "Amino Framework",
+  "name": "GENNIE",
+  "subdomain": "GENNIE",
+  "description": "GENNIE User Interface",
   "version": "0.2.1",
   "engines": {
     "node": "0.12.x",
     "npm": "2.11.x"
   },
-  "homepage": "https://github.com/sotera/Amino",
-  "author": "John Reeme <john.reeme@soteradefense.com",
+  "homepage": "https://github.com/sotera/gennie-ui",
+  "author": "Justin Lueders <justin.lueders@soteradefense.com",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sotera/Amino"
+    "url": "https://github.com/sotera/gennie-ui"
   },
   "bugs": {
-    "url": "https://github.com/sotera/Amino/issues"
+    "url": "https://github.com/sotera/gennie-ui/issues"
   },
   "scripts": {
     "start": "node server/server.js",

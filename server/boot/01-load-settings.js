@@ -13,7 +13,7 @@ module.exports = function(app) {
     var settings = [{
       type: 'string',
       key: 'appName',
-      value: 'Amino Framework'
+      value: 'GENNIE UI'
     }, {
       type: 'select',
       key: 'appTheme',
