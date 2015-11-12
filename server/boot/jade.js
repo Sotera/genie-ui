@@ -35,12 +35,12 @@ module.exports = function (app) {
     res.render('sandbox/views/grid', {title: 'Grid'});
   });
 
-  /*Blank*/
-  app.get('/modules/blank/views/main', function (req, res) {
-    res.render('blank/views/main', {title: 'Main'});
+  /* Events Map */
+  app.get('/modules/events-map/views/main', function (req, res) {
+    res.render('events-map/views/main', {title: 'Events'});
   });
-  app.get('/modules/blank/views/list', function (req, res) {
-    res.render('blank/views/list', {title: 'List'});
+  app.get('/modules/events-map/views/map', function (req, res) {
+    res.render('events-map/views/map', {title: 'Events'});
   });
 
   /* Users */
