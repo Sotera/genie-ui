@@ -5,5 +5,3 @@ providers.json
 .tmp/
 dist/
 .idea/
-client/app/index.html
-client/app/js/lb-services.js
