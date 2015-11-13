@@ -13,7 +13,7 @@ module.exports = function(app) {
     var settings = [{
       type: 'string',
       key: 'appName',
-      value: 'GENNIE UI'
+      value: 'GENIE UI'
     }, {
       type: 'select',
       key: 'appTheme',

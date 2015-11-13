@@ -1,4 +1,4 @@
-# GENNIE
+# GENIE
 
 ```
 npm install  

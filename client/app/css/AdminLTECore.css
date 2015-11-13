@@ -140,8 +140,9 @@ h6,
   margin-top: 5px;
 }
 /* All images should be responsive */
+/*removing to play nicely with google maps*/
 img {
-  max-width: 100% !important;
+  /*max-width: 100% !important;*/
 }
 .sort-highlight {
   background: #f4f4f4;
