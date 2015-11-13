@@ -48,6 +48,7 @@ angular.module('loopbackApp', [
   'com.module.pages',
   'com.module.posts',
   'com.module.products', */
+  'com.module.blank',
   'com.module.sandbox',
   'com.module.settings',
   'com.module.users'

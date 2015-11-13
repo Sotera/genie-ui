@@ -10,8 +10,8 @@ section.content
         tab( heading="{{ 'Dashboard' | translate }}")
           div.row
             small-box( name="{{ box.name }}" color="{{ box.color }}" icon="{{ box.icon }}"
-              quantity="{{ box.quantity }}" href="{{ box.href }}"
-              ng-repeat="box in boxes | orderBy:['-quantity', 'name']")
+            quantity="{{ box.quantity }}" href="{{ box.href }}" content = "{{ box.content}}"
+            ng-repeat="box in boxes | orderBy:['-quantity', 'name']")
         tab( heading="{{ 'Variables' | translate }}")
           div.row
             div.col-md-6

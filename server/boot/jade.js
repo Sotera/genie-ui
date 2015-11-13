@@ -43,6 +43,17 @@ module.exports = function (app) {
     res.render('events-map/views/map', {title: 'Events'});
   });
 
+  /*Blank*/
+  app.get('/modules/blank/views/main', function (req, res) {
+    res.render('blank/views/main', {title: 'Main'});
+  });
+  app.get('/modules/blank/views/list', function (req, res) {
+    res.render('blank/views/list', {title: 'List'});
+  });
+  app.get('/modules/blank/views/chip', function (req, res) {
+    res.render('blank/views/chip', {title: 'Chip'});
+  });
+
   /* Users */
   app.get('/modules/users/views/main', function (req, res) {
     res.render('users/views/main', {title: 'Main'});

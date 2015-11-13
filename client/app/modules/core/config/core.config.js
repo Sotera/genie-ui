@@ -17,13 +17,14 @@ app.run(function ($rootScope, Setting, gettextCatalog, $window, UserLoginOrLogou
   // Dashboard
   $rootScope.dashboardBox = [];
   // Add Dashboard Box
-  $rootScope.addDashboardBox = function (name, color, icon, quantity, href) {
+  $rootScope.addDashboardBox = function (name, color, icon, quantity, href, content) {
     $rootScope.dashboardBox.push({
       name: name,
       color: color,
       icon: icon,
       quantity: quantity,
-      href: href
+      href: href,
+      content:content
     });
   };
   // Get Settings for Database
