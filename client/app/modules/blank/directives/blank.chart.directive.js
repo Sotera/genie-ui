@@ -3,7 +3,7 @@
 angular.module('com.module.blank')
   .directive('blankChart', function() {
     return {
-      template: '<div id="chart_div" style="width: 300px; height: 200px;">',
+      template: '<div id="chart_div" style="width: 100%; height: 100%;">',
       restrict: 'E',
       link:function(scope, element, attrs) {
         // Set a callback to run when the Google Visualization API is loaded.

@@ -42,6 +42,9 @@ module.exports = function (app) {
   app.get('/modules/events-map/views/map', function (req, res) {
     res.render('events-map/views/map', {title: 'Events'});
   });
+  app.get('/modules/events-map/views/chipmap', function (req, res) {
+    res.render('events-map/views/chipmap', {title: 'MiniMap'});
+  });
 
   /*Blank*/
   app.get('/modules/blank/views/main', function (req, res) {

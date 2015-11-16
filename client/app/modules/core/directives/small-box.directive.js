@@ -26,7 +26,7 @@ angular.module('com.module.core')
           content:'@'
         },
         link: function(scope, element, attrs){
-          var template ='<div style="width:100% height:100%" ng-include="content">';
+          var template ='<div style="width:100%; height:100%" ng-include="content">';
 
           var linkFn = $compile(template);
           var content = linkFn(scope);
