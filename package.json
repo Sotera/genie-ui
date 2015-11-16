@@ -19,6 +19,7 @@
   },
   "scripts": {
     "start": "node server/server.js",
+    "predev": "npm install",
     "dev": "nodemon server/server.js --watch server --watch common --ext js,json ",
     "postinstall": "bower install"
   },
