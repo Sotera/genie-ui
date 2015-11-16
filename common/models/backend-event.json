@@ -1,0 +1,21 @@
+{
+  "name": "BackendEvent",
+  "properties": {
+    "uuid": {
+      "type": "string"
+    },
+    "tag": {
+      "type": "string"
+    },
+    "indexedDate": {
+      "type": "date"
+    },
+    "location": {
+      "type": "object"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

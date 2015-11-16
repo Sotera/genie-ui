@@ -9,5 +9,15 @@
     "database": "MongoDatabase",
     "name": "MongoDB",
     "connector": "mongodb"
+  },
+  "es": {
+    "host": "172.21.10.140",
+    "port": 9200,
+    "name": "es",
+    "connector": "elastic-search",
+    "log": "trace",
+    "defaultSize": 50,
+    "index": "jag_hc",
+    "type": "post"
   }
 }

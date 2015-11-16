@@ -73,5 +73,9 @@
   "AminoUser": {
     "dataSource": "db",
     "public": true
+  },
+  "BackendEvent": {
+    "dataSource": "es",
+    "public": true
   }
 }
