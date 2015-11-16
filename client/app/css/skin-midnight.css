@@ -101,11 +101,6 @@ body.skin-midnight{
   border: 2px solid  #85144b !important;
 }
 
-
-.skin-midnight .small-box > .small-box-footer {
-  background-color: #525252;
-}
-
 .skin-midnight .small-box .icon {
   color: #0099FF;
 }

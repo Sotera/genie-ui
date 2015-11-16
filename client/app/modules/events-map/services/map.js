@@ -10,7 +10,7 @@ angular.module('genie.eventsMap')
           "saturation": 36
         },
         {
-          "color": "#181818"
+          "color": "#ffffff"
         },
         {
           "lightness": 40
@@ -97,10 +97,10 @@ angular.module('genie.eventsMap')
       "elementType": "geometry.fill",
       "stylers": [
         {
-          "color": "#181818"
+          "color": "#484848"
         },
         {
-          "lightness": 17
+          "lightness": 20
         }
       ]
     },

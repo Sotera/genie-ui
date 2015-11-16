@@ -23,8 +23,7 @@ angular.module('com.module.blank')
 
           // Set chart options
           var options = {
-            'width':300,
-            'height':100,
+            
             'backgroundColor':'#181818',
             'pieSliceText':'none',
             'is3D': true,

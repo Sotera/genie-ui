@@ -1291,6 +1291,7 @@ header.header .logo .icon {
     Component: Small boxes
 */
 .small-box {
+  min-height: 150px;
   position: relative;
   display: block;
   -webkit-border-radius: 2px;
@@ -1321,18 +1322,6 @@ header.header .logo .icon {
   height:100%;
   top: 0;
 }
-
-.small-box-footer {
-  padding: 3px 0;
-  background: rgba(0, 0, 0, 0.1);
-  width:100%;
-  text-align: center;
-}
-
-.small-box-footer:hover {
-  color: #fff;
-  background: rgba(0, 0, 0, 0.15);
-}
 .small-box h3 {
   font-size: 38px;
   font-weight: bold;
@@ -1351,12 +1340,11 @@ header.header .logo .icon {
 }
 .small-box h3,
 .small-box p {
-  z-index: 5px;
+  z-index: 5;
 }
 .small-box .icon {
   position: absolute;
-  top: auto;
-  bottom: 5px;
+  top: 0;
   right: 5px;
   z-index: 0;
   font-size: 90px;
