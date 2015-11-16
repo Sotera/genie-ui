@@ -1,5 +1,5 @@
 'use strict';
-angular.module('gennie.eventsMap')
+angular.module('genie.eventsMap')
   .factory('mapService', function() {
     var darkStyles = [
     {
@@ -171,15 +171,15 @@ angular.module('gennie.eventsMap')
 
     return {
       applyHeatmap: function(map) {
-        var Event = Parse.Object.extend("Event")
-        var query = new Parse.Query(Event)
+        var Event = Parse.Object.extend("Event");
+        var query = new Parse.Query(Event);
         
         query.find({
           success: function(results) {
             new google.maps.visualization.HeatmapLayer({
               data: _.map(results, 
                 function(item) {
-                  var coord = item.get('geo')
+                  var coord = item.get('geo');
                   return new google.maps.LatLng(coord[0], coord[1]) 
                 }),
               map: map

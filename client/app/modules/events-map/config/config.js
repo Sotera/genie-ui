@@ -1,5 +1,5 @@
 'use strict';
-angular.module('gennie.eventsMap')
+angular.module('genie.eventsMap')
   .run(function ($rootScope) {
     $rootScope.addMenu('Events Map', 'app.events-map.show','fa-map-marker');
     $rootScope.addDashboardBox('Events Map', 'bg-blue5', '',

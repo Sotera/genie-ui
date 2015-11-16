@@ -8,7 +8,7 @@
     "name": "db",
     "host": "localhost",
     "port": 27017,
-    "database": "gennie",
+    "database": "genie",
     "connectionTimeout": 10000,
     "connector": "mongodb"
   }

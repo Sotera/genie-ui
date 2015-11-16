@@ -41,7 +41,7 @@ angular.module('loopbackApp', [
   'gettext',
   'com.module.core',
   'com.module.about',
-  'gennie.eventsMap',
+  'genie.eventsMap',
 /*  'com.module.files',
   'com.module.events',
   'com.module.notes',

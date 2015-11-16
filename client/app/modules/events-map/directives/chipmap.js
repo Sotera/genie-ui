@@ -1,5 +1,5 @@
 'use strict';
-angular.module('gennie.eventsMap')
+angular.module('genie.eventsMap')
   .directive('chipmap', ['mapService', function (mapService) {
     function link(scope, element, attrs) {
 

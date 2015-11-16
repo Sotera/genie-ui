@@ -1,5 +1,5 @@
 'use strict';
-angular.module('gennie.eventsMap')
+angular.module('genie.eventsMap')
   .config(function($stateProvider) {
     $stateProvider
       

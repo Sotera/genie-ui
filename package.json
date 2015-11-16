@@ -1,21 +1,21 @@
 {
-  "name": "GENNIE",
-  "subdomain": "GENNIE",
-  "description": "GENNIE User Interface",
+  "name": "GENIE",
+  "subdomain": "GENIE",
+  "description": "GENIE User Interface",
   "version": "0.2.1",
   "engines": {
     "node": "0.12.x",
     "npm": "2.11.x"
   },
-  "homepage": "https://github.com/sotera/gennie-ui",
+  "homepage": "https://github.com/sotera/genie-ui",
   "author": "Justin Lueders <justin.lueders@soteradefense.com",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sotera/gennie-ui"
+    "url": "https://github.com/sotera/genie-ui"
   },
   "bugs": {
-    "url": "https://github.com/sotera/gennie-ui/issues"
+    "url": "https://github.com/sotera/genie-ui/issues"
   },
   "scripts": {
     "start": "node server/server.js",
