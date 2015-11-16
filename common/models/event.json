@@ -1,40 +1,28 @@
 {
   "name": "Event",
-  "plural": "events",
   "base": "PersistedModel",
+  "idInjection": true,
+  "strict": "throw",
+  "options": {
+    "validateUpsert": true
+  },
   "properties": {
-    "name": {
-      "type": "string",
+    "coordinates": {
+      "type": ["GeoPoint"],
       "required": true
     },
-    "description": {
-      "type": "string"
+    "name": {
+      "type": "string",
+      "description": "A user-defined, identifiable name"
     },
-    "start_time": {
-      "type": "date"
+    "eventType": {
+      "type": "string",
+      "default": "hashtag",
+      "description": "Ex. hashtag, user-defined, etc."
     },
-    "end_time": {
-      "type": "date"
-    },
-    "timezone": {
-      "type": "String"
-    },
-    "location": {
-      "type": "String"
-    },
-    "url": {
-      "type": "String"
-    },
-    "image": {
-      "type": "String"
-    },
-    "tickets": {
-      "type": "String"
-    },
-    "tags": {
-      "type": [
-        "string"
-      ]
+    "eventTime": {
+      "type": "date",
+      "defaultFn": "now"
     }
   },
   "validations": [],

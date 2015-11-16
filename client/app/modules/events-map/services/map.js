@@ -1,6 +1,6 @@
 'use strict';
 angular.module('genie.eventsMap')
-  .factory('mapService', function() {
+  .factory('mapService', ['Event', function(Event) {
     var darkStyles = [
     {
       "featureType": "all",
@@ -169,27 +169,28 @@ angular.module('genie.eventsMap')
     }
     ];
 
+    function createHeatmap(map) {
+      return function(events) {
+        new google.maps.visualization.HeatmapLayer({
+          data: _.map(events, 
+            function(event) {
+              var coord = event.coordinates[0];
+              return new google.maps.LatLng(coord.lat, coord.lng) 
+            }),
+          map: map
+        });
+      };
+    }
+
     return {
-      applyHeatmap: function(map) {
-        var Event = Parse.Object.extend("Event");
-        var query = new Parse.Query(Event);
-        
-        query.find({
-          success: function(results) {
-            new google.maps.visualization.HeatmapLayer({
-              data: _.map(results, 
-                function(item) {
-                  var coord = item.get('geo');
-                  return new google.maps.LatLng(coord[0], coord[1]) 
-                }),
-              map: map
-            });
-          },
-          error: function(err) {
-            console.log(err)
-          }
+      applyHeatmap: function applyHeatmap(map) {
+        Event.find()
+        .$promise
+        .then(createHeatmap(map))
+        .catch(function(err) {
+          console.log(err);
         })
       },
       darkStyles: darkStyles
     };
-  });
+  }]);
