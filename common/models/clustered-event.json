@@ -1,0 +1,40 @@
+{
+  "name": "ClusteredEvent",
+  "base": "PersistedModel",
+  "strict": "throw",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "zoomLevel": {
+      "type": "number",
+      "required": true
+    },
+    "coordinates": {
+      "type": [
+        "geopoint"
+      ],
+      "required": true
+    },
+    "startTime": {
+      "type": "date",
+      "required": true
+    },
+    "endTime": {
+      "type": "date",
+      "required": true
+    },
+    "childId": {
+      "type": "string"
+    },
+    "clusterType": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

@@ -15,6 +15,7 @@
   "es": {
     "host": "172.21.10.140",
     "port": 9200,
+    "requestTimeout": 5000,
     "name": "es",
     "connector": "elastic-search",
     "log": "trace",
