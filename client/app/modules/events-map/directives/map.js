@@ -2,9 +2,10 @@
 angular.module('genie.eventsMap')
   .directive('map', ['mapService', function (mapService) {
     function link(scope, element, attrs) {
+      
       var mapOptions = {
         zoom: 13,
-        center: {lat: 37.775, lng: -122.434},
+        center: {lat: 41.506111, lng: -81.699444},
         styles: mapService.darkStyles
       };
 

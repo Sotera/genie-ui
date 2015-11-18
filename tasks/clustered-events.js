@@ -22,6 +22,8 @@ function runTask (err, task) {
     return;
   };
 
+  //TODO: run for 24, 48 hrs, 1 week ago
+  //TODO: add Task#running, lastError
   ClusteredEventSource.find({
     where: {
       indexedDate: {gt: task.lastRun}

@@ -1,6 +1,6 @@
 'use strict';
 angular.module('genie.eventsMap')
-  .factory('mapService', ['Event', function(Event) {
+  .factory('mapService', ['ClusteredEvent', function(ClusteredEvent) {
     var darkStyles = [
     {
       "featureType": "all",
@@ -170,11 +170,11 @@ angular.module('genie.eventsMap')
     ];
 
     function createHeatmap(map) {
-      return function(events) {
+      // return a function that maps events
+      return function(event) {
         new google.maps.visualization.HeatmapLayer({
-          data: _.map(events, 
-            function(event) {
-              var coord = event.coordinates[0];
+          data: _.map(event.coordinates, 
+            function(coord) {
               return new google.maps.LatLng(coord.lat, coord.lng) 
             }),
           map: map
@@ -184,7 +184,13 @@ angular.module('genie.eventsMap')
 
     return {
       applyHeatmap: function applyHeatmap(map) {
-        Event.find()
+        ClusteredEvent.findOne({
+          filter: {
+            where: {
+              zoomLevel: 10
+            }
+          } 
+        })
         .$promise
         .then(createHeatmap(map))
         .catch(function(err) {

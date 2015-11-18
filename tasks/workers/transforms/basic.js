@@ -1,7 +1,7 @@
 var loopback = require('loopback'),
   path = require('path'),
   filename = path.basename(__filename, '.js'),
-  app = require('../../server/server'),
+  app = require('../../../server/server'),
   ClusteredEvent = app.models.ClusteredEvent,
   log = require('debug')('transforms:' + filename),
   maxZoom = 10,
@@ -13,9 +13,10 @@ module.exports = {
 
 function run (eventSources) {
   var coordinatesCollection = eventSources.map(function(source) {
+    // sources have irregular [lng,lat] order
     return new loopback.GeoPoint({
-      lat: source.location.coordinates[0],
-      lng: source.location.coordinates[1]
+      lat: source.location.coordinates[1],
+      lng: source.location.coordinates[0]
     });
   });
 

@@ -5,7 +5,7 @@ angular.module('genie.eventsMap')
 
       var mapOptions = {
         zoom: 1,
-        center: {lat: 37.775, lng: -122.434},
+        center: {lat: 41.506111, lng: -81.699444},
         styles: mapService.darkStyles
       };
       scope.map = new google.maps.Map(elem[0], mapOptions)
