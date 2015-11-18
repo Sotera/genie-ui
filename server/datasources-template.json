@@ -4,10 +4,10 @@
     "connector": "memory"
   },
   "MongoDB": {
+    "name": "MongoDB",
     "host": MONGO_HOST_ADDR,
     "port": MONGO_HOST_PORT,
     "database": "MongoDatabase",
-    "name": "MongoDB",
     "connector": "mongodb"
   },
   "es": {
@@ -24,6 +24,7 @@
     "requestTimeout": 5000,
     "log": "trace",
     "defaultSize": 50,
-    "index": INDEX
+    "index": INDEX,
+    "type": TYPE
   }
 }

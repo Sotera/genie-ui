@@ -14383,8 +14383,8 @@
     },
     "loopback-connector-es": {
       "version": "1.0.2",
-      "from": "loopback-connector-es@*",
-      "resolved": "https://registry.npmjs.org/loopback-connector-es/-/loopback-connector-es-1.0.2.tgz",
+      "from": "lukewendling/loopback-connector-elastic-search#e2efd1",
+      "resolved": "git://github.com/lukewendling/loopback-connector-elastic-search.git#e2efd14f6c8872b73f3ff4242d236d45407f9492",
       "dependencies": {
         "async": {
           "version": "0.9.2",

@@ -77,7 +77,7 @@
     "loopback-boot": "~2.14.0",
     "loopback-component-passport": "~1.6.0",
     "loopback-component-storage": "~1.5.1",
-    "loopback-connector-es": "^1.0.2",
+    "loopback-connector-es": "lukewendling/loopback-connector-elastic-search#e2efd1",
     "loopback-connector-mongodb": "~1.13.0",
     "loopback-datasource-juggler": "~2.41.1",
     "mongo-express": "0.25.0",
