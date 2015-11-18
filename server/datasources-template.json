@@ -11,14 +11,19 @@
     "connector": "mongodb"
   },
   "es": {
-    "host": "172.21.10.140",
-    "port": 9200,
+    "name": "elasticsearch",
+    "connector": "es",
+    "hosts": [
+      {
+        "protocol": "http",
+        "host": HOST,
+        "port": 9200
+      }
+    ],
+    "apiVersion": "1.1",
     "requestTimeout": 5000,
-    "name": "es",
-    "connector": "elastic-search",
     "log": "trace",
     "defaultSize": 50,
-    "index": "jag_hc",
-    "type": "post"
+    "index": INDEX
   }
 }
