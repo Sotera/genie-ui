@@ -4,10 +4,10 @@
     "connector": "memory"
   },
   "MongoDB": {
-    "name": "MongoDB",
     "host": MONGO_HOST_ADDR,
     "port": MONGO_HOST_PORT,
-    "database": "MongoDatabase",
+    "database": "genie",
+    "name": "MongoDB",
     "connector": "mongodb"
   },
   "es": {
