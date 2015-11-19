@@ -8,9 +8,9 @@ angular.module('com.module.blank')
       link:function(scope, element, attrs) {
           var data = new google.visualization.DataTable();
           data.addColumn('number', 'Day');
-          data.addColumn('number', 'Guardians of the Galaxy');
-          data.addColumn('number', 'The Avengers');
-          data.addColumn('number', 'Transformers: Age of Extinction');
+          data.addColumn('number', 'blank value');
+          data.addColumn('number', 'blank value 2');
+          data.addColumn('number', 'blank value 3');
 
           data.addRows([
               [1,  37.8, 80.8, 41.8],
