@@ -41,10 +41,11 @@ function run (eventSources) {
 
 //TODO: use a real center point calculator
 function getCenter (points) {
-  let sumLats = _.sum(points, (point) => { return point.lat }),
-    sumLngs = _.sum(points, (point) => { return point.lng }),
-    avgLats = sumLats / points.length,
-    avgLngs = sumLngs / points.length;
+  let _points = _(points), len = points.length,
+    sumLats = _points.sum('lat'),
+    sumLngs = _points.sum('lng'),
+    avgLats = sumLats / len,
+    avgLngs = sumLngs / len;
 
     return new loopback.GeoPoint({lat: avgLats, lng: avgLngs});
 }
