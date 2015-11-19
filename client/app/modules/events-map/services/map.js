@@ -5,48 +5,56 @@ angular.module('genie.eventsMap')
     var darkStyles = stylesService.dark;
     var elem, zoomLevel;
 
-    function createHeatmap(map, event) {
-      new google.maps.visualization.HeatmapLayer({
-        data: _.map(event.coordinates, 
-          function(coord) {
-            return new google.maps.LatLng(coord.lat, coord.lng) 
-          }),
-        map: map
-      });
+    function updateMap(map) {
+      return function(event) {
+        map.setCenter(event.centerPoint);
+        new google.maps.visualization.HeatmapLayer({
+          data: _.map(event.coordinates, 
+            function(coord) {
+              return new google.maps.LatLng(coord.lat, coord.lng) 
+            }),
+          map: map
+        });
+      }
     }
 
-    function createMap(event) {
+    function createMap(elem) {
 
       var mapOptions = {
-        zoom: zoomLevel,
-        center: event.centerPoint,
+        zoom: 9,
+        center: new google.maps.LatLng(-25.363882, 131.044922),
         styles: stylesService.dark
       };
 
       var map = new google.maps.Map(elem, mapOptions);
-      createHeatmap(map, event);
 
       map.addListener('zoom_changed', function() {
-        console.log(map.getZoom())
-      })
+        console.log(map.getZoom(), 'zoom')
+        focusOnEvent({zoomLevel: map.getZoom(), map: map});
+      });
+
+      return map;
     }
 
-    function displayHeatmap(options) {
-      elem = options.elem,
-      zoomLevel = options.zoomLevel;
-
+    function focusOnEvent(options) {
       ClusteredEvent.findOne({
         filter: {
           where: {
-            zoomLevel: zoomLevel
+            zoomLevel: options.zoomLevel
           }
         } 
       })
       .$promise
-      .then(createMap)
+      .then(updateMap(options.map))
       .catch(function(err) {
         console.log(err);
       })
+    }
+
+    function displayHeatmap(options) {
+      var map = createMap(options.elem);
+
+      focusOnEvent({zoomLevel: options.zoomLevel, map: map});
     };
 
     return {

@@ -24,6 +24,7 @@ function run (eventSources) {
   });
 
   //TODO: add childId, start, end
+  //TODO: apply clustering algorithm to successive zoomlevel
   for (var i=maxZoom; i>=minZoom; i--) {
     ClusteredEvent.create({
       centerPoint: getCenter(points),
@@ -38,6 +39,7 @@ function run (eventSources) {
   }
 }
 
+//TODO: use a real center point calculator
 function getCenter (points) {
   let sumLats = _.sum(points, (point) => { return point.lat }),
     sumLngs = _.sum(points, (point) => { return point.lng }),
