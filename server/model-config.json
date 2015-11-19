@@ -74,8 +74,16 @@
     "dataSource": "db",
     "public": true
   },
-  "BackendEvent": {
+  "ClusteredEventSource": {
     "dataSource": "es",
+    "public": true
+  },
+  "Task": {
+    "dataSource": "db",
+    "public": true
+  },
+  "ClusteredEvent": {
+    "dataSource": "db",
     "public": true
   }
 }

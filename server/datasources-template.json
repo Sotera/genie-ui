@@ -24,6 +24,7 @@
     "requestTimeout": 5000,
     "log": "trace",
     "defaultSize": 50,
-    "index": INDEX
+    "index": INDEX,
+    "type": TYPE
   }
 }
