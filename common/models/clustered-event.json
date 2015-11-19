@@ -17,6 +17,10 @@
       ],
       "required": true
     },
+    "centerPoint": {
+      "type": "geopoint",
+      "required": true
+    },
     "startTime": {
       "type": "date",
       "required": true

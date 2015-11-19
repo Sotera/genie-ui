@@ -1,17 +1,9 @@
 'use strict';
 angular.module('genie.eventsMap')
   .directive('map', ['mapService', function (mapService) {
-    function link(scope, element, attrs) {
-      
-      var mapOptions = {
-        zoom: 13,
-        center: {lat: 41.506111, lng: -81.699444},
-        styles: mapService.darkStyles
-      };
+    function link(scope, elem, attrs) {
 
-      scope.map = new google.maps.Map(element[0], mapOptions)
-
-      mapService.applyHeatmap(scope.map)
+      mapService.displayHeatmap({elem: elem[0], zoomLevel: 13})
 
     }
 

@@ -1,10 +1,13 @@
-var loopback = require('loopback'),
+'use strict';
+
+let loopback = require('loopback'),
+  _ = require('lodash'),
   path = require('path'),
   filename = path.basename(__filename, '.js'),
   app = require('../../../server/server'),
   ClusteredEvent = app.models.ClusteredEvent,
   log = require('debug')('transforms:' + filename),
-  maxZoom = 10,
+  maxZoom = 18, minZoom=0,
   clusterType = filename;
 
 module.exports = {
@@ -12,7 +15,7 @@ module.exports = {
 };
 
 function run (eventSources) {
-  var coordinatesCollection = eventSources.map(function(source) {
+  var points = eventSources.map((source) => {
     // sources have irregular [lng,lat] order
     return new loopback.GeoPoint({
       lat: source.location.coordinates[1],
@@ -21,15 +24,25 @@ function run (eventSources) {
   });
 
   //TODO: add childId, start, end
-  for (var i=maxZoom; i>0; i--) {
+  for (var i=maxZoom; i>=minZoom; i--) {
     ClusteredEvent.create({
+      centerPoint: getCenter(points),
       zoomLevel: i,
-      coordinates: coordinatesCollection,
+      coordinates: points,
       startTime: new Date(),
       endTime: new Date(),
       clusterType: clusterType
     }, function(err, event) {
-      log(err);
+      if (err) log(err);
     });
   }
+}
+
+function getCenter (points) {
+  let sumLats = _.sum(points, (point) => { return point.lat }),
+    sumLngs = _.sum(points, (point) => { return point.lng }),
+    avgLats = sumLats / points.length,
+    avgLngs = sumLngs / points.length;
+
+    return new loopback.GeoPoint({lat: avgLats, lng: avgLngs});
 }
