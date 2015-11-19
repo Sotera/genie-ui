@@ -1,196 +1,63 @@
 'use strict';
 angular.module('genie.eventsMap')
-  .factory('mapService', ['Event', function(Event) {
-    var darkStyles = [
-    {
-      "featureType": "all",
-      "elementType": "labels.text.fill",
-      "stylers": [
-        {
-          "saturation": 36
-        },
-        {
-          "color": "#ffffff"
-        },
-        {
-          "lightness": 40
-        }
-      ]
-    },
-    {
-      "featureType": "all",
-      "elementType": "labels.text.stroke",
-      "stylers": [
-        {
-          "visibility": "on"
-        },
-        {
-          "color": "#181818"
-        },
-        {
-          "lightness": 16
-        }
-      ]
-    },
-    {
-      "featureType": "all",
-      "elementType": "labels.icon",
-      "stylers": [
-        {
-          "visibility": "off"
-        }
-      ]
-    },
-    {
-      "featureType": "administrative",
-      "elementType": "geometry.fill",
-      "stylers": [
-        {
-          "color": "#181818"
-        },
-        {
-          "lightness": 20
-        }
-      ]
-    },
-    {
-      "featureType": "administrative",
-      "elementType": "geometry.stroke",
-      "stylers": [
-        {
-          "color": "#181818"
-        },
-        {
-          "lightness": 17
-        },
-        {
-          "weight": 1.2
-        }
-      ]
-    },
-    {
-      "featureType": "landscape",
-      "elementType": "geometry",
-      "stylers": [
-        {
-          "color": "#181818"
-        },
-        {
-          "lightness": 20
-        }
-      ]
-    },
-    {
-      "featureType": "poi",
-      "elementType": "geometry",
-      "stylers": [
-        {
-          "color": "#181818"
-        },
-        {
-          "lightness": 21
-        }
-      ]
-    },
-    {
-      "featureType": "road.highway",
-      "elementType": "geometry.fill",
-      "stylers": [
-        {
-          "color": "#484848"
-        },
-        {
-          "lightness": 20
-        }
-      ]
-    },
-    {
-      "featureType": "road.highway",
-      "elementType": "geometry.stroke",
-      "stylers": [
-        {
-          "color": "#181818"
-        },
-        {
-          "lightness": 29
-        },
-        {
-          "weight": 0.2
-        }
-      ]
-    },
-    {
-      "featureType": "road.arterial",
-      "elementType": "geometry",
-      "stylers": [
-        {
-          "color": "#181818"
-        },
-        {
-          "lightness": 18
-        }
-      ]
-    },
-    {
-      "featureType": "road.local",
-      "elementType": "geometry",
-      "stylers": [
-        {
-          "color": "#181818"
-        },
-        {
-          "lightness": 16
-        }
-      ]
-    },
-    {
-      "featureType": "transit",
-      "elementType": "geometry",
-      "stylers": [
-        {
-          "color": "#181818"
-        },
-        {
-          "lightness": 19
-        }
-      ]
-    },
-    {
-      "featureType": "water",
-      "elementType": "geometry",
-      "stylers": [
-        {
-          "color": "#181818"
-        },
-        {
-          
-        }
-      ]
-    }
-    ];
+  .factory('mapService', ['ClusteredEvent', 'stylesService',
+    function(ClusteredEvent, stylesService) {
+    var darkStyles = stylesService.dark;
+    var heatmapLayer = new google.maps.visualization.HeatmapLayer();
 
-    function createHeatmap(map) {
-      return function(events) {
-        new google.maps.visualization.HeatmapLayer({
-          data: _.map(events, 
-            function(event) {
-              var coord = event.coordinates[0];
-              return new google.maps.LatLng(coord.lat, coord.lng) 
-            }),
-          map: map
-        });
-      };
+    function updateMap(map) {
+      return function(event) {
+        map.setCenter(event.centerPoint);
+        heatmapLayer.setMap(map);
+        var data = _.map(event.coordinates,
+          function(coord) {
+            return new google.maps.LatLng(coord.lat, coord.lng);
+          });
+        heatmapLayer.setData(data);
+      }
     }
+
+    function createMap(elem) {
+
+      var mapOptions = {
+        zoom: 9,
+        center: new google.maps.LatLng(-25.363882, 131.044922),
+        styles: stylesService.dark
+      };
+
+      var map = new google.maps.Map(elem, mapOptions);
+
+      map.addListener('zoom_changed', function() {
+        console.log(map.getZoom(), 'zoom')
+        focusOnEvent({zoomLevel: map.getZoom(), map: map});
+      });
+
+      return map;
+    }
+
+    function focusOnEvent(options) {
+      ClusteredEvent.findOne({
+        filter: {
+          where: {
+            zoomLevel: options.zoomLevel
+          }
+        }
+      })
+      .$promise
+      .then(updateMap(options.map))
+      .catch(function(err) {
+        console.log(err);
+      })
+    }
+
+    function displayHeatmap(options) {
+      var map = createMap(options.elem);
+
+      focusOnEvent({zoomLevel: options.zoomLevel, map: map});
+    };
 
     return {
-      applyHeatmap: function applyHeatmap(map) {
-        Event.find()
-        .$promise
-        .then(createHeatmap(map))
-        .catch(function(err) {
-          console.log(err);
-        })
-      },
+      displayHeatmap: displayHeatmap,
       darkStyles: darkStyles
     };
   }]);

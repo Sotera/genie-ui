@@ -6,6 +6,3 @@ angular.module('genie.eventsMap')
       5, 'app.events-map.show', 'modules/events-map/views/chipmap');
 
   });
-
-Parse.initialize('LgPQdpbw1cy7DduT6vkOjereXO19eOEUe2G3ux1w', 
-  'CgX6WK7wX8Tw99qEq7JRAJjK8I908hQQsaah1WYT');
