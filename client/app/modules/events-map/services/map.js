@@ -1,20 +1,19 @@
 'use strict';
 angular.module('genie.eventsMap')
-  .factory('mapService', ['ClusteredEvent', 'stylesService', 
+  .factory('mapService', ['ClusteredEvent', 'stylesService',
     function(ClusteredEvent, stylesService) {
     var darkStyles = stylesService.dark;
-    var elem, zoomLevel;
+    var heatmapLayer = new google.maps.visualization.HeatmapLayer();
 
     function updateMap(map) {
       return function(event) {
         map.setCenter(event.centerPoint);
-        new google.maps.visualization.HeatmapLayer({
-          data: _.map(event.coordinates, 
-            function(coord) {
-              return new google.maps.LatLng(coord.lat, coord.lng) 
-            }),
-          map: map
-        });
+        heatmapLayer.setMap(map);
+        var data = _.map(event.coordinates,
+          function(coord) {
+            return new google.maps.LatLng(coord.lat, coord.lng);
+          });
+        heatmapLayer.setData(data);
       }
     }
 
@@ -42,7 +41,7 @@ angular.module('genie.eventsMap')
           where: {
             zoomLevel: options.zoomLevel
           }
-        } 
+        }
       })
       .$promise
       .then(updateMap(options.map))
