@@ -5,3 +5,4 @@ providers.json
 .tmp/
 dist/
 .idea/
+.env

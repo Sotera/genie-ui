@@ -1,10 +1,12 @@
 'use strict';
 angular.module('genie.eventsMap')
-  .directive('map', ['mapService', function (mapService) {
+  .directive('map', ['mapService', 'tweetService', function (mapService, tweetService) {
     function link(scope, elem, attrs) {
 
-      mapService.displayHeatmap({elem: elem[0], zoomLevel: 13})
+      var map = mapService.displayHeatmap({elem: elem[0], zoomLevel: 13});
 
+      //TODO: add event handler to 'realtime' button
+      tweetService.start({bounds: map.getBounds()});
     }
 
     return {
