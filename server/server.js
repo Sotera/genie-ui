@@ -17,6 +17,55 @@ var env = require('get-env')({
   test: 'test'
 });
 
+app.RED = require('node-red');
+app.server = require('http').createServer(app);
+
+//NodeRED-->BEGIN
+//Monkey patch loopback/application.listen because we need the actual http.server object to initialize NodeRED
+app.listen = function(cb) {
+  var self = this;
+
+  var server = this.server;
+
+  server.on('listening', function() {
+    self.set('port', this.address().port);
+
+    var listeningOnAll = false;
+    var host = self.get('host');
+    if (!host) {
+      listeningOnAll = true;
+      host = this.address().address;
+      self.set('host', host);
+    } else if (host === '0.0.0.0' || host === '::') {
+      listeningOnAll = true;
+    }
+
+    if (!self.get('url')) {
+      if (process.platform === 'win32' && listeningOnAll) {
+        // Windows browsers don't support `0.0.0.0` host in the URL
+        // We are replacing it with localhost to build a URL
+        // that can be copied and pasted into the browser.
+        host = 'localhost';
+      }
+      var url = 'http://' + host + ':' + self.get('port') + '/';
+      self.set('url', url);
+    }
+  });
+
+  var useAppConfig =
+    arguments.length === 0 ||
+    (arguments.length == 1 && typeof arguments[0] == 'function');
+
+  if (useAppConfig) {
+    server.listen(this.get('port'), this.get('host'), cb);
+  } else {
+    server.listen.apply(server, arguments);
+  }
+  app.RED.start();
+  return server;
+};
+//NodeRED-->END
+
 // Set up the /favicon.ico
 app.use(loopback.favicon(path.join(__dirname, 'waveicon16.png')));
 

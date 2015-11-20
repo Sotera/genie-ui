@@ -53,6 +53,7 @@
     "loopback-connector-mongodb": "~1.13.0",
     "loopback-datasource-juggler": "~2.41.1",
     "mongo-express": "0.25.0",
+    "node-red": "^0.12.1",
     "nodemon": "1.8.1",
     "passport": "0.3.2",
     "passport-facebook": "2.0.0",
