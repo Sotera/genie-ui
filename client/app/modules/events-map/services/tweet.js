@@ -1,48 +1,65 @@
 'use strict';
 angular.module('genie.eventsMap')
-  .factory('tweetService', [
-    function() {
+.factory('tweetService', [function() {
 
-    function start (options) {
-      console.log(options.bounds)
-      if (io !== undefined) {
-        // Storage for WebSocket connections
-        var socket = io.connect('http://localhost:3001/');
+  var connected = false,
+    socket = null;
 
-        // This listens on the "twitter-steam" channel and data is
-        // received everytime a new tweet is receieved.
+  function init(options) {
+    var map = options.map,
+      liveTweets = options.liveTweets;
+
+    if (io !== undefined) {
+      if (!connected) {
+        socket = io.connect('http://localhost:3001/');
+
+        var tweetLocation, marker;
+
+        // listen on the "twitter-steam" channel
         socket.on('twitter-stream', function (data) {
 
           //Add tweet to the heat map array.
-          var tweetLocation = new google.maps.LatLng(data.lng,data.lat);
+          tweetLocation = new google.maps.LatLng(data.lng, data.lat);
           liveTweets.push(tweetLocation);
 
-          //Flash a dot onto the map quickly
-          // var image = "css/small-dot-icon.png";
-          var marker = new google.maps.Marker({
+          marker = new google.maps.Marker({
             position: tweetLocation,
             map: map
-            // icon: image
           });
-          setTimeout(function(){
+
+          // periodically remove marker
+          setTimeout(function() {
             marker.setMap(null);
           },600);
 
         });
 
-        // Listens for a success response from the server to
-        // say the connection was successful.
         socket.on('connected', function(r) {
-
-          //Now that we are connected to the server let's tell
-          //the server we are ready to start receiving tweets.
-          // socket.emit('start tweets');
-          console.log('connected')
+          connected = true;
+          console.log('connected');
         });
       }
     }
+  }
 
-    return {
-      start: start
-    };
-  }]);
+  function start(options) {
+    var bounds = boundForTwitter(options.bounds);
+    socket.emit('start tweets', {bounds: bounds});
+  }
+
+  function stop() {
+    socket.emit('stop tweets');
+  }
+
+  // twitter wants lng-lat pairs: reorder map.getBounds() output
+  function boundForTwitter(mapBounds) {
+    var bounds = mapBounds.toUrlValue().split(',');
+    return [bounds[1], bounds[0], bounds[3], bounds[2]].join(',');
+  }
+
+  return {
+    init: init,
+    start: start,
+    stop: stop
+  };
+}]);

@@ -1,3 +1,4 @@
+// def: a socket.io server
 var twitter = require('twitter'),
     app = require('express')(),
     http = require('http').Server(app),
@@ -19,22 +20,27 @@ http.listen(port, () => console.log("Socket.IO server listening on %s", port));
 io.on('connection', function (socket) {
 
   socket.on('start tweets', function(data) {
+    console.log(data.bounds)
 
     if (!stream) {
-      //Connect to twitter stream passing in filter for entire world.
-      // twit.stream('statuses/filter', {'locations':'-180,-90,180,90'}, function(s) {
-      twit.stream('statuses/filter', {locations: data.bounds}, (s) => {
+      var bounds = data.bounds;
+      // WARN: expects lng-lat pairs
+      twit.stream('statuses/filter', {locations: bounds}, s => {
         stream = s;
-        stream.on('data', function(data) {
+        stream.on('data', data => {
+          console.log(data)
           // Does the JSON result have coordinates
-          if (data.coordinates){
+          if (data.coordinates) {
             //If so then build up some nice json and send out to web sockets
-            var outputPoint = {"lat": data.coordinates.coordinates[0],"lng": data.coordinates.coordinates[1]};
+            var coord = {
+              lat: data.coordinates.coordinates[0],
+              lng: data.coordinates.coordinates[1]
+            };
 
-            socket.broadcast.emit('twitter-stream', outputPoint);
+            socket.broadcast.emit('twitter-stream', coord);
 
             //Send out to web sockets channel.
-            socket.emit('twitter-stream', outputPoint);
+            socket.emit('twitter-stream', coord);
           }
         });
       });
