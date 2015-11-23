@@ -54,7 +54,7 @@ angular.module('genie.eventsMap')
       var map = createMap(options.elem);
 
       focusOnEvent({zoomLevel: options.zoomLevel, map: map});
-    };
+    }
 
     return {
       displayHeatmap: displayHeatmap,
