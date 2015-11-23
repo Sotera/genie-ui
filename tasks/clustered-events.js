@@ -9,7 +9,7 @@ var app = require('../server/server'),
 
 Task.findOrCreate({
     code: taskName
-  }, 
+  },
   {
     code: taskName,
     lastRun: '2015-11-01'
@@ -27,7 +27,8 @@ function runTask (err, task) {
   ClusteredEventSource.find({
     where: {
       indexedDate: {gt: task.lastRun}
-    }
+    },
+    limit: 50
   }, processEventSources)
 }
 
