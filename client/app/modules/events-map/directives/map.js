@@ -15,7 +15,6 @@ angular.module('genie.eventsMap')
 
       angular.element($window).bind('resize', _.throttle(function () {
         doResize();
-        scope.$apply();
       },33.33));
 
       $(document).ready(doResize);
