@@ -3,9 +3,10 @@
 angular.module('com.module.stats')
   .directive('statsChart', function() {
     return {
-      template: '<div id="chart_div" style="width: 100%; height: 100%;">',
+      template: '<div id="stats_chart_div" style="width: 100%; height: 100%;">',
       restrict: 'E',
       link:function(scope, element, attrs) {
+
           var data = new google.visualization.DataTable();
           data.addColumn('number', 'Day');
           data.addColumn('number', 'Events');
@@ -46,7 +47,7 @@ angular.module('com.module.stats')
               }
           };
 
-          var chart = new google.charts.Line(document.getElementById('chart_div'));
+          var chart = new google.charts.Line(document.getElementById('stats_chart_div'));
 
           chart.draw(data, google.charts.Line.convertOptions(options));
 
