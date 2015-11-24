@@ -13,10 +13,10 @@ angular.module('genie.eventsMap')
         google.maps.event.trigger(map, "resize");
       };
 
-      angular.element($window).bind('resize', function () {
+      angular.element($window).bind('resize', _.throttle(function () {
         doResize();
         scope.$apply();
-      });
+      },33.33));
 
       $(document).ready(doResize);
 
