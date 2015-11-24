@@ -1,14 +1,16 @@
 {
   "name": "Event",
   "base": "PersistedModel",
-  "idInjection": true,
   "strict": "throw",
+  "idInjection": true,
   "options": {
     "validateUpsert": true
   },
   "properties": {
     "coordinates": {
-      "type": ["GeoPoint"],
+      "type": [
+        "GeoPoint"
+      ],
       "required": true
     },
     "name": {
@@ -17,8 +19,8 @@
     },
     "eventType": {
       "type": "string",
-      "default": "hashtag",
-      "description": "Ex. hashtag, user-defined, etc."
+      "description": "Ex. hashtag, user-defined, etc.",
+      "default": "hashtag"
     },
     "eventTime": {
       "type": "date",

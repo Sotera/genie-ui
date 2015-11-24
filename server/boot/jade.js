@@ -57,6 +57,17 @@ module.exports = function (app) {
     res.render('blank/views/chip', {title: 'Chip'});
   });
 
+  /*Stats*/
+  app.get('/modules/stats/views/main', function (req, res) {
+    res.render('stats/views/main', {title: 'Main'});
+  });
+  app.get('/modules/stats/views/list', function (req, res) {
+    res.render('stats/views/list', {title: 'List'});
+  });
+  app.get('/modules/stats/views/chip', function (req, res) {
+    res.render('stats/views/chip', {title: 'Chip'});
+  });
+
   /* Users */
   app.get('/modules/users/views/main', function (req, res) {
     res.render('users/views/main', {title: 'Main'});

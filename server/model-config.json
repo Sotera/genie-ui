@@ -85,5 +85,9 @@
   "ClusteredEvent": {
     "dataSource": "db",
     "public": true
+  },
+  "stats-chip": {
+    "dataSource": "db",
+    "public": true
   }
 }
