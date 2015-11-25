@@ -17,7 +17,7 @@ angular.module('loopbackApp', [
   'isteven-multi-select',
   'btford.markdown',
   'oitozero.ngSweetAlert',
-  'config',
+  'loopbackApp.config',
   'formly',
   'formlyBootstrap',
   'lbServices',

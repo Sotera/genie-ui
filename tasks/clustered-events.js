@@ -27,7 +27,8 @@ function runTask (err, task) {
   ClusteredEventSource.find({
     where: {
       indexedDate: {gt: task.lastRun}
-    }
+    },
+    limit: 50
   }, processEventSources)
 }
 
