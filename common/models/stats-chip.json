@@ -1,6 +1,6 @@
 {
-  "name": "stats-chip",
-  "plural": "stats-chips",
+  "name": "StatsChip",
+  "plural": "StatsChips",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
