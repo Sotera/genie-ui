@@ -1,7 +1,7 @@
 {
   "name": "StatsChip",
-  "plural": "StatsChips",
   "base": "PersistedModel",
+  "strict": "throw",
   "idInjection": true,
   "options": {
     "validateUpsert": true

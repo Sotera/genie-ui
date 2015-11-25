@@ -6,3 +6,4 @@ providers.json
 dist/
 .idea/
 .env
+server/node-red
