@@ -6,25 +6,18 @@ angular.module('genie.eventsMap')
   function main(scope, elem, attrs) {
     var map = mapService.displayHeatmap({elem: elem[0], zoomLevel: 13});
     createMapControls(map);
-    resizeMap(map, elem);
-
+    angular.element($window).bind('resize', _.throttle(doResize(map,elem),33.33));
+    $(document).ready(doResize(map,elem));
   }
 
-  function resizeMap(map, element) {
-    var doResize = function () {
+  function doResize (map, element) {
+    return function() {
       var parent = $("#" + element.parent()[0].id);
       var parentMargins = parent.outerHeight(true) - parent.height();
-      var height = $window.innerHeight - element[0].offsetTop - parentMargins ;
+      var height = $window.innerHeight - element[0].offsetTop - parentMargins;
       element.css('height', height + 'px');
-
       google.maps.event.trigger(map, "resize");
-    };
-
-    angular.element($window).bind('resize', _.throttle(function () {
-      doResize();
-    },33.33));
-
-    $(document).ready(doResize);
+    }
   }
 
   function creatLiveHeatmap(map) {
