@@ -1,7 +1,7 @@
 'use strict';
 angular.module('genie.eventsMap')
-  .factory('mapService', ['ClusteredEvent', 'stylesService',
-    function(ClusteredEvent, stylesService) {
+  .factory('mapService', ['ClusteredEvent', 'stylesService', 'tweetService',
+    function(ClusteredEvent, stylesService, tweetService) {
     var darkStyles = stylesService.dark;
     var heatmapLayer = new google.maps.visualization.HeatmapLayer();
 
@@ -18,10 +18,9 @@ angular.module('genie.eventsMap')
     }
 
     function createMap(elem) {
-
       var mapOptions = {
         zoom: 9,
-        center: new google.maps.LatLng(-25.363882, 131.044922),
+        center: new google.maps.LatLng(1,1), // insignificant to start
         styles: stylesService.dark
       };
 
@@ -30,6 +29,7 @@ angular.module('genie.eventsMap')
       map.addListener('zoom_changed', function() {
         console.log(map.getZoom(), 'zoom')
         focusOnEvent({zoomLevel: map.getZoom(), map: map});
+        tweetService.stop();
       });
 
       return map;

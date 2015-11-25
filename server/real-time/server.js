@@ -27,8 +27,12 @@ io.on('connection', function (socket) {
       // WARN: expects lng-lat pairs
       twit.stream('statuses/filter', {locations: bounds}, s => {
         stream = s;
+        stream.on('error', err => {
+          console.log(err);
+        });
+
         stream.on('data', data => {
-          console.log(data)
+          console.log(data);
           // Does the JSON result have coordinates
           if (data.coordinates) {
             //If so then build up some nice json and send out to web sockets
@@ -47,6 +51,10 @@ io.on('connection', function (socket) {
     }
   });
 
+  socket.on('stop tweets', function() {
+    console.log('stop tweets');
+    stream && stream.destroy();
+  });
   // Emits signal to the client telling them that the
   // they are connected and can start receiving Tweets
   socket.emit('connected');

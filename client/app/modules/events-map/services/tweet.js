@@ -1,17 +1,18 @@
 'use strict';
 angular.module('genie.eventsMap')
-.factory('tweetService', [function() {
+.factory('tweetService', ['ENV', function(ENV) {
 
   var connected = false,
     socket = null;
 
+  // needs a google map object and liveTweets data store (array)
   function init(options) {
     var map = options.map,
       liveTweets = options.liveTweets;
 
     if (io !== undefined) {
       if (!connected) {
-        socket = io.connect('http://localhost:3001/');
+        socket = io.connect(ENV.wsUrl);
 
         var tweetLocation, marker;
 
@@ -48,7 +49,7 @@ angular.module('genie.eventsMap')
   }
 
   function stop() {
-    socket.emit('stop tweets');
+    socket && socket.emit('stop tweets');
   }
 
   // twitter wants lng-lat pairs: reorder map.getBounds() output

@@ -1,54 +1,45 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('map', ['mapService', 'tweetService', function (mapService, tweetService) {
-  function link(scope, elem, attrs) {
+.directive('map', ['mapService', 'tweetService', 'mapControlService',
+  function (mapService, tweetService, mapControlService) {
 
+  function main(scope, elem, attrs) {
     var map = mapService.displayHeatmap({elem: elem[0], zoomLevel: 13});
+    createMapControls(map);
+  }
+
+  function creatLiveHeatmap(map) {
     var liveTweets = new google.maps.MVCArray();
     var liveHeatmap = new google.maps.visualization.HeatmapLayer({
       data: liveTweets,
-      radius: 25
+      radius: 10
     });
     liveHeatmap.setMap(map);
+    return liveTweets;
+  }
 
-    function MapControl(controlDiv, map) {
-      // Set CSS for the control border.
-      var controlUI = document.createElement('div');
-      controlUI.style.backgroundColor = '#fff';
-      controlUI.style.border = '2px solid #fff';
-      controlUI.style.borderRadius = '3px';
-      controlUI.style.cursor = 'pointer';
-      controlUI.style.marginBottom = '22px';
-      controlUI.style.textAlign = 'center';
-      controlUI.title = 'Click to view realtime tweets';
-      controlDiv.appendChild(controlUI);
+  function createMapControls(map, liveTweets) {
+    var startButton = document.createElement('div');
+    var stopButton = document.createElement('div');
+    mapControlService.createButton(startButton, { label: 'Start' });
+    mapControlService.createButton(stopButton, { label: 'Stop' });
 
-      // Set CSS for the control interior.
-      var controlText = document.createElement('div');
-      controlText.style.color = 'rgb(25,25,25)';
-      controlText.style.fontSize = '16px';
-      controlText.style.lineHeight = '38px';
-      controlText.style.paddingLeft = '5px';
-      controlText.style.paddingRight = '5px';
-      controlText.innerHTML = 'Get Tweets';
-      controlUI.appendChild(controlText);
+    startButton.addEventListener('click', function start() {
+      var liveTweets = creatLiveHeatmap(map);
+      tweetService.init({map: map, liveTweets: liveTweets});
+      tweetService.start({bounds: map.getBounds()});
+    });
 
-      controlUI.addEventListener('click', function() {
-        tweetService.init({map: map, liveTweets: liveTweets});
-        tweetService.start({bounds: map.getBounds()});
-      });
+    stopButton.addEventListener('click', function stop() {
+      tweetService.stop();
+    });
 
-    }
-
-    var controlContainer = document.createElement('div');
-    var mapControl = new MapControl(controlContainer, map);
-
-    controlContainer.index = 1;
-    map.controls[google.maps.ControlPosition.TOP_CENTER].push(controlContainer);
+    map.controls[google.maps.ControlPosition.TOP_CENTER].push(startButton);
+    map.controls[google.maps.ControlPosition.TOP_CENTER].push(stopButton);
   }
 
   return {
     restrict: 'AE',
-    link: link
+    link: main
   };
 }]);
