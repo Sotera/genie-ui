@@ -13829,13 +13829,13 @@ module.factory(
 
 /**
  * @ngdoc object
- * @name lbServices.Stats-chip
- * @header lbServices.Stats-chip
+ * @name lbServices.StatsChip
+ * @header lbServices.StatsChip
  * @object
  *
  * @description
  *
- * A $resource object for interacting with the `Stats-chip` model.
+ * A $resource object for interacting with the `StatsChip` model.
  *
  * ## Example
  *
@@ -13845,17 +13845,17 @@ module.factory(
  *
  */
 module.factory(
-  "Stats-chip",
+  "StatsChip",
   ['LoopBackResource', 'LoopBackAuth', '$injector', function(Resource, LoopBackAuth, $injector) {
     var R = Resource(
-      urlBase + "/stats-chips/:id",
+      urlBase + "/StatsChips/:id",
       { 'id': '@id' },
       {
 
         /**
          * @ngdoc method
-         * @name lbServices.Stats-chip#create
-         * @methodOf lbServices.Stats-chip
+         * @name lbServices.StatsChip#create
+         * @methodOf lbServices.StatsChip
          *
          * @description
          *
@@ -13882,18 +13882,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `Stats-chip` object.)
+         * This usually means the response is a `StatsChip` object.)
          * </em>
          */
         "create": {
-          url: urlBase + "/stats-chips",
+          url: urlBase + "/StatsChips",
           method: "POST"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.Stats-chip#createMany
-         * @methodOf lbServices.Stats-chip
+         * @name lbServices.StatsChip#createMany
+         * @methodOf lbServices.StatsChip
          *
          * @description
          *
@@ -13920,19 +13920,19 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `Stats-chip` object.)
+         * This usually means the response is a `StatsChip` object.)
          * </em>
          */
         "createMany": {
           isArray: true,
-          url: urlBase + "/stats-chips",
+          url: urlBase + "/StatsChips",
           method: "POST"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.Stats-chip#upsert
-         * @methodOf lbServices.Stats-chip
+         * @name lbServices.StatsChip#upsert
+         * @methodOf lbServices.StatsChip
          *
          * @description
          *
@@ -13959,18 +13959,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `Stats-chip` object.)
+         * This usually means the response is a `StatsChip` object.)
          * </em>
          */
         "upsert": {
-          url: urlBase + "/stats-chips",
+          url: urlBase + "/StatsChips",
           method: "PUT"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.Stats-chip#exists
-         * @methodOf lbServices.Stats-chip
+         * @name lbServices.StatsChip#exists
+         * @methodOf lbServices.StatsChip
          *
          * @description
          *
@@ -13995,14 +13995,14 @@ module.factory(
          *  - `exists` – `{boolean=}` - 
          */
         "exists": {
-          url: urlBase + "/stats-chips/:id/exists",
+          url: urlBase + "/StatsChips/:id/exists",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.Stats-chip#findById
-         * @methodOf lbServices.Stats-chip
+         * @name lbServices.StatsChip#findById
+         * @methodOf lbServices.StatsChip
          *
          * @description
          *
@@ -14026,18 +14026,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `Stats-chip` object.)
+         * This usually means the response is a `StatsChip` object.)
          * </em>
          */
         "findById": {
-          url: urlBase + "/stats-chips/:id",
+          url: urlBase + "/StatsChips/:id",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.Stats-chip#find
-         * @methodOf lbServices.Stats-chip
+         * @name lbServices.StatsChip#find
+         * @methodOf lbServices.StatsChip
          *
          * @description
          *
@@ -14059,19 +14059,19 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `Stats-chip` object.)
+         * This usually means the response is a `StatsChip` object.)
          * </em>
          */
         "find": {
           isArray: true,
-          url: urlBase + "/stats-chips",
+          url: urlBase + "/StatsChips",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.Stats-chip#findOne
-         * @methodOf lbServices.Stats-chip
+         * @name lbServices.StatsChip#findOne
+         * @methodOf lbServices.StatsChip
          *
          * @description
          *
@@ -14093,18 +14093,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `Stats-chip` object.)
+         * This usually means the response is a `StatsChip` object.)
          * </em>
          */
         "findOne": {
-          url: urlBase + "/stats-chips/findOne",
+          url: urlBase + "/StatsChips/findOne",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.Stats-chip#updateAll
-         * @methodOf lbServices.Stats-chip
+         * @name lbServices.StatsChip#updateAll
+         * @methodOf lbServices.StatsChip
          *
          * @description
          *
@@ -14131,14 +14131,14 @@ module.factory(
          * The number of instances updated
          */
         "updateAll": {
-          url: urlBase + "/stats-chips/update",
+          url: urlBase + "/StatsChips/update",
           method: "POST"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.Stats-chip#deleteById
-         * @methodOf lbServices.Stats-chip
+         * @name lbServices.StatsChip#deleteById
+         * @methodOf lbServices.StatsChip
          *
          * @description
          *
@@ -14160,18 +14160,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `Stats-chip` object.)
+         * This usually means the response is a `StatsChip` object.)
          * </em>
          */
         "deleteById": {
-          url: urlBase + "/stats-chips/:id",
+          url: urlBase + "/StatsChips/:id",
           method: "DELETE"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.Stats-chip#count
-         * @methodOf lbServices.Stats-chip
+         * @name lbServices.StatsChip#count
+         * @methodOf lbServices.StatsChip
          *
          * @description
          *
@@ -14196,14 +14196,14 @@ module.factory(
          *  - `count` – `{number=}` - 
          */
         "count": {
-          url: urlBase + "/stats-chips/count",
+          url: urlBase + "/StatsChips/count",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.Stats-chip#prototype$updateAttributes
-         * @methodOf lbServices.Stats-chip
+         * @name lbServices.StatsChip#prototype$updateAttributes
+         * @methodOf lbServices.StatsChip
          *
          * @description
          *
@@ -14229,18 +14229,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `Stats-chip` object.)
+         * This usually means the response is a `StatsChip` object.)
          * </em>
          */
         "prototype$updateAttributes": {
-          url: urlBase + "/stats-chips/:id",
+          url: urlBase + "/StatsChips/:id",
           method: "PUT"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.Stats-chip#createChangeStream
-         * @methodOf lbServices.Stats-chip
+         * @name lbServices.StatsChip#createChangeStream
+         * @methodOf lbServices.StatsChip
          *
          * @description
          *
@@ -14270,7 +14270,7 @@ module.factory(
          *  - `changes` – `{ReadableStream=}` - 
          */
         "createChangeStream": {
-          url: urlBase + "/stats-chips/change-stream",
+          url: urlBase + "/StatsChips/change-stream",
           method: "POST"
         },
       }
@@ -14280,8 +14280,8 @@ module.factory(
 
         /**
          * @ngdoc method
-         * @name lbServices.Stats-chip#updateOrCreate
-         * @methodOf lbServices.Stats-chip
+         * @name lbServices.StatsChip#updateOrCreate
+         * @methodOf lbServices.StatsChip
          *
          * @description
          *
@@ -14308,15 +14308,15 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `Stats-chip` object.)
+         * This usually means the response is a `StatsChip` object.)
          * </em>
          */
         R["updateOrCreate"] = R["upsert"];
 
         /**
          * @ngdoc method
-         * @name lbServices.Stats-chip#update
-         * @methodOf lbServices.Stats-chip
+         * @name lbServices.StatsChip#update
+         * @methodOf lbServices.StatsChip
          *
          * @description
          *
@@ -14346,8 +14346,8 @@ module.factory(
 
         /**
          * @ngdoc method
-         * @name lbServices.Stats-chip#destroyById
-         * @methodOf lbServices.Stats-chip
+         * @name lbServices.StatsChip#destroyById
+         * @methodOf lbServices.StatsChip
          *
          * @description
          *
@@ -14369,15 +14369,15 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `Stats-chip` object.)
+         * This usually means the response is a `StatsChip` object.)
          * </em>
          */
         R["destroyById"] = R["deleteById"];
 
         /**
          * @ngdoc method
-         * @name lbServices.Stats-chip#removeById
-         * @methodOf lbServices.Stats-chip
+         * @name lbServices.StatsChip#removeById
+         * @methodOf lbServices.StatsChip
          *
          * @description
          *
@@ -14399,7 +14399,7 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `Stats-chip` object.)
+         * This usually means the response is a `StatsChip` object.)
          * </em>
          */
         R["removeById"] = R["deleteById"];
@@ -14407,13 +14407,13 @@ module.factory(
 
     /**
     * @ngdoc property
-    * @name lbServices.Stats-chip#modelName
-    * @propertyOf lbServices.Stats-chip
+    * @name lbServices.StatsChip#modelName
+    * @propertyOf lbServices.StatsChip
     * @description
     * The name of the model represented by this $resource,
-    * i.e. `Stats-chip`.
+    * i.e. `StatsChip`.
     */
-    R.modelName = "Stats-chip";
+    R.modelName = "StatsChip";
 
 
     return R;
@@ -14553,6 +14553,18 @@ module
      */
     this.setUrlBase = function(url) {
       urlBase = url;
+    };
+
+    /**
+     * @ngdoc method
+     * @name lbServices.LoopBackResourceProvider#getUrlBase
+     * @methodOf lbServices.LoopBackResourceProvider
+     * @description
+     * Get the URL of the REST API server. The URL provided
+     * to the code generator (`lb-ng` or `grunt-loopback-sdk-angular`) is used.
+     */
+    this.getUrlBase = function() {
+      return urlBase;
     };
 
     this.$get = ['$resource', function($resource) {
