@@ -11,6 +11,9 @@ module.exports = function (app) {
   app.get('/modules/about/views/about', function (req, res) {
     res.render('about/views/about', {title: 'About'});
   });
+  app.get('/modules/about/views/chip', function (req, res) {
+    res.render('about/views/chip', {title: 'Chip'});
+  });
 
 
   /* Core */

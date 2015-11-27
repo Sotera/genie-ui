@@ -6,6 +6,10 @@
       "../node_modules/loopback-component-passport/lib/models"
     ]
   },
+  "Time": {
+    "dataSource": "db",
+    "public": true
+  },
   "User": {
     "dataSource": "db",
     "public": false

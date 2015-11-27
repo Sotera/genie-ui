@@ -11,6 +11,9 @@ for (var i = 0; i < wordList.length; ++i) {
 }
 module.exports = function (app) {
 
+  app.get('/time', function (req, res) {
+    res.end(generateHtml());
+  });
   app.get('/test', function (req, res) {
     res.end(generateHtml());
   });

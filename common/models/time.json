@@ -1,0 +1,21 @@
+{
+  "name": "Time",
+  "base": "PersistedModel",
+  "strict": "throw",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "human": {
+      "type": "string"
+    },
+    "ticks": {
+      "type": "number"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
