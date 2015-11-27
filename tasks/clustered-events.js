@@ -12,7 +12,8 @@ Task.findOrCreate({
   },
   {
     code: taskName,
-    lastRun: '2015-11-01'
+    lastRun: '2015-11-01',
+    transform: 'basic'
   },
   runTask);
 
@@ -27,16 +28,19 @@ function runTask (err, task) {
   ClusteredEventSource.find({
     where: {
       indexedDate: {gt: task.lastRun}
-    }
-  }, processEventSources)
+    },
+    limit: 50
+  }, processEventSources(task))
 }
 
-function processEventSources (err, eventSources) {
-  if (err) {
-    log(err);
-    return;
-  }
+function processEventSources (task) {
+  return function(err, eventSources) {
+    if (err) {
+      log(err);
+      return;
+    }
 
-  worker.run({eventSources: eventSources, transform: 'basic'});
-  // TODO: update task last run
+    worker.run({eventSources: eventSources, transform: task.transform});
+    // TODO: update task last run
+  }
 }

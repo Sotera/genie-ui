@@ -11,6 +11,10 @@
       "type": "string",
       "required": true
     },
+    "transform": {
+      "type": "string",
+      "required": true
+    },
     "lastRun": {
       "type": "date"
     },

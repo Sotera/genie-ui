@@ -5,3 +5,5 @@ providers.json
 .tmp/
 dist/
 .idea/
+.env
+server/node-red

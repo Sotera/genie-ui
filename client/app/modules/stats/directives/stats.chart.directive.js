@@ -1,57 +1,68 @@
 'use strict';
 
 angular.module('com.module.stats')
-  .directive('statsChart', function() {
-    return {
-      template: '<div id="stats_chart_div" style="width: 100%; height: 100%;">',
-      restrict: 'E',
-      link:function(scope, element, attrs) {
+  .directive('statsChart', ['StatsChip','$window',
+    function (StatsChip,$window) {
 
-          var data = new google.visualization.DataTable();
-          data.addColumn('number', 'Day');
-          data.addColumn('number', 'Events');
-          data.addColumn('number', 'blank value 2');
-          data.addColumn('number', 'blank value 3');
+      function main(scope, element, attrs) {
+        StatsChip.findOne().$promise
+          .then(function (instance) {
 
-          data.addRows([
-              [1,  37.8, 80.8, 41.8],
-              [2,  30.9, 69.5, 32.4],
-              [3,  25.4,   57, 25.7],
-              [4,  11.7, 18.8, 10.5],
-              [5,  11.9, 17.6, 10.4],
-              [6,   8.8, 13.6,  7.7],
-              [7,   7.6, 12.3,  9.6],
-              [8,  12.3, 29.2, 10.6],
-              [9,  16.9, 42.9, 14.8],
-              [10, 12.8, 30.9, 11.6],
-              [11,  5.3,  7.9,  4.7],
-              [12,  6.6,  8.4,  5.2],
-              [13,  4.8,  6.3,  3.6],
-              [14,  4.2,  6.2,  3.4]
-          ]);
+            var data = new google.visualization.DataTable();
+            _.map(instance.columns,
+              function (column) {
+                data.addColumn(column.type, column.name);
+              });
 
-          var options = {
+            _.map(instance.rows,
+              function (row) {
+                data.addRow(row.row);
+              });
+
+
+            var options = {
               chart: {
-                  'backgroundColor': {
-                      'fill': '#181818'
-                  }
+                'backgroundColor': {
+                  'fill': '#181818'
+                }
 
               },
               'chartArea': {
-                  'backgroundColor': '#181818'
+                'backgroundColor': '#181818'
               },
               axes: {
-                  x: {
-                      0: {side: 'top'}
-                  }
+                x: {
+                  0: {side: 'top'}
+                }
               }
-          };
+            };
 
-          var chart = new google.charts.Line(document.getElementById('stats_chart_div'));
+            var chart = new google.charts.Line(document.getElementById('stats_chart_div'));
+            angular.element($window).bind('resize', _.throttle(doResize(chart, element,data,options), 33.33));
+            $(document).ready(doResize(chart, element, data, options));
 
-          chart.draw(data, google.charts.Line.convertOptions(options));
+          }
+        ).catch(function (err) {
+            console.log(err);
+          })
 
-        //});
       }
-    };
-  });
+
+      function doResize (chart, element, data, options) {
+        return function() {
+          var parent = $("#" + element.parent()[0].id);
+          var height = parent.height();
+          var width = parent.width();
+          element.css('height', height + 'px');
+          element.css('width', width + 'px');
+          chart.draw(data, google.charts.Line.convertOptions(options));
+        }
+      }
+
+      return {
+        template: '<div id="stats_chart_div" style="width: 100%; height: 100%;">',
+        restrict: 'E',
+        link: main
+      };
+
+    }]);
