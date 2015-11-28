@@ -40,8 +40,10 @@ angular.module('genie.eventsMap')
   function createMapControls(map, liveTweets) {
     var startButton = document.createElement('div');
     var stopButton = document.createElement('div');
-    mapControlService.createButton(startButton, { label: 'Start' });
-    mapControlService.createButton(stopButton, { label: 'Stop' });
+    mapControlService.createButton(startButton,
+      { label: '▶', title: 'Start Twitter stream' });
+    mapControlService.createButton(stopButton,
+      { label: '■', title: 'Stop Twitter stream' });
 
     startButton.addEventListener('click', function start() {
       var liveTweets = creatLiveHeatmap(map);
