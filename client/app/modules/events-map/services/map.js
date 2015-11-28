@@ -4,10 +4,14 @@ angular.module('genie.eventsMap')
     function(ClusteredEvent, stylesService, tweetService) {
     var darkStyles = stylesService.dark;
     var heatmapLayer = new google.maps.visualization.HeatmapLayer();
+    var notCentered = true;
 
     function updateMap(map) {
       return function(event) {
-        map.setCenter(event.centerPoint);
+        if (notCentered) { // on initial view, set center
+          map.setCenter(event.centerPoint);
+          notCentered = false;
+        }
         heatmapLayer.setMap(map);
         var data = _.map(event.coordinates,
           function(coord) {
@@ -20,7 +24,6 @@ angular.module('genie.eventsMap')
     function createMap(elem) {
       var mapOptions = {
         zoom: 9,
-        center: new google.maps.LatLng(1,1), // insignificant to start
         styles: stylesService.dark
       };
 
