@@ -4,13 +4,12 @@ angular.module('genie.eventsMap')
     function(ClusteredEvent, stylesService, tweetService) {
     var darkStyles = stylesService.dark;
     var heatmapLayer = new google.maps.visualization.HeatmapLayer();
-    var notCentered = true;
 
-    function updateMap(map) {
+    function updateMap(options) {
+      var map = options.map;
       return function(event) {
-        if (notCentered) { // on initial view, set center
+        if (options.notCentered) {
           map.setCenter(event.centerPoint);
-          notCentered = false;
         }
         heatmapLayer.setMap(map);
         var data = _.map(event.coordinates,
@@ -30,15 +29,15 @@ angular.module('genie.eventsMap')
       var map = new google.maps.Map(elem, mapOptions);
 
       map.addListener('zoom_changed', function() {
-        console.log(map.getZoom(), 'zoom')
-        focusOnEvent({zoomLevel: map.getZoom(), map: map});
+        console.log(map.getZoom(), 'zoom');
+        focusOnEventCluster({zoomLevel: map.getZoom(), map: map});
         tweetService.stop();
       });
 
       return map;
     }
 
-    function focusOnEvent(options) {
+    function focusOnEventCluster(options) {
       ClusteredEvent.findOne({
         filter: {
           where: {
@@ -47,15 +46,16 @@ angular.module('genie.eventsMap')
         }
       })
       .$promise
-      .then(updateMap(options.map))
+      .then(updateMap({map: options.map, notCentered: options.notCentered}))
       .catch(function(err) {
         console.log(err);
-      })
+      });
     }
 
     function displayHeatmap(options) {
       var map = createMap(options.elem);
-      focusOnEvent({zoomLevel: options.zoomLevel, map: map});
+      // notCentered on initial view
+      focusOnEventCluster({zoomLevel: options.zoomLevel, map: map, notCentered: true});
       return map;
     }
 
