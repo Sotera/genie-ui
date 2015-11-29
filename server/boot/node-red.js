@@ -6,11 +6,19 @@ var async = require('async');
 var getSettings = require('../util/getSettings');
 
 module.exports = function (app, cb) {
-  getSettings(['nodeRedNodeRoot', 'nodeRedAdminRoot', 'nodeRedFlowsFolder'], function (settings) {
+  getSettings([
+    'nodeRedFlowFile',
+    'nodeRedNodesFolder',
+    'nodeRedNodeRoot',
+    'nodeRedAdminRoot',
+    'nodeRedFlowsFolder'
+  ], function (settings) {
     var REDsettings = {
       httpAdminRoot: settings['nodeRedAdminRoot'],
       httpNodeRoot: settings['nodeRedNodeRoot'],
       userDir: settings['nodeRedFlowsFolder'],
+      nodesDir: settings['nodeRedNodesFolder'],
+      flowFile: settings['nodeRedFlowFile'],
       functionGlobalContext: {} // enables global context
     };
 

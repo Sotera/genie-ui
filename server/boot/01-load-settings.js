@@ -50,13 +50,26 @@ module.exports = function (app, cb) {
     value: './server/node-red'
   }, {
     type: 'string',
+    key: 'nodeRedNodesFolder',
+    value: './server/node-red/nodes'
+  }, {
+    type: 'string',
     key: 'nodeRedNodeRoot',
     value: '/api'
   }, {
     type: 'string',
+    key: 'nodeRedFlowFile',
+    value: 'genie-ui-flows.json'
+  }, {
+    type: 'string',
     key: 'nodeRedAdminRoot',
     value: '/red'
-  }
+  },
+    {
+      type: 'boolean',
+      key: 'loadUpSomeClusteredEventsBaby',
+      value: false
+    }
   ];
 
   var functionArray = [];
@@ -66,11 +79,9 @@ module.exports = function (app, cb) {
       {where: {key: newSetting.key}},
       newSetting));
   });
-  async.parallel(functionArray, function (err, settings) {
+  async.parallel(functionArray, function (err) {
     if (err) {
       log(err);
-      cb();
-      return;
     }
     cb();
   });

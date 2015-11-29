@@ -14,7 +14,16 @@ module.exports = function (settingKeys, cb) {
       settingKeys.forEach(function(settingKey){
         settings.forEach(function(setting){
           if(setting.key === settingKey){
-            retVal[settingKey] = setting.value;
+            if(setting.type === 'boolean'){
+              retVal[settingKey] = (setting.value !== 'false');
+            }
+            else if(setting.type === 'int'){
+              retVal[settingKey] = parseInt(setting.value.toString());
+            } else if(setting.type === 'string'){
+              retVal[settingKey] = setting.value.toString();
+            }else{
+              retVal[settingKey] = setting.value;
+            }
           }
         });
       });

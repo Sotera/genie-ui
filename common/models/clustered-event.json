@@ -10,6 +10,10 @@
     "Timestamp": {}
   },
   "properties": {
+    "uuid": {
+      "type": "string",
+      "required": false
+    },
     "zoomLevel": {
       "type": "number",
       "required": true
