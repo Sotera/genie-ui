@@ -1,8 +1,8 @@
 'use strict';
 
 angular.module('com.module.stats')
-  .directive('statsChart', ['StatsChip','$window',
-    function (StatsChip,$window) {
+  .directive('statsChart', ['StatsChip', '$window',
+    function (StatsChip, $window) {
 
       function main(scope, element, attrs) {
         StatsChip.findOne().$promise
@@ -19,20 +19,18 @@ angular.module('com.module.stats')
                 data.addRow(row.row);
               });
 
-
             var options = {
               chart: {
                 'backgroundColor': {
                   'fill': '#181818'
                 }
-
               },
               'chartArea': {
                 'backgroundColor': '#181818'
               },
               axes: {
                 x: {
-                  0: {side: 'top'}
+                  0: {side: 'bottom'}
                 }
               }
             };
@@ -43,8 +41,8 @@ angular.module('com.module.stats')
 
           }
         ).catch(function (err) {
-            console.log(err);
-          })
+          console.log(err);
+        })
 
       }
 

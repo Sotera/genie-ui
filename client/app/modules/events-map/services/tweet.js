@@ -1,6 +1,6 @@
 'use strict';
 angular.module('genie.eventsMap')
-.factory('tweetService', ['ENV', function(ENV) {
+.factory('tweetService', ['ENV', '$timeout', function(ENV, $timeout) {
 
   var connected = false,
     socket = null;
@@ -14,24 +14,34 @@ angular.module('genie.eventsMap')
       if (!connected) {
         socket = io.connect(ENV.wsUrl);
 
-        var tweetLocation, marker;
+        var tweetLocation;
 
         // listen on the "twitter-steam" channel
         socket.on('twitter-stream', function (data) {
-
           //Add tweet to the heat map array.
           tweetLocation = new google.maps.LatLng(data.lng, data.lat);
           liveTweets.push(tweetLocation);
 
-          marker = new google.maps.Marker({
+          var marker = new google.maps.Marker({
             position: tweetLocation,
-            map: map
+            map: map,
+            icon: data.user.profile_image_url
+          });
+
+          var infowindow = new google.maps.InfoWindow({
+            content: data.text
+          });
+
+          marker.addListener('click', function() {
+            infowindow.open(map, marker);
           });
 
           // periodically remove marker
-          setTimeout(function() {
+          $timeout(function() {
             marker.setMap(null);
-          },600);
+            marker = null;
+            infowindow = null;
+          },10000);
 
         });
 
