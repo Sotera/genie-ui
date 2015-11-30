@@ -7,6 +7,11 @@ var Twit = require('twit'),
 
 require('dotenv').load();
 
+if (!process.env.CONSUMER_KEY) {
+  console.log('Cannot continue: missing Twitter config in .env file.');
+  process.exit();
+}
+
 var twit = new Twit({
   consumer_key: process.env.CONSUMER_KEY,
   consumer_secret: process.env.CONSUMER_SECRET,
