@@ -46,9 +46,15 @@ angular.module('genie.eventsMap')
       { label: '■', title: 'Stop Twitter stream' });
 
     startButton.addEventListener('click', function start() {
-      var liveTweets = creatLiveHeatmap(map);
-      tweetService.init({map: map, liveTweets: liveTweets});
-      tweetService.start({bounds: map.getBounds()});
+      var minZoomForStreaming = 9;
+      if (map.getZoom() >= minZoomForStreaming) {
+        var liveTweets = creatLiveHeatmap(map);
+        tweetService.init({map: map, liveTweets: liveTweets});
+        tweetService.start({bounds: map.getBounds()});
+      } else {
+        // TODO: use js fancy box to display
+        alert('Please zoom in before streaming');
+      }
     });
 
     stopButton.addEventListener('click', function stop() {
