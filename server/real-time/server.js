@@ -3,6 +3,7 @@ var Twit = require('twit'),
     app = require('express')(),
     http = require('http').Server(app),
     io = require('socket.io')(http),
+    _ = require('lodash'),
     port = process.env.REALTIME_PORT || 3001;
 
 require('dotenv').load();
@@ -53,12 +54,16 @@ io.on('connection', socket => {
         var coord = {
           lat: tweet.coordinates.coordinates[0],
           lng: tweet.coordinates.coordinates[1]
-        };
+        },
+        base = {user: tweet.user, text: tweet.text};
 
-        socket.broadcast.emit('twitter-stream', coord);
+        // create a lean return obj
+        _.extend(base, coord);
+
+        socket.broadcast.emit('twitter-stream', base);
 
         //Send out to web sockets channel.
-        socket.emit('twitter-stream', coord);
+        socket.emit('twitter-stream', base);
       }
     });
   });
