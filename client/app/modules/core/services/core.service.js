@@ -49,7 +49,7 @@ app.service('CoreService', ['ENV', 'SweetAlert', 'toasty', function(ENV,
   };
 
   this.toastSuccess = function(title, text) {
-    toasty.pop.success({
+    toasty.success({
       title: title,
       msg: text,
       sound: false
@@ -57,7 +57,7 @@ app.service('CoreService', ['ENV', 'SweetAlert', 'toasty', function(ENV,
   };
 
   this.toastError = function(title, text) {
-    toasty.pop.error({
+    toasty.error({
       title: title,
       msg: text,
       sound: false
@@ -65,7 +65,7 @@ app.service('CoreService', ['ENV', 'SweetAlert', 'toasty', function(ENV,
   };
 
   this.toastWarning = function(title, text) {
-    toasty.pop.warning({
+    toasty.warning({
       title: title,
       msg: text,
       sound: false
@@ -73,7 +73,7 @@ app.service('CoreService', ['ENV', 'SweetAlert', 'toasty', function(ENV,
   };
 
   this.toastInfo = function(title, text) {
-    toasty.pop.info({
+    toasty.info({
       title: title,
       msg: text,
       sound: false

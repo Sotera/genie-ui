@@ -19,7 +19,7 @@
   <link rel="stylesheet" href="bower_components/angular-bootstrap-nav-tree/dist/abn_tree.css" />
   <link rel="stylesheet" href="bower_components/angular-loading-bar/build/loading-bar.css" />
   <link rel="stylesheet" href="bower_components/sweetalert/lib/sweet-alert.css" />
-  <link rel="stylesheet" href="bower_components/angular-toasty/css/ng-toasty.css" />
+  <link rel="stylesheet" href="bower_components/angular-toasty/dist/angular-toasty.css" />
   <link rel="stylesheet" href="bower_components/codemirror/lib/codemirror.css" />
   <link rel="stylesheet" href="bower_components/codemirror/theme/monokai.css" />
   <link rel="stylesheet" href="bower_components/angular-ui-grid/ui-grid.css" />
@@ -45,17 +45,14 @@
   <!-- endbuild -->
 </head>
 <body class="{{getSetting('appTheme') }} {{ getSetting('appLayout') }} "
-      ng-controller="MainCtrl">
+  ng-controller="MainCtrl">
 <!--[if lt IE 7]>
 <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade
   your browser</a> to improve your experience.</p>
 <![endif]-->
-<div ui-view
-     ng-class="{'full-height': noOneLoggedIn}"></div>
+<div ui-view ng-class="{'full-height': noOneLoggedIn}"></div>
 
-<div ng-controller="toasty-controller">
-  <toasty-container toasty-defaults='{"timeout": 3000, "close-button":true, "sound": false}'></toasty-container>
-</div>
+<toasty></toasty>
 
 <!-- Google Analytics: change UA-XXXXX-X to be your site's ID -->
 <!--<script>
@@ -121,7 +118,7 @@
 <script src="bower_components/angular-smart-table/dist/smart-table.js"></script>
 <script src="bower_components/sweetalert/lib/sweet-alert.js"></script>
 <script src="bower_components/angular-sweetalert/SweetAlert.js"></script>
-<script src="bower_components/angular-toasty/js/ng-toasty.js"></script>
+<script src="bower_components/angular-toasty/dist/angular-toasty.js"></script>
 <script src="bower_components/angular-touch/angular-touch.js"></script>
 <script src="bower_components/angular-translate/angular-translate.js"></script>
 <script src="bower_components/angular-translate-loader-static-files/angular-translate-loader-static-files.js"></script>

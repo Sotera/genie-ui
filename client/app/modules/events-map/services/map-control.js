@@ -10,8 +10,9 @@ angular.module('genie.eventsMap')
     controlUI.style.borderRadius = '3px';
     controlUI.style.cursor = 'pointer';
     controlUI.style.marginBottom = '22px';
+    controlUI.style.marginRight = '8px';
     controlUI.style.textAlign = 'center';
-    controlUI.title = '';
+    controlUI.title = options.title;
     container.appendChild(controlUI);
 
     // Set CSS for the control interior.
