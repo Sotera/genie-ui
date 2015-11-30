@@ -33,11 +33,6 @@ module.exports = function (app) {
     res.render('core/views/elements/small-box', {title: 'small-box'});
   });
 
-  /* Sandbox */
-  app.get('/modules/sandbox/views/grid', function (req, res) {
-    res.render('sandbox/views/grid', {title: 'Grid'});
-  });
-
   /* Events Map */
   app.get('/modules/events-map/views/main', function (req, res) {
     res.render('events-map/views/main', {title: 'Events'});

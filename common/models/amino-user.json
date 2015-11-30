@@ -18,11 +18,6 @@
       "model": "accessToken",
       "foreignKey": "userId"
     },
-    "identities": {
-      "type": "hasMany",
-      "model": "userIdentity",
-      "foreignKey": "userId"
-    },
     "credentials": {
       "type": "hasMany",
       "model": "userCredential",

@@ -94,6 +94,6 @@ app.config(function (formlyConfigProvider) {
   });
   //formlyConfigProvider.setTemplateUrl('time', templates + 'time.html');
 });
-app.config(['cfpLoadingBarProvider', function (cfpLoadingBarProvider) {
+/*app.config(['cfpLoadingBarProvider', function (cfpLoadingBarProvider) {
   cfpLoadingBarProvider.includeSpinner = false;
-}]);
+}]);*/

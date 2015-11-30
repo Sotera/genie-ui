@@ -70,7 +70,7 @@ app.listen = function (cb) {
 app.use(loopback.favicon(path.join(__dirname, 'waveicon16.png')));
 
 // request pre-processing middleware
-app.use(loopback.compress());
+//app.use(loopback.compress());
 
 // -- Add your pre-processing middleware here --
 

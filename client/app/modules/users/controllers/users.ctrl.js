@@ -127,7 +127,7 @@ app.controller('UsersCtrl', function ($scope, $stateParams, $state, CoreService,
                   where: {
                     id: $stateParams.id
                   },
-                  include: ['roles', 'identities', 'credentials', 'accessTokens']
+                  include: ['roles', 'accessTokens']
                 }
               }
             ).$promise
