@@ -6,3 +6,6 @@ providers.json
 dist/
 .idea/
 .env
+# Will re-ignore this once flows are stored in database
+# server/node-red
+server/node-red/.config.json

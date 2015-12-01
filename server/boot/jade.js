@@ -11,6 +11,9 @@ module.exports = function (app) {
   app.get('/modules/about/views/about', function (req, res) {
     res.render('about/views/about', {title: 'About'});
   });
+  app.get('/modules/about/views/chip', function (req, res) {
+    res.render('about/views/chip', {title: 'Chip'});
+  });
 
 
   /* Core */
@@ -28,11 +31,6 @@ module.exports = function (app) {
   });
   app.get('/modules/core/views/elements/small-box', function (req, res) {
     res.render('core/views/elements/small-box', {title: 'small-box'});
-  });
-
-  /* Sandbox */
-  app.get('/modules/sandbox/views/grid', function (req, res) {
-    res.render('sandbox/views/grid', {title: 'Grid'});
   });
 
   /* Events Map */
@@ -55,6 +53,17 @@ module.exports = function (app) {
   });
   app.get('/modules/blank/views/chip', function (req, res) {
     res.render('blank/views/chip', {title: 'Chip'});
+  });
+
+  /*Stats*/
+  app.get('/modules/stats/views/main', function (req, res) {
+    res.render('stats/views/main', {title: 'Main'});
+  });
+  app.get('/modules/stats/views/list', function (req, res) {
+    res.render('stats/views/list', {title: 'List'});
+  });
+  app.get('/modules/stats/views/chip', function (req, res) {
+    res.render('stats/views/chip', {title: 'Chip'});
   });
 
   /* Users */

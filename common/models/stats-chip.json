@@ -1,0 +1,27 @@
+{
+  "name": "StatsChip",
+  "base": "PersistedModel",
+  "strict": "throw",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "rows": {
+      "type": [
+        "object"
+      ],
+      "required": true
+    },
+    "columns": {
+      "type": [
+        "object"
+      ],
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

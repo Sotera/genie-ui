@@ -12,13 +12,10 @@
       .body.bg-gray
         .callout.callout-danger(ng-if='loginError')
           p {{loginError.message | translate}}
-        auto-fields(fields='schema', data='credentials', options='options')
+        formly-form(model='credentials', fields='formlyFields')
       .footer.bg-gray
         button.btn.bg-light-blue.btn-block(translate, type='submit')
           |Sign In
         a.btn.bg-olive.btn-block(translate, href='#/register')
           |Or Register
-        a.btn.btn-block(class='btn-{{provider.class}}',
-        ng-hide='provider.link',
-        ng-click='socialLogin(provider)',
-        ng-repeat='provider in authProviders') {{provider.provider | ucfirst}}
+

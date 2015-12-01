@@ -14,9 +14,7 @@
       .body.bg-gray
         .callout.callout-danger(ng-if='registerError')
           p {{loginError.message | translate}}
-        auto-fields(fields='schema',
-        data='registration',
-        options='options')
+        formly-form(model='registration', fields='formlyFields')
       .footer
         button.btn.bg-olive.btn-block(translate,
         type='submit',

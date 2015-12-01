@@ -26,7 +26,9 @@ http.listen(port, () => console.log("Socket.IO server listening on %s", port));
 io.on('connection', socket => {
 
   socket.on('start tweets', data => {
-    var bounds = data.bounds;
+    var bounds = data.bounds,
+    coord, box, base;
+
     console.log(bounds);
 
     // stream.start() could work if it accepted params
@@ -50,21 +52,31 @@ io.on('connection', socket => {
 
     stream.on('tweet', tweet => {
       console.log(tweet);
-      if (tweet.coordinates) {
-        var coord = {
+      if (tweet.coordinates) { // exact location
+        coord = {
           lat: tweet.coordinates.coordinates[0],
           lng: tweet.coordinates.coordinates[1]
-        },
-        base = {user: tweet.user, text: tweet.text};
-
-        // create a lean return obj
-        _.extend(base, coord);
-
-        socket.broadcast.emit('twitter-stream', base);
-
-        //Send out to web sockets channel.
-        socket.emit('twitter-stream', base);
+        };
+      } else { // fallback to place obj
+        // TODO: for now, just get one of the box coords
+        box = tweet.place.bounding_box.coordinates[0][0];
+        coord = {
+          lat: box[0],
+          lng: box[1]
+        };
       }
+
+      console.log('*********', coord)
+
+      // create a lean return obj
+      base = {user: tweet.user, text: tweet.text};
+
+      _.extend(base, coord);
+
+      socket.broadcast.emit('twitter-stream', base);
+
+      //Send out to web sockets channel.
+      socket.emit('twitter-stream', base);
     });
   });
 

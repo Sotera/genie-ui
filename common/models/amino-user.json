@@ -18,11 +18,6 @@
       "model": "accessToken",
       "foreignKey": "userId"
     },
-    "identities": {
-      "type": "hasMany",
-      "model": "userIdentity",
-      "foreignKey": "userId"
-    },
     "credentials": {
       "type": "hasMany",
       "model": "userCredential",
@@ -38,11 +33,11 @@
   "acls": [
     {
       "accessType": "*",
-      "model": "*",
-      "property": "*",
       "principalType": "ROLE",
       "principalId": "admin",
-      "permission": "ALLOW"
+      "permission": "ALLOW",
+      "property": "*",
+      "model": "*"
     },
     {
       "accessType": "READ",

@@ -2,9 +2,7 @@
 angular.module('genie.eventsMap')
   .directive('chipmap', ['mapService', function (mapService) {
     function link(scope, elem, attrs) {
-
       mapService.displayHeatmap({elem: elem[0], zoomLevel: 1})
-
     }
 
     return {

@@ -16,5 +16,5 @@ npm run realtime
 ### Fetch clustered events
 
 ```
-node tasks/clustered-events.js
+./script/setup
 ```
