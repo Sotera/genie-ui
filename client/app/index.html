@@ -9,8 +9,8 @@
   <meta name="viewport"
         content="width=device-width">
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css"/>
-  <link rel="stylesheet" href="bower_components/sweetalert/lib/sweet-alert.css"/>
-  <link rel="stylesheet" href="bower_components/angular-toasty/css/ng-toasty.css"/>
+<!--  <link rel="stylesheet" href="bower_components/sweetalert/lib/sweet-alert.css"/>-->
+  <link rel="stylesheet" href="bower_components/angular-toasty/dist/angular-toasty.css"/>
   <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.css"/>
   <link rel="stylesheet" href="bower_components/ionicons/css/ionicons.css"/>
   <link rel="stylesheet" href="/css/AdminLTE.css"/>
@@ -34,9 +34,7 @@
 <![endif]-->
 <div ui-view
      ng-class="{'full-height': noOneLoggedIn}"></div>
-<div ng-controller="toasty-controller">
-  <toasty-container toasty-defaults='{"timeout": 3000, "close-button":true, "sound": false}'></toasty-container>
-</div>
+<toasty></toasty>
 <script type="text/javascript" src="https://www.google.com/jsapi?autoload=
 {'modules':[{'name':'visualization','version':'1.1','packages':
 ['line']}]}"></script>
@@ -55,15 +53,14 @@
 <script src="bower_components/angular-formly/dist/formly.js"></script>
 <script src="bower_components/angular-formly-templates-bootstrap/dist/angular-formly-templates-bootstrap.js"></script>
 <script src="bower_components/angular-gettext/dist/angular-gettext.js"></script>
-<script src="bower_components/angular-gravatar/build/md5.js"></script>
+<!--<script src="bower_components/angular-gravatar/build/md5.js"></script>-->
 <script src="bower_components/angular-gravatar/build/angular-gravatar.js"></script>
 <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
 <script src="bower_components/angular-resource/angular-resource.js"></script>
 <script src="bower_components/angular-route/angular-route.js"></script>
 <script src="bower_components/angular-smart-table/dist/smart-table.js"></script>
-<script src="bower_components/sweetalert/lib/sweet-alert.js"></script>
 <script src="bower_components/angular-sweetalert/SweetAlert.js"></script>
-<script src="bower_components/angular-toasty/js/ng-toasty.js"></script>
+<script src="bower_components/angular-toasty/dist/angular-toasty.js"></script>
 <script src="bower_components/angular-touch/angular-touch.js"></script>
 <script src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
 <script src="bower_components/jszip/dist/jszip.js"></script>

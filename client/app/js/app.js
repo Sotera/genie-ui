@@ -35,7 +35,7 @@ angular.module('loopbackApp', [
     'smart-table',
     'ui.router',
     //'ui.layout',
-    'toasty',
+    'angular-toasty',
     'gettext',
     'com.module.core',
     'com.module.about',
