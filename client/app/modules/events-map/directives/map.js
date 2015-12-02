@@ -8,7 +8,7 @@ angular.module('genie.eventsMap')
     var map = mapService.displayHeatmap({elem: elem[0], zoomLevel: 13});
     createMapControls(map);
     resizeMap(map, elem);
-
+    $window.addEventListener('unload', function() { tweetService.stop(); })
   }
 
   function resizeMap(map, element) {
