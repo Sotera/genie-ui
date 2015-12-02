@@ -27,7 +27,7 @@ function runTask (err, task) {
   //TODO: add Task#running, lastError
   ClusteredEventSource.find({
     where: {
-      indexedDate: {gt: task.lastRun}
+      indexed_date: {gt: task.lastRun}
     },
     limit: 50
   }, processEventSources(task))

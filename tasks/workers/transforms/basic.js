@@ -15,12 +15,13 @@ module.exports = {
 };
 
 function run (eventSources) {
-  var points = eventSources.map((source) => {
+  var points = eventSources.map(source => {
     // sources have irregular [lng,lat] order
-    return new loopback.GeoPoint({
+    return {
+      lng: source.location.coordinates[0],
       lat: source.location.coordinates[1],
-      lng: source.location.coordinates[0]
-    });
+      weight: source.num_users
+    };
   });
 
   //TODO: add childId, start, end

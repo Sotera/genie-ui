@@ -26,7 +26,7 @@
     "requestTimeout": 5000,
     "log": "trace",
     "defaultSize": 50,
-    "index": "jag_hc",
+    "index": "jag_hc2_clusters",
     "type": "post"
   }
 }

@@ -14,7 +14,10 @@ angular.module('genie.eventsMap')
         heatmapLayer.setMap(map);
         var data = _.map(event.coordinates,
           function(coord) {
-            return new google.maps.LatLng(coord.lat, coord.lng);
+            return {
+              location: new google.maps.LatLng(coord.lat, coord.lng),
+              weight: coord.weight
+            };
           });
         heatmapLayer.setData(data);
       }
