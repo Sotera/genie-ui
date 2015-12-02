@@ -54,7 +54,7 @@ angular.module('genie.eventsMap')
         tweetService.init({map: map, liveTweets: liveTweets});
         tweetService.start({bounds: map.getBounds()});
       } else {
-        CoreService.toastSuccess('Zoom', 'Please zoom in before streaming');
+        CoreService.toastInfo('Zoom', 'Please zoom in before streaming');
       }
     });
 
