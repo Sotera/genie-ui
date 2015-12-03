@@ -1,18 +1,14 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('map', ['mapService', 'tweetService', 'mapControlService', '$window',
-  'CoreService',
-  function (mapService, tweetService, mapControlService, $window, CoreService) {
+.directive('map', ['$window', 'mapService', function ($window, mapService) {
 
-  function main(scope, elem, attrs) {
-    var map = mapService.displayHeatmap({elem: elem[0], zoomLevel: 13});
-    createMapControls(map);
-    resizeMap(map, elem);
-    $window.addEventListener('unload', function() { tweetService.stop(); })
+  function link(scope, elem, attrs) {
+    scope.map = mapService.displayHeatmap({elem: elem[0], zoomLevel: 13});
+    resizeMap(scope.map, elem);
   }
 
   function resizeMap(map, element) {
-    var doResize = function () {
+    var doResize = function doResize () {
       var parent = $("#" + element.parent()[0].id);
       var parentMargins = parent.outerHeight(true) - parent.height();
       var height = $window.innerHeight - element[0].offsetTop - parentMargins ;
@@ -21,54 +17,13 @@ angular.module('genie.eventsMap')
       google.maps.event.trigger(map, 'resize');
     };
 
-    angular.element($window).bind('resize', _.throttle(function () {
-      doResize();
-    },33.33));
+    angular.element($window).bind('resize', _.throttle(doResize, 33.33));
 
     $(document).ready(doResize);
   }
 
-  function creatLiveHeatmap(map) {
-    var liveTweets = new google.maps.MVCArray();
-    var liveHeatmap = new google.maps.visualization.HeatmapLayer({
-      data: liveTweets,
-      radius: 10
-    });
-    liveHeatmap.setMap(map);
-    return liveTweets;
-  }
-
-  function createMapControls(map, liveTweets) {
-    var startButton = document.createElement('div');
-    var stopButton = document.createElement('div');
-    mapControlService.createButton(startButton,
-      { label: '▶', title: 'Start Twitter stream' });
-    mapControlService.createButton(stopButton,
-      { label: '■', title: 'Stop Twitter stream' });
-
-    startButton.addEventListener('click', function start() {
-      var minZoomForStreaming = 9;
-      if (map.getZoom() >= minZoomForStreaming) {
-        CoreService.toastSuccess('Start', 'Starting Twitter stream');
-        var liveTweets = creatLiveHeatmap(map);
-        tweetService.init({map: map, liveTweets: liveTweets});
-        tweetService.start({bounds: map.getBounds()});
-      } else {
-        CoreService.toastInfo('Zoom', 'Please zoom in before streaming');
-      }
-    });
-
-    stopButton.addEventListener('click', function stop() {
-      tweetService.stop();
-      CoreService.toastSuccess('Stop', 'Stopping Twitter stream');
-    });
-
-    map.controls[google.maps.ControlPosition.TOP_CENTER].push(startButton);
-    map.controls[google.maps.ControlPosition.TOP_CENTER].push(stopButton);
-  }
-
   return {
     restrict: 'AE',
-    link: main
+    link: link
   };
 }]);
