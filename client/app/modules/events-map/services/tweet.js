@@ -5,10 +5,10 @@ angular.module('genie.eventsMap')
   var connected = false,
     socket = null;
 
-  // needs a google map object and liveTweets data store (array)
+  // needs a google map object and tweets data store (array)
   function init(options) {
     var map = options.map,
-      liveTweets = options.liveTweets;
+      tweets = options.tweets;
 
     if (io !== undefined) {
       if (!connected) {
@@ -20,7 +20,7 @@ angular.module('genie.eventsMap')
         socket.on('twitter-stream', function (data) {
           //Add tweet to the heat map array.
           tweetLocation = new google.maps.LatLng(data.lng, data.lat);
-          liveTweets.push(tweetLocation);
+          tweets.push(tweetLocation);
 
           var marker = new google.maps.Marker({
             position: tweetLocation,
