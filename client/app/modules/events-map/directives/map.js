@@ -7,12 +7,12 @@ angular.module('genie.eventsMap')
     resizeMap(scope.map, elem);
   }
 
-  function resizeMap(map, element) {
+  function resizeMap(map, elem) {
+    var parent = $('#' + elem.parent()[0].id);
     var doResize = function doResize () {
-      var parent = $("#" + element.parent()[0].id);
       var parentMargins = parent.outerHeight(true) - parent.height();
-      var height = $window.innerHeight - element[0].offsetTop - parentMargins ;
-      element.css('height', height + 'px');
+      var height = $window.innerHeight - elem[0].offsetTop - parentMargins ;
+      elem.css('height', height + 'px');
 
       google.maps.event.trigger(map, 'resize');
     };
