@@ -1,5 +1,5 @@
 {
-  "name": "ClusteredEvent",
+  "name": "ZoomLevel",
   "base": "PersistedModel",
   "strict": "throw",
   "idInjection": true,
@@ -18,7 +18,7 @@
       "type": "number",
       "required": true
     },
-    "coordinates": {
+    "events": {
       "type": [
         "object"
       ],

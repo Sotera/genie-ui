@@ -1,16 +1,16 @@
 'use strict';
 
 let app = require('../server/server'),
-  ClusteredEvent = app.models.ClusteredEvent,
+  ZoomLevel = app.models.ZoomLevel,
   StatsChip = app.models.StatsChip,
   log = require('debug')('task:events-stats'),
-  ds = ClusteredEvent.getDataSource();
+  ds = ZoomLevel.getDataSource();
 
 // TODO: we need to query ES, not clustered events
 ds.on('connected', function() {
-  let eventsCollection = ds.connector.collection(ClusteredEvent.modelName);
+  let zoomLevels = ds.connector.collection(ZoomLevel.modelName);
 
-  eventsCollection.aggregate({
+  zoomLevels.aggregate({
     $group: {
       _id: { created: "$created" },
       total: { $sum: 1 }
