@@ -5,10 +5,10 @@ angular.module('genie.eventsMap')
   var connected = false,
     socket = null;
 
-  // needs a google map object and liveTweets data store (array)
+  // needs a google map object and tweets data store (array)
   function init(options) {
     var map = options.map,
-      liveTweets = options.liveTweets;
+      tweets = options.tweets;
 
     if (io !== undefined) {
       if (!connected) {
@@ -17,30 +17,31 @@ angular.module('genie.eventsMap')
         var tweetLocation;
 
         // listen on the "twitter-steam" channel
-        socket.on('twitter-stream', function (data) {
+        socket.on('twitter-stream', function (tweet) {
           //Add tweet to the heat map array.
-          tweetLocation = new google.maps.LatLng(data.lng, data.lat);
-          liveTweets.push(tweetLocation);
+          tweetLocation = new google.maps.LatLng(tweet.lng, tweet.lat);
+          tweets.push(tweetLocation);
 
           var marker = new google.maps.Marker({
             position: tweetLocation,
             map: map,
-            icon: data.user.profile_image_url
+            icon: tweet.user.profile_image_url
           });
 
-          var infowindow = new google.maps.InfoWindow({
-            content: data.text
-          });
+          var infowindow = createInfoWindow(tweet);
 
           marker.addListener('click', function() {
+            marker.keep = true; // custom flag: don't auto-remove
             infowindow.open(map, marker);
           });
 
           // periodically remove marker
           $timeout(function() {
-            marker.setMap(null);
-            marker = null;
-            infowindow = null;
+            if (!marker.keep) {
+              marker.setMap(null);
+              marker = null;
+              infowindow = null;
+            }
           },10000);
 
         });
@@ -66,6 +67,27 @@ angular.module('genie.eventsMap')
   function boundForTwitter(mapBounds) {
     var bounds = mapBounds.toUrlValue().split(',');
     return [bounds[1], bounds[0], bounds[3], bounds[2]].join(',');
+  }
+
+  function createInfoWindow(tweet) {
+    return new google.maps.InfoWindow({
+      maxWidth: 200,
+      content: _.template(" \
+        <blockquote><%= text %></blockquote> \
+        <ul> \
+          <li>User: <a href='//twitter.com/<%= screen_name %>' target='_blank'> \
+            <%= screen_name %> \
+          </a></li> \
+          <li>Followers: <%= followers_count %></li> \
+          <li>Friends: <%= friends_count %></li> \
+        </ul> \
+        ")({
+          text: tweet.text,
+          screen_name: tweet.user.screen_name,
+          followers_count: tweet.user.followers_count,
+          friends_count: tweet.user.friends_count
+        })
+    });
   }
 
   return {
