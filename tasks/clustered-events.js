@@ -1,3 +1,4 @@
+#!/usr/local/bin/node
 var app = require('../server/server'),
   Task = app.models.Task,
   ClusteredEvent = app.models.ClusteredEvent,

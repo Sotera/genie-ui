@@ -45,7 +45,7 @@
     "public": true
   },
   "ClusteredEventSource": {
-    "dataSource": "es",
+    "dataSource": "db",
     "public": true
   },
   "Task": {
