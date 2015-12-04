@@ -1,77 +1,109 @@
 'use strict';
 var log = require('debug')('boot:routes');
+var kmeans = require('node-kmeans');
+var async = require('async');
+var findOrCreateObj = require('../util/findOrCreateObj');
 var clusteringInProgress = false;
 module.exports = function (app) {
+  var ClusteredEvent = app.models.ClusteredEvent;
+  var ClusteredEventSource = app.models.ClusteredEventSource;
   app.post('/clusterEvents', function (req, res) {
-    var r = req;
     if (clusteringInProgress) {
       res.status(200).end('Already Clustering Them! Patience!');
     } else {
-      clusteringInProgress = true;
-      var ClusteredEvent = app.models.ClusteredEvent;
-      var ClusteredEventSource = app.models.ClusteredEventSource;
+      res.status(200).end('Test! Remove Me!');
+      async.waterfall([
+        function (next) {
+          //Step 0-0 -> Get the clustered event sources from ES
+          ClusteredEventSource.find(function (err, ces) {
+            var vectorToCluster = [];
+            for (var i = 0; i < ces.length; ++i) {
+              ces[i]['lat'] = ces[i].location.coordinates[1];
+              ces[i]['lon'] = ces[i].location.coordinates[0];
+              vectorToCluster[i] = [ces[i]['lat'], ces[i]['lon']];
+            }
+            next(null, vectorToCluster);
+          });
+        },
+        function (vectorToCluster, next) {
+          //Step 0-1 -> Waterfall through the 18 Google map zoom levels reclustering the results of
+          //the previous clustering cycle
 
-      ClusteredEvent.deleteAll();
-      ClusteredEventSource.find(function (err, ces) {
-        var v = [];
-        for (var i = 0; i < ces.length; ++i) {
-          ces[i]['lat'] = ces[i].location.coordinates[1];
-          ces[i]['lon'] = ces[i].location.coordinates[0];
-          v[i] = [ces[i]['lat'], ces[i]['lon']];
-        }
-        var kmeans = require('node-kmeans');
-        kmeans.clusterize(v, {k: 4}, function (err, clusters) {
-          if (err) {
-            log('Clustering Error: ' + err);
-            clusteringInProgress = false;
-            return;
-          }
-          //Clustering worked, let's add them to ClusteredEvents
-          var async = require('async');
-          var findOrCreateObj = require('../util/findOrCreateObj');
-          var newClusteredEvents = [];
-          for (var k = 1; k <= 18; ++k) {
-            log('Clustering Zoom Level: ' + k);
+          //Delete the entire Clustered event collection
+          ClusteredEvent.deleteAll();
+          const clustersPerZoomLevel = [
+            1024,1024,1024,512,512,512,256,256,256,128,128,128,64,64,32,16,8,1
+          ];
+          var recursiveClusteringFunctionArray = [
+            //Seed the waterfall with the event sources from ES
+            function (next) {
+              kmeans.clusterize(vectorToCluster, {k: clustersPerZoomLevel[0]}, function (err, clusters) {
+                next(err, clusters, 1);
+              });
+            }
+          ];
+          //Define function to calculate sub clusters
+          function subClusteringFunction(clusters, zoomLevel, next) {
+            var newClusteredEvents = [];
+            var coordinates = [];
             for (var i = 0; i < clusters.length; ++i) {
-              var coordinates = [];
-              //for (var j = 0; j < clusters[i].cluster.length; ++j) {
-              for (var j = 0; j < 1; ++j) {
-                coordinates.push({
-/*                  lat: clusters[i].cluster[j][0],
-                  lng: clusters[i].cluster[j][1]*/
-                  lat: clusters[i].centroid[0],
-                  lng: clusters[i].centroid[1]
-                });
+              coordinates.push({
+                lat: clusters[i].centroid[0],
+                lng: clusters[i].centroid[1]
+              });
+            }
+            log(clustersPerZoomLevel.length - zoomLevel);
+            newClusteredEvents.push(
+              {
+                //zoomLevel,
+                zoomLevel: clustersPerZoomLevel.length - zoomLevel,
+                startTime: new Date(),
+                endTime: new Date(),
+                clusterType: 'Random',
+                coordinates,
+                centerPoint: {lat: 20, lng: -80}
               }
-              newClusteredEvents.push(
-                {
-                  zoomLevel: k,
-                  startTime: new Date(),
-                  endTime: new Date(),
-                  clusterType: 'Random',
-                  coordinates,
-                  centerPoint: {lat: clusters[i].centroid[0], lng: clusters[i].centroid[1]}
-                }
-              );
-            }
+            );
+            var functionArray = [];
+            newClusteredEvents.forEach(function (newClusteredEvent) {
+              functionArray.push(async.apply(findOrCreateObj,
+                ClusteredEvent,
+                {where: {uuid: 'dummy'}},
+                newClusteredEvent));
+            });
+            async.parallel(functionArray, function (err) {
+              if (err) {
+                log('Error inserting Clustered Events: ' + err);
+                next(null);
+              } else {
+                var vectorToCluster = [];
+                clusters.forEach(function (cluster) {
+                  vectorToCluster.push([cluster.centroid[0], cluster.centroid[1]]);
+                });
+                kmeans.clusterize(vectorToCluster, {k: clustersPerZoomLevel[zoomLevel]}, function (err, clusters) {
+                  next(err, clusters, zoomLevel + 1);
+                });
+                log('Clusters added for zoom level' + zoomLevel + ' Complete!');
+              }
+            });
           }
-          var functionArray = [];
-          newClusteredEvents.forEach(function (newClusteredEvent) {
-            functionArray.push(async.apply(findOrCreateObj,
-              ClusteredEvent,
-              {where: {uuid: 'dummy'}},
-              newClusteredEvent));
-          });
-          async.parallel(functionArray, function (err) {
+
+          //Load up an array of the subClusteringFunction for use in the async.waterfall method
+          for (var i = 1; i < clustersPerZoomLevel.length; ++i) {
+            recursiveClusteringFunctionArray.push(subClusteringFunction);
+          }
+          async.waterfall(recursiveClusteringFunctionArray, function (err) {
             if (err) {
-              log('Error inserting Clustered Events: ' + err);
-            } else {
-              log('Clustering Complete!');
+              log(err);
             }
-            clusteringInProgress = false;
+            next(null);
           });
-        });
+        }
+      ], function (err) {
+        clusteringInProgress = false;
+        var e = err;
       });
+      clusteringInProgress = true;
       res.status(200).end('Clustering Them!');
     }
   });
