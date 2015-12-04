@@ -5,7 +5,7 @@ var async = require('async');
 var findOrCreateObj = require('../util/findOrCreateObj');
 var clusteringInProgress = false;
 module.exports = function (app) {
-  var ClusteredEvent = app.models.ClusteredEvent;
+  var ZoomLevel = app.models.ZoomLevel;
   var ClusteredEventSource = app.models.ClusteredEventSource;
   app.post('/clusterEvents', function (req, res) {
     if (clusteringInProgress) {
@@ -30,7 +30,7 @@ module.exports = function (app) {
           //the previous clustering cycle
 
           //Delete the entire Clustered event collection
-          ClusteredEvent.deleteAll();
+          ZoomLevel.deleteAll();
           const clustersPerZoomLevel = [
             1024,1024,1024,512,512,512,256,256,256,128,128,128,64,64,32,16,8,1
           ];
@@ -67,7 +67,7 @@ module.exports = function (app) {
             var functionArray = [];
             newClusteredEvents.forEach(function (newClusteredEvent) {
               functionArray.push(async.apply(findOrCreateObj,
-                ClusteredEvent,
+                ZoomLevel,
                 {where: {uuid: 'dummy'}},
                 newClusteredEvent));
             });
