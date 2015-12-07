@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 'use strict';
 
 let app = require('../server/server'),
