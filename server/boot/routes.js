@@ -4,9 +4,43 @@ var kmeans = require('node-kmeans');
 var async = require('async');
 var findOrCreateObj = require('../util/findOrCreateObj');
 var clusteringInProgress = false;
+const clustersPerZoomLevel = [
+  1024, 1024, 1024, 512, 512, 512, 256, 256, 256, 128, 128, 128, 64, 64, 32, 16, 8, 1
+];
 module.exports = function (app) {
   var ZoomLevel = app.models.ZoomLevel;
   var ClusteredEventSource = app.models.ClusteredEventSource;
+  app.post('/clusterEventsEx', function (req, res) {
+    var zoomLevel = req.body.zoomLevel;
+    var msg = 'Clustering @ zoomLevel: ' + zoomLevel;
+    msg += ' [' + clustersPerZoomLevel[zoomLevel] + '] clusters.';
+    res.status(200).end(msg);
+    async.waterfall([
+      function (next) {
+        //Step 0-0 -> Get the clustered event sources from ES
+        ClusteredEventSource.find(function (err, ces) {
+          var vectorToCluster = [];
+          for (var i = 0; i < ces.length; ++i) {
+            ces[i]['lat'] = ces[i].location.coordinates[1];
+            ces[i]['lon'] = ces[i].location.coordinates[0];
+            vectorToCluster[i] = [ces[i]['lat'], ces[i]['lon']];
+          }
+          next(null, vectorToCluster);
+        });
+      },
+      function (vectorToCluster, next) {
+        //Delete the entire Clustered event collection
+        //ZoomLevel.deleteAll();
+        kmeans.clusterize(vectorToCluster, {k: clustersPerZoomLevel[zoomLevel]}, function (err, clusters) {
+          addClusteredEventsToDB(clusters, zoomLevel, function () {
+            next();
+          });
+        });
+      }
+    ], function (err) {
+    });
+  });
+
   app.post('/clusterEvents', function (req, res) {
     if (clusteringInProgress) {
       res.status(200).end('Already Clustering Them! Patience!');
@@ -31,9 +65,6 @@ module.exports = function (app) {
 
           //Delete the entire Clustered event collection
           ZoomLevel.deleteAll();
-          const clustersPerZoomLevel = [
-            1024,1024,1024,512,512,512,256,256,256,128,128,128,64,64,32,16,8,1
-          ];
           var recursiveClusteringFunctionArray = [
             //Seed the waterfall with the event sources from ES
             function (next) {
@@ -108,6 +139,42 @@ module.exports = function (app) {
     }
   });
 
+  function addClusteredEventsToDB(clusters, zoomLevel, cb) {
+    var newClusteredEvents = [];
+    var coordinates = [];
+    for (var i = 0; i < clusters.length; ++i) {
+      coordinates.push({
+        lat: clusters[i].centroid[0],
+        lng: clusters[i].centroid[1]
+      });
+    }
+    log(clustersPerZoomLevel.length - zoomLevel);
+    newClusteredEvents.push(
+      {
+        //zoomLevel,
+        zoomLevel: clustersPerZoomLevel.length - zoomLevel,
+        startTime: new Date(),
+        endTime: new Date(),
+        clusterType: 'Random',
+        events: coordinates,
+        centerPoint: {lat: 20, lng: -80}
+      }
+    );
+    var functionArray = [];
+    newClusteredEvents.forEach(function (newClusteredEvent) {
+      functionArray.push(async.apply(findOrCreateObj,
+        ZoomLevel,
+        {where: {uuid: 'dummy'}},
+        newClusteredEvent));
+    });
+    async.parallel(functionArray, function (err) {
+      if (err) {
+        log('Error inserting Clustered Events: ' + err);
+      }
+      cb(null);
+    });
+  }
+
   app.get('/addSomeClusteredEvents', function (req, res) {
     const tags = [
       'disney',
@@ -126,7 +193,7 @@ module.exports = function (app) {
     var findOrCreateObj = require('../util/findOrCreateObj');
     var Random = require('random-js');
     var random = new Random(Random.engines.mt19937().autoSeed())
-    for (var i = 0; i <= random.integer(5, 10); i++) {
+    for (var i = 0; i <= random.integer(20, 50); i++) {
       newClusteredEventSources.push(
         {
           num_users: random.integer(5, 15),
@@ -159,3 +226,4 @@ module.exports = function (app) {
     });
   });
 }
+
