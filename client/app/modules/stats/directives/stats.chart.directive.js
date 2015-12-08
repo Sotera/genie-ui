@@ -16,7 +16,8 @@ angular.module('com.module.stats')
 
             _.map(instance.rows,
               function (row) {
-                data.addRow(row.row);
+                var dateRow = [new Date(row[0]),row[1]];
+                data.addRow(dateRow);
               });
 
             var options = {
@@ -27,6 +28,15 @@ angular.module('com.module.stats')
               },
               'chartArea': {
                 'backgroundColor': '#181818'
+              },
+              hAxis: {
+                gridlines: {
+                  count: 25,
+                  units: {
+                    days: {format: ['MMM dd']},
+                    hours: {format: ['HH:mm', 'ha']}
+                  }
+                }
               },
               axes: {
                 x: {

@@ -1,7 +1,8 @@
-#!/usr/local/bin/node
+#!/usr/bin/env node
+'use strict';
+
 var app = require('../server/server'),
   Task = app.models.Task,
-  ClusteredEvent = app.models.ClusteredEvent,
   ClusteredEventSource = app.models.ClusteredEventSource,
   log = require('debug')('task:clustered-events'),
   taskName = 'clustered events',

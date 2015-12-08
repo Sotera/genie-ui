@@ -1,44 +1,57 @@
+#!/usr/bin/env node
 'use strict';
 
 let app = require('../server/server'),
-  ZoomLevel = app.models.ZoomLevel,
+  request = require('request'),
   StatsChip = app.models.StatsChip,
   log = require('debug')('task:events-stats'),
-  ds = ZoomLevel.getDataSource();
+  ds = StatsChip.getDataSource();
 
 // TODO: we need to query ES, not clustered events
+
 ds.on('connected', function() {
-  let zoomLevels = ds.connector.collection(ZoomLevel.modelName);
-
-  zoomLevels.aggregate({
-    $group: {
-      _id: { created: "$created" },
-      total: { $sum: 1 }
+  let statsAggObj = {
+    "size":0,
+    "aggregations" : {
+      "event_stats" : {
+        "date_histogram" : {
+          "field" : "indexed_date",
+          "interval" : "hour"
+        }
+      }
     }
-  }, (err, results) => {
-    if (err) throw err;
-    console.log(results)
+  };
 
-    createStats(results);
+  request.post({
+    url: 'http://172.21.10.140:9200/jag_hc2_clusters/post/_search',
+    json: true,
+    body: statsAggObj
+  }, function (error, response, body) {
+    if (response) {
+      log(body);
+      createStats(body);
+    }
+    else if (error) {
+      log(error);
+    }
   });
 });
 
 function createStats(results) {
   // TODO: use mapping once we have more ES data
   // let rows = results.map((result,i) => ({"row": [ i, result.total ]}));
-  let rows = [
-    {row: ['11-25', 300]},
-    {row: ['11-26', 200]},
-    {row: ['11-27', 700]},
-    {row: ['11-28', 500]},
-    {row: ['11-29', 200]},
-    {row: ['11-30', 600]}
-  ];
+  let rows = [];
+  results.aggregations.event_stats.buckets.forEach(function(aggregation){
+      rows.push([aggregation.key_as_string,aggregation.doc_count]);
+    }
+  );
+
+  StatsChip.destroyAll();
 
   StatsChip.create({
     rows: rows,
     columns: [
-      { "name": "Day", "type": "string" }, { "name": "Events", "type": "number" }
+      { "name": "Day", "type": "date" }, { "name": "Events", "type": "number" }
     ]
   }, (err, chip) => {
     if (err) throw err;
