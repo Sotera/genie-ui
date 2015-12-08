@@ -26,7 +26,19 @@ angular.module('genie.eventsMap')
     controlUI.appendChild(controlText);
   }
 
+  function createSlider(options) {
+    var slider = document.createElement('input');
+    slider.style.paddingBottom = '20px';
+    slider.setAttribute('type', 'range');
+    slider.setAttribute('min', options.min);
+    slider.setAttribute('max', options.max);
+    slider.setAttribute('step', options.step);
+    slider.value = options.value;
+    return slider;
+  }
+
   return {
-    createButton: createButton
+    createButton: createButton,
+    createSlider: createSlider
   };
 }]);

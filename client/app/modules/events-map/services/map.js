@@ -1,26 +1,34 @@
 'use strict';
 angular.module('genie.eventsMap')
   .factory('mapService', ['ZoomLevel', 'stylesService', 'tweetService',
-    '$http', 'ENV', 'CoreService',
-    function(ZoomLevel, stylesService, tweetService, $http, ENV, CoreService) {
-    var heatmapLayer = new google.maps.visualization.HeatmapLayer();
-    var events = [];
+    '$http', 'ENV', 'CoreService', 'mapControlService',
+    function(ZoomLevel, stylesService, tweetService, $http, ENV, CoreService,
+      mapControlService) {
+    var heatmapLayer = new google.maps.visualization.HeatmapLayer(),
+      events = [],
+      minsInDay = 24*60,
+      minutesAgo = minsInDay*5;
 
     function updateMap(options) {
       var map = options.map;
-      return function(zoomLevel) {
-        if (options.notCentered) {
-          map.setCenter(zoomLevel.centerPoint);
+      return function(zoomLevels) {
+        if (zoomLevels.length) {
+          var zoomLevel = zoomLevels[0];
+          if (options.notCentered) {
+            map.setCenter(zoomLevel.centerPoint);
+          }
+          events = _.map(zoomLevel.events,
+            function(event) {
+              return {
+                location: new google.maps.LatLng(event.lat, event.lng),
+                weight: event.weight,
+                eventId: event.eventId,
+                tag: event.tag
+              };
+            });
+        } else {
+          events = [];
         }
-        events = _.map(zoomLevel.events,
-          function(event) {
-            return {
-              location: new google.maps.LatLng(event.lat, event.lng),
-              weight: event.weight,
-              eventId: event.eventId,
-              tag: event.tag
-            };
-          });
         heatmapLayer.setMap(map);
         heatmapLayer.setData(events);
         addMarkers(events, map);
@@ -83,22 +91,41 @@ angular.module('genie.eventsMap')
     }
 
     function zoom(options) {
-      ZoomLevel.findOne({
+      var zoomLevel = options.zoomLevel || options.map.getZoom();
+      minutesAgo = +options.minutesAgo || minutesAgo;
+
+      ZoomLevel.find({
         filter: {
           where: {
-            zoomLevel: options.zoomLevel
+            zoomLevel: zoomLevel,
+            minutesAgo: minutesAgo
           }
         }
       })
       .$promise
-      .then(updateMap({map: options.map, notCentered: options.notCentered}))
-      .catch(function(err) {
-        console.log(err);
+      .then(updateMap({map: options.map, notCentered: options.notCentered}),
+        function(err) {
+          // console.log(err)
+        });
+    }
+
+    function createControls(map) {
+      var slider = mapControlService.createSlider({
+        min: 0, max: minsInDay*10, step: minsInDay, value: minutesAgo
       });
+
+      slider.addEventListener('change', function slide(event) {
+        minutesAgo = +event.target.value;
+        zoom({minutesAgo: minutesAgo, map: map});
+        console.log(event.target.value);
+      });
+
+      map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(slider);
     }
 
     function displayHeatmap(options) {
       var map = createMap(options.elem);
+      createControls(map);
       // notCentered on initial view
       zoom({zoomLevel: options.zoomLevel, map: map, notCentered: true});
       return map;
