@@ -6495,13 +6495,13 @@ module.factory(
 
 /**
  * @ngdoc object
- * @name lbServices.ClusteredEvent
- * @header lbServices.ClusteredEvent
+ * @name lbServices.ZoomLevel
+ * @header lbServices.ZoomLevel
  * @object
  *
  * @description
  *
- * A $resource object for interacting with the `ClusteredEvent` model.
+ * A $resource object for interacting with the `ZoomLevel` model.
  *
  * ## Example
  *
@@ -6511,17 +6511,17 @@ module.factory(
  *
  */
 module.factory(
-  "ClusteredEvent",
+  "ZoomLevel",
   ['LoopBackResource', 'LoopBackAuth', '$injector', function(Resource, LoopBackAuth, $injector) {
     var R = Resource(
-      urlBase + "/ClusteredEvents/:id",
+      urlBase + "/ZoomLevels/:id",
       { 'id': '@id' },
       {
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEvent#create
-         * @methodOf lbServices.ClusteredEvent
+         * @name lbServices.ZoomLevel#create
+         * @methodOf lbServices.ZoomLevel
          *
          * @description
          *
@@ -6548,18 +6548,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEvent` object.)
+         * This usually means the response is a `ZoomLevel` object.)
          * </em>
          */
         "create": {
-          url: urlBase + "/ClusteredEvents",
+          url: urlBase + "/ZoomLevels",
           method: "POST"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEvent#createMany
-         * @methodOf lbServices.ClusteredEvent
+         * @name lbServices.ZoomLevel#createMany
+         * @methodOf lbServices.ZoomLevel
          *
          * @description
          *
@@ -6586,19 +6586,19 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEvent` object.)
+         * This usually means the response is a `ZoomLevel` object.)
          * </em>
          */
         "createMany": {
           isArray: true,
-          url: urlBase + "/ClusteredEvents",
+          url: urlBase + "/ZoomLevels",
           method: "POST"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEvent#upsert
-         * @methodOf lbServices.ClusteredEvent
+         * @name lbServices.ZoomLevel#upsert
+         * @methodOf lbServices.ZoomLevel
          *
          * @description
          *
@@ -6625,18 +6625,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEvent` object.)
+         * This usually means the response is a `ZoomLevel` object.)
          * </em>
          */
         "upsert": {
-          url: urlBase + "/ClusteredEvents",
+          url: urlBase + "/ZoomLevels",
           method: "PUT"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEvent#exists
-         * @methodOf lbServices.ClusteredEvent
+         * @name lbServices.ZoomLevel#exists
+         * @methodOf lbServices.ZoomLevel
          *
          * @description
          *
@@ -6661,14 +6661,14 @@ module.factory(
          *  - `exists` – `{boolean=}` - 
          */
         "exists": {
-          url: urlBase + "/ClusteredEvents/:id/exists",
+          url: urlBase + "/ZoomLevels/:id/exists",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEvent#findById
-         * @methodOf lbServices.ClusteredEvent
+         * @name lbServices.ZoomLevel#findById
+         * @methodOf lbServices.ZoomLevel
          *
          * @description
          *
@@ -6692,18 +6692,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEvent` object.)
+         * This usually means the response is a `ZoomLevel` object.)
          * </em>
          */
         "findById": {
-          url: urlBase + "/ClusteredEvents/:id",
+          url: urlBase + "/ZoomLevels/:id",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEvent#find
-         * @methodOf lbServices.ClusteredEvent
+         * @name lbServices.ZoomLevel#find
+         * @methodOf lbServices.ZoomLevel
          *
          * @description
          *
@@ -6725,19 +6725,19 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEvent` object.)
+         * This usually means the response is a `ZoomLevel` object.)
          * </em>
          */
         "find": {
           isArray: true,
-          url: urlBase + "/ClusteredEvents",
+          url: urlBase + "/ZoomLevels",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEvent#findOne
-         * @methodOf lbServices.ClusteredEvent
+         * @name lbServices.ZoomLevel#findOne
+         * @methodOf lbServices.ZoomLevel
          *
          * @description
          *
@@ -6759,18 +6759,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEvent` object.)
+         * This usually means the response is a `ZoomLevel` object.)
          * </em>
          */
         "findOne": {
-          url: urlBase + "/ClusteredEvents/findOne",
+          url: urlBase + "/ZoomLevels/findOne",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEvent#updateAll
-         * @methodOf lbServices.ClusteredEvent
+         * @name lbServices.ZoomLevel#updateAll
+         * @methodOf lbServices.ZoomLevel
          *
          * @description
          *
@@ -6797,14 +6797,14 @@ module.factory(
          * The number of instances updated
          */
         "updateAll": {
-          url: urlBase + "/ClusteredEvents/update",
+          url: urlBase + "/ZoomLevels/update",
           method: "POST"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEvent#deleteById
-         * @methodOf lbServices.ClusteredEvent
+         * @name lbServices.ZoomLevel#deleteById
+         * @methodOf lbServices.ZoomLevel
          *
          * @description
          *
@@ -6826,18 +6826,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEvent` object.)
+         * This usually means the response is a `ZoomLevel` object.)
          * </em>
          */
         "deleteById": {
-          url: urlBase + "/ClusteredEvents/:id",
+          url: urlBase + "/ZoomLevels/:id",
           method: "DELETE"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEvent#count
-         * @methodOf lbServices.ClusteredEvent
+         * @name lbServices.ZoomLevel#count
+         * @methodOf lbServices.ZoomLevel
          *
          * @description
          *
@@ -6862,14 +6862,14 @@ module.factory(
          *  - `count` – `{number=}` - 
          */
         "count": {
-          url: urlBase + "/ClusteredEvents/count",
+          url: urlBase + "/ZoomLevels/count",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEvent#prototype$updateAttributes
-         * @methodOf lbServices.ClusteredEvent
+         * @name lbServices.ZoomLevel#prototype$updateAttributes
+         * @methodOf lbServices.ZoomLevel
          *
          * @description
          *
@@ -6895,18 +6895,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEvent` object.)
+         * This usually means the response is a `ZoomLevel` object.)
          * </em>
          */
         "prototype$updateAttributes": {
-          url: urlBase + "/ClusteredEvents/:id",
+          url: urlBase + "/ZoomLevels/:id",
           method: "PUT"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEvent#createChangeStream
-         * @methodOf lbServices.ClusteredEvent
+         * @name lbServices.ZoomLevel#createChangeStream
+         * @methodOf lbServices.ZoomLevel
          *
          * @description
          *
@@ -6936,7 +6936,7 @@ module.factory(
          *  - `changes` – `{ReadableStream=}` - 
          */
         "createChangeStream": {
-          url: urlBase + "/ClusteredEvents/change-stream",
+          url: urlBase + "/ZoomLevels/change-stream",
           method: "POST"
         },
       }
@@ -6946,8 +6946,8 @@ module.factory(
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEvent#updateOrCreate
-         * @methodOf lbServices.ClusteredEvent
+         * @name lbServices.ZoomLevel#updateOrCreate
+         * @methodOf lbServices.ZoomLevel
          *
          * @description
          *
@@ -6974,15 +6974,15 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEvent` object.)
+         * This usually means the response is a `ZoomLevel` object.)
          * </em>
          */
         R["updateOrCreate"] = R["upsert"];
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEvent#update
-         * @methodOf lbServices.ClusteredEvent
+         * @name lbServices.ZoomLevel#update
+         * @methodOf lbServices.ZoomLevel
          *
          * @description
          *
@@ -7012,8 +7012,8 @@ module.factory(
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEvent#destroyById
-         * @methodOf lbServices.ClusteredEvent
+         * @name lbServices.ZoomLevel#destroyById
+         * @methodOf lbServices.ZoomLevel
          *
          * @description
          *
@@ -7035,15 +7035,15 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEvent` object.)
+         * This usually means the response is a `ZoomLevel` object.)
          * </em>
          */
         R["destroyById"] = R["deleteById"];
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEvent#removeById
-         * @methodOf lbServices.ClusteredEvent
+         * @name lbServices.ZoomLevel#removeById
+         * @methodOf lbServices.ZoomLevel
          *
          * @description
          *
@@ -7065,7 +7065,7 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEvent` object.)
+         * This usually means the response is a `ZoomLevel` object.)
          * </em>
          */
         R["removeById"] = R["deleteById"];
@@ -7073,13 +7073,13 @@ module.factory(
 
     /**
     * @ngdoc property
-    * @name lbServices.ClusteredEvent#modelName
-    * @propertyOf lbServices.ClusteredEvent
+    * @name lbServices.ZoomLevel#modelName
+    * @propertyOf lbServices.ZoomLevel
     * @description
     * The name of the model represented by this $resource,
-    * i.e. `ClusteredEvent`.
+    * i.e. `ZoomLevel`.
     */
-    R.modelName = "ClusteredEvent";
+    R.modelName = "ZoomLevel";
 
 
     return R;

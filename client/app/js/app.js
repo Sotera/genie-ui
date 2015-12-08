@@ -36,6 +36,7 @@ angular.module('loopbackApp', [
     'ui.router',
     //'ui.layout',
     'angular-toasty',
+    'angular-jqcloud',
     'gettext',
     'com.module.core',
     'com.module.about',

@@ -5,7 +5,7 @@ let loopback = require('loopback'),
   path = require('path'),
   filename = path.basename(__filename, '.js'),
   app = require('../../../server/server'),
-  ClusteredEvent = app.models.ClusteredEvent,
+  ZoomLevel = app.models.ZoomLevel,
   log = require('debug')('transforms:' + filename),
   maxZoom = 18, minZoom=0,
   clusterType = filename;
@@ -15,21 +15,24 @@ module.exports = {
 };
 
 function run (eventSources) {
-  var points = eventSources.map((source) => {
+  var events = eventSources.map(source => {
     // sources have irregular [lng,lat] order
-    return new loopback.GeoPoint({
+    return {
+      lng: source.location.coordinates[0],
       lat: source.location.coordinates[1],
-      lng: source.location.coordinates[0]
-    });
+      weight: source.num_users,
+      eventId: source.id,
+      tag: source.tag
+    };
   });
 
   //TODO: add childId, start, end
   //TODO: apply clustering algorithm to successive zoomlevel
   for (var i=maxZoom; i>=minZoom; i--) {
-    ClusteredEvent.create({
-      centerPoint: getCenter(points),
+    ZoomLevel.create({
+      centerPoint: getCenter(events),
       zoomLevel: i,
-      coordinates: points,
+      events: events,
       startTime: new Date(),
       endTime: new Date(),
       clusterType: clusterType
@@ -40,6 +43,7 @@ function run (eventSources) {
 }
 
 //TODO: use a real center point calculator
+// accepts objects with lat, lng attrs
 function getCenter (points) {
   let _points = _(points), len = points.length,
     sumLats = _points.sum('lat'),

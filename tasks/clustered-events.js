@@ -1,6 +1,8 @@
+#!/usr/bin/env node
+'use strict';
+
 var app = require('../server/server'),
   Task = app.models.Task,
-  ClusteredEvent = app.models.ClusteredEvent,
   ClusteredEventSource = app.models.ClusteredEventSource,
   log = require('debug')('task:clustered-events'),
   taskName = 'clustered events',
@@ -27,7 +29,7 @@ function runTask (err, task) {
   //TODO: add Task#running, lastError
   ClusteredEventSource.find({
     where: {
-      indexedDate: {gt: task.lastRun}
+      indexed_date: {gt: task.lastRun}
     },
     limit: 50
   }, processEventSources(task))

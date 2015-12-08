@@ -4,10 +4,19 @@
     "uuid": {
       "type": "string"
     },
+    "num_users": {
+      "type": "number"
+    },
+    "num_posts": {
+      "type": "number"
+    },
     "tag": {
       "type": "string"
     },
-    "indexedDate": {
+    "indexed_date": {
+      "type": "date"
+    },
+    "post_date": {
       "type": "date"
     },
     "location": {

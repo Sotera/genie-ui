@@ -52,7 +52,7 @@
     "dataSource": "db",
     "public": true
   },
-  "ClusteredEvent": {
+  "ZoomLevel": {
     "dataSource": "db",
     "public": true
   },

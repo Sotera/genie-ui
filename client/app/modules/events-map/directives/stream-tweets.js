@@ -2,10 +2,11 @@
 angular.module('genie.eventsMap')
 
 .directive('streamTweets', ['CoreService', 'mapControlService', 'tweetService',
-  function (CoreService, mapControlService, tweetService) {
+  '$window', function (CoreService, mapControlService, tweetService, $window) {
 
   function link(scope, elem, attrs, mapCtrl) {
     init(scope.map);
+    $window.addEventListener('unload', tweetService.stop);
   }
 
   function createLiveHeatmap(map) {
