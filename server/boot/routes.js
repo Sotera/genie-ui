@@ -1,4 +1,7 @@
 'use strict';
+if (require('cluster').isMaster) {
+  return;
+}
 var log = require('debug')('boot:routes');
 var kmeans = require('node-kmeans');
 var async = require('async');
@@ -11,6 +14,7 @@ module.exports = function (app) {
   var ZoomLevel = app.models.ZoomLevel;
   var ClusteredEventSource = app.models.ClusteredEventSource;
   app.post('/clusterEventsEx', function (req, res) {
+    //ZoomLevel.deleteAll();return;
     var zoomLevel = req.body.zoomLevel;
     var msg = 'Clustering @ zoomLevel: ' + zoomLevel;
     msg += ' [' + clustersPerZoomLevel[zoomLevel] + '] clusters.';
@@ -29,8 +33,6 @@ module.exports = function (app) {
         });
       },
       function (vectorToCluster, next) {
-        //Delete the entire Clustered event collection
-        //ZoomLevel.deleteAll();
         kmeans.clusterize(vectorToCluster, {k: clustersPerZoomLevel[zoomLevel]}, function (err, clusters) {
           addClusteredEventsToDB(clusters, zoomLevel, function () {
             next();
@@ -132,7 +134,6 @@ module.exports = function (app) {
         }
       ], function (err) {
         clusteringInProgress = false;
-        var e = err;
       });
       clusteringInProgress = true;
       res.status(200).end('Clustering Them!');
@@ -140,38 +141,50 @@ module.exports = function (app) {
   });
 
   function addClusteredEventsToDB(clusters, zoomLevel, cb) {
-    var newClusteredEvents = [];
-    var coordinates = [];
-    for (var i = 0; i < clusters.length; ++i) {
-      coordinates.push({
-        lat: clusters[i].centroid[0],
-        lng: clusters[i].centroid[1]
-      });
+    if(!clusters){
+      log('Clusters is undefined ...');
+      cb();
+      return;
     }
-    log(clustersPerZoomLevel.length - zoomLevel);
-    newClusteredEvents.push(
-      {
-        //zoomLevel,
-        zoomLevel: clustersPerZoomLevel.length - zoomLevel,
-        startTime: new Date(),
-        endTime: new Date(),
-        clusterType: 'Random',
-        events: coordinates,
-        centerPoint: {lat: 20, lng: -80}
+    ZoomLevel.destroyAll({zoomLevel: zoomLevel}, function (err, destroyRes) {
+      if(err){
+        log('Error destroying zoomLevel: ' + zoomLevel);
+        return;
       }
-    );
-    var functionArray = [];
-    newClusteredEvents.forEach(function (newClusteredEvent) {
-      functionArray.push(async.apply(findOrCreateObj,
-        ZoomLevel,
-        {where: {uuid: 'dummy'}},
-        newClusteredEvent));
-    });
-    async.parallel(functionArray, function (err) {
-      if (err) {
-        log('Error inserting Clustered Events: ' + err);
+      log('Destroyed ZoomLevel: ' + zoomLevel);
+      var newClusteredEvents = [];
+      var coordinates = [];
+      for (var i = 0; i < clusters.length; ++i) {
+        coordinates.push({
+          lat: clusters[i].centroid[0],
+          lng: clusters[i].centroid[1]
+        });
       }
-      cb(null);
+      log(clustersPerZoomLevel.length - zoomLevel);
+      newClusteredEvents.push(
+        {
+          //zoomLevel,
+          zoomLevel: clustersPerZoomLevel.length - zoomLevel,
+          startTime: new Date(),
+          endTime: new Date(),
+          clusterType: 'Random',
+          events: coordinates,
+          centerPoint: {lat: 20, lng: -80}
+        }
+      );
+      var functionArray = [];
+      newClusteredEvents.forEach(function (newClusteredEvent) {
+        functionArray.push(async.apply(findOrCreateObj,
+          ZoomLevel,
+          {where: {uuid: 'dummy'}},
+          newClusteredEvent));
+      });
+      async.parallel(functionArray, function (err) {
+        if (err) {
+          log('Error inserting Clustered Events: ' + err);
+        }
+        cb(null);
+      });
     });
   }
 

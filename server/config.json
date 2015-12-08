@@ -4,5 +4,16 @@
   "port": 3000,
   "url": "http://localhost:3000/",
   "cookieSecret": "F1FEE670-3C72-11E4-916C-0800200C9A66",
-  "legacyExplorer": false
+  "legacyExplorer": false,
+  "REDsettings": {
+    "httpAdminRoot": "/",
+    "httpNodeRoot": "/api",
+    "userDir": "./server/node-red",
+    "nodesDir": "./server/node-red/nodes",
+    "flowFile": "genie-ui-flows.json",
+    "port": 8888,
+    "functionGlobalContext": {
+      "port": 3000
+    }
+  }
 }
