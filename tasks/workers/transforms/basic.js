@@ -21,7 +21,7 @@ function run() {
     return numDays * 24 * 60;
   }
 
-  for (let i of util.range(0, 10, 1)) {
+  for (let i of util.range(0, 10)) {
     i = daysToMinutes(i);
     ClusteredEventSource.find({
       native: {
@@ -61,14 +61,14 @@ function processEventSources(minutesAgo) {
     if (events.length) {
     //TODO: add childId, start, end
     //TODO: apply clustering algorithm to successive zoomlevel
-      for (var i=maxZoom; i>=minZoom; i--) {
+      for (let i of util.range(maxZoom, minZoom)) {
         ZoomLevel.create({
           centerPoint: getCenter(events),
           zoomLevel: i,
           events: events,
           clusterType: clusterType,
           minutesAgo: minutesAgo
-        }, function(err, event) {
+        }, (err, event) => {
           if (err) log(err);
         });
       }
