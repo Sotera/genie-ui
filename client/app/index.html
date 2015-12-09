@@ -1,13 +1,10 @@
 <!doctype html>
-<html ng-app="loopbackApp"
-      ng-controller="LayoutCtrl">
+<html ng-app="loopbackApp" ng-controller="LayoutCtrl">
 <head>
   <meta charset="utf-8">
   <title ng-bind="getSetting('appName')"></title>
-  <meta name="description"
-        content="">
-  <meta name="viewport"
-        content="width=device-width">
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width">
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css"/>
 <!--  <link rel="stylesheet" href="bower_components/sweetalert/lib/sweet-alert.css"/>-->
   <link rel="stylesheet" href="bower_components/angular-toasty/dist/angular-toasty.css"/>
@@ -25,7 +22,7 @@
   <link rel="stylesheet" href="/css/events-map.css"/>
 </head>
 <body class="{{getSetting('appTheme') }} {{ getSetting('appLayout') }} "
-      ng-controller="MainCtrl">
+  ng-controller="MainCtrl">
 <!--[if lt IE 7]>
 <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade
   your browser</a> to improve your experience.</p>
@@ -38,7 +35,7 @@
 
 <toasty></toasty>
 
-<script type="text/javascript" src="https://www.google.com/jsapi?autoload=
+<script src="https://www.google.com/jsapi?autoload=
 {'modules':[{'name':'visualization','version':'1.1','packages':
 ['line']}]}"></script>
 
