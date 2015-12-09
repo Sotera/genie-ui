@@ -5,3 +5,13 @@ div.events-map-cloud {
   top: 30px;
   right: 10px;
 }
+
+div.time-series {
+  width: 800px;
+  height: 400px;
+}
+
+/* override google chart styles */
+div.time-series .border {
+  background-color: #181818
+}
