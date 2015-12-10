@@ -5,7 +5,7 @@ header.header
     navbar
 div
   div.wrapper.row-offcanvas.row-offcanvas-left
-      aside.left-side.sidebar-offcanvas(class="{{getCollapsedStatus()}}")
+      aside.left-side.sidebar-offcanvas.collapse-left(class="{{getCollapsedStatus()}}")
           section.sidebar
               div.user-panel
                   div.pull-left.image
@@ -21,5 +21,5 @@ div
                       a(href="" ui-sref="{{item.sref}}")
                         i.fa.fa-fw(class="{{item.icon}}")
                         |{{item.name | translate}}
-      aside.right-side.at-view-fade-in.at-view-fade-out(class="{{getStretchedStatus()}}" )
+      aside.right-side.at-view-fade-in.at-view-fade-out.strech(class="{{getStretchedStatus()}}" )
         ui-view(style="background-color:red")
