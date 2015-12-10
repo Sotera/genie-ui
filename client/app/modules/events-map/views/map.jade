@@ -1,7 +1,9 @@
-time-series
-stream-tweets
-  #map( map style='width:100%; height:100%;' )
+//
+  stream-tweets
 
-jqcloud(words='words' delay='10' steps='7' class='events-map-cloud'
-font-size='{from:0.09, to:0.04}')
+heat-map
+  #map( map zoom='5' style='width:100%; height:100%;' )
+
+//
+  jqcloud(words='words' delay='10' steps='7' class='events-map-cloud' font-size='{from:0.09, to:0.04}')
 
