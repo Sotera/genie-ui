@@ -26,6 +26,7 @@
   },
   "main": "server/server.js",
   "dependencies": {
+    "api-check": "^7.5.5",
     "async": "^1.4.2",
     "body-parser": "1.14.1",
     "cookie-parser": "1.4.0",

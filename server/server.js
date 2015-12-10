@@ -32,7 +32,7 @@ if (cluster.isMaster) {
   cluster.on('exit', function (worker, code, signal) {
     log('Worker ' + worker.process.pid + ' died with code: ' + code + ', and signal: ' + signal);
     log('Starting a new worker');
-    //cluster.fork();
+    cluster.fork();
   });
 
   app.get('/test', function (req, res) {
