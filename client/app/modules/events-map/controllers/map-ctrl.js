@@ -21,7 +21,9 @@ angular.module('genie.eventsMap')
   function getZoomLevel() {
     mapService.getZoomLevel($scope.inputs)
     .then(function(zoomLevelObj) {
-      $scope.map.setCenter(zoomLevelObj.centerPoint);
+      if (!$scope.map.getCenter()) { // center not set
+        $scope.map.setCenter(zoomLevelObj.centerPoint);
+      }
       $scope.zoomLevelObj = zoomLevelObj;
       //jqcloud tag collection
       $scope.words = _.map(zoomLevelObj.events, function(event) {
