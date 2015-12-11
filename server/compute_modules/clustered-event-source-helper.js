@@ -20,10 +20,10 @@ const randomishTags = [
   'miamibeach'
 ];
 const randomishPointsOnEarth = [
-  {lat: 30.25, lng: -97.5}
-  , {lat: 41.8, lng: -87.67}
-  , {lat: 39.75, lng: -104.9}
-  , {lat: 25.75, lng: -80.2}
+  {lat: 30.25, lng: -97.5}//Austin
+  , {lat: 41.8, lng: -87.67}//Chicago
+  , {lat: 39.75, lng: -104.9}//Denver
+  , {lat: 25.75, lng: -80.2}//Miami
 ];
 var randomishNumPosts = [];
 for (var i = 0; i < random.integer(5, 50); ++i) {
@@ -51,9 +51,7 @@ module.exports = class {
       }
       var vectorToCluster = [];
       for (var i = 0; i < ces.length; ++i) {
-        ces[i]['lat'] = ces[i].location.coordinates[1];
-        ces[i]['lng'] = ces[i].location.coordinates[0];
-        vectorToCluster[i] = [ces[i]['lat'], ces[i]['lng']];
+        vectorToCluster[i] = {lat: ces[i].location.coordinates[1], lng: ces[i].location.coordinates[0]};
       }
       cb(err, vectorToCluster);
     });
@@ -62,7 +60,7 @@ module.exports = class {
   addClusteredEventSources(options, cb) {
     var ClusteredEventSource = this.ClusteredEventSource;
     options = options || {};
-    apiCheck.warn([apiCheck.shape({
+/*    apiCheck.warn([apiCheck.shape({
       clusterCountMin: apiCheck.number
       , clusterCountMax: apiCheck.number
       , tags: apiCheck.arrayOf(apiCheck.number)
@@ -76,10 +74,10 @@ module.exports = class {
           }))
       , distFromCenterMin: apiCheck.number
       , distFromCenterMax: apiCheck.number
-    }).optional, apiCheck.func], arguments);
+    }).optional, apiCheck.func], arguments);*/
     if ((arguments.length === 0) ||
       (arguments.length === 1 && typeof arguments[0] !== 'function') ||
-      (arguments.length === 2 && typeof arguments[1] !== 'function')) {
+      (arguments.length >= 2 && typeof arguments[1] !== 'function')) {
       throw new Error('Syntax: addClusteredEventSources([options], callback)');
     }
     //Setup some defaults for options
@@ -91,6 +89,8 @@ module.exports = class {
     options.locCenters = options.locCenters || randomishPointsOnEarth;
     options.distFromCenterMin = options.distFromCenterMin || 0.05;
     options.distFromCenterMax = options.distFromCenterMax || 0.5;
+    options.postDate = options.postDate || new Date();
+    options.indexedDate = options.indexedDate || new Date();
 
     var clusterCount = random.integer(options.clusterCountMin, options.clusterCountMax);
     var newClusteredEventSources = [];
@@ -103,8 +103,8 @@ module.exports = class {
       newClusteredEventSources.push(
         {
           num_users: options.numUsers[random.integer(0, options.numUsers.length - 1)],
-          indexed_date: new Date(),
-          post_date: new Date(),
+          indexed_date: options.indexedDate,
+          post_date: options.postDate,
           tag: options.tags[random.integer(0, options.tags.length - 1)],
           num_posts: options.numPosts[random.integer(0, options.numPosts.length - 1)],
           location: {

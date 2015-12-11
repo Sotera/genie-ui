@@ -35,11 +35,6 @@ if (cluster.isMaster) {
     cluster.fork();
   });
 
-  app.get('/test', function (req, res) {
-    res.status(200).end('worker created');
-    cluster.fork();
-  });
-
   var server = http.createServer(app);
 
   //Initialise the runtime with a server and settings
@@ -53,8 +48,14 @@ if (cluster.isMaster) {
   RED.start();
 
   //Fire up the workers!
-  var numWorkers = 2;
-  //numWorkers = require('os').cpus().length;
+  var numWorkers = config.numberOfWorkers;
+  numWorkers = (numWorkers === -1)
+    ? require('os').cpus().length
+    : (numWorkers < 1)
+    ? 1
+    : (numWorkers > 16)
+    ? 16
+    : numWorkers;
   console.log('Master cluster setting up ' + numWorkers + ' workers...');
   for (var i = 0; i < numWorkers; i++) {
     cluster.fork();

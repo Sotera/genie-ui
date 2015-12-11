@@ -1,6 +1,7 @@
 'use strict';
 //var log = require('debug')('compute_modules:zoom-level-helper');
 var createObj = require('../util/createObj');
+var updateObj = require('../util/updateObj');
 var async = require('async');
 var apiCheck = require('api-check')({
   output: {
@@ -15,10 +16,46 @@ module.exports = class {
     this.ZoomLevel = app.models.ZoomLevel;
   }
 
-  initialize(cb){
+  updateZoomLevels(clusters, zoomLevel, cb) {
     var ZoomLevel = this.ZoomLevel;
-    ZoomLevel.deleteAll(function(err){
-      if(err){
+    //apiCheck.warn([apiCheck.arrayOf(apiCheck.object), apiCheck.number, apiCheck.func], arguments);
+    var coordinates = [];
+    var latSum = 0;
+    var lngSum = 0;
+    var len = clusters.length;
+    for (var i = 0; i < len; ++i) {
+      coordinates.push({
+        lat: clusters[i].centroid[0],
+        lng: clusters[i].centroid[1]
+      });
+      latSum += clusters[i].centroid[0];
+      lngSum += clusters[i].centroid[1];
+    }
+    var centroid = {lat: latSum / len, lng: lngSum / len};
+    var newClusteredEvent =
+    {
+      zoomLevel,
+      startTime: new Date(),
+      endTime: new Date(),
+      clusterType: 'Random',
+      events: coordinates,
+      centerPoint: centroid
+    };
+    updateObj(ZoomLevel,
+      {zoomLevel: newClusteredEvent.zoomLevel},
+      newClusteredEvent,
+      function (err) {
+        if (err) {
+          log('Error inserting Clustered Events: ' + err);
+        }
+        cb(err);
+      });
+  }
+
+  initialize(cb) {
+    var ZoomLevel = this.ZoomLevel;
+    ZoomLevel.deleteAll(function (err) {
+      if (err) {
         cb(err);
         return;
       }
