@@ -83,5 +83,18 @@ module.exports = function (app) {
     res.render('users/views/register', {title: 'Login'});
   });
 
+  /* Settings */
+  app.get('/modules/settings/views/main', function (req, res) {
+    res.render('settings/views/main', {title: 'Main'});
+  });
+  app.get('/modules/settings/views/list', function (req, res) {
+    res.render('settings/views/list', {title: 'List'});
+  });
+  app.get('/modules/settings/views/view', function (req, res) {
+    res.render('settings/views/view', {title: 'View'});
+  });
+  app.get('/modules/settings/views/form', function (req, res) {
+    res.render('settings/views/form', {title: 'Form'});
+  });
 
 };

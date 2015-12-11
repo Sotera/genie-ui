@@ -1,0 +1,35 @@
+section.content-header(admin-header title="{{ 'Settings' | translate }}" sub-title="{{ 'Manage your settings here!' | translate }}")
+    a.btn.btn-default.btn-sm(ui-sref=".add" translate)
+      |Add
+tabset.nav-tabs-custom
+  tab( heading="{{ 'Settings' | translate }}")
+    .row
+      section.content(ui-view="")
+  tab( heading="{{ 'Variables' | translate }}")
+    .row
+      .col-md-6
+        h4(translate)
+        | Current user
+        pre
+        | {{currentUser | json}}
+      .col-md-6
+        h4( translate)
+        | Settings
+        pre
+        | {{settings | json}}
+  tab( heading="{{ 'Theme' | translate }}")
+    .row
+      .col-md-6
+        h4 {{ 'Theme' | translate }}
+          small  {{appTheme}}
+        .btn-group(data-toggle="btn-toggle")
+          button.btn.btn-default( type="button" data-toggle="on" ng-repeat="theme in appThemes"
+          ng-click="setSetting('appTheme', theme.class)") {{theme.name}}
+        h4 Layout
+          small
+          | {{appLayout}}
+        .btn-group( data-toggle="btn-toggle")
+          button.btn.btn-default( type="button" data-toggle="on" ng-repeat="layout in appLayouts"
+          ng-click="setSetting('appLayout', layout.class)") {{layout.name}}
+
+
