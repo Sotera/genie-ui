@@ -39,32 +39,6 @@ angular.module('genie.eventsMap')
   //   );
   // }
 
-  // function regenerateHeatmap(options) {
-  //   var map = options.map;
-  //   return function(zoomLevels) {
-  //     if (zoomLevels.length) {
-  //       var zoomLevel = zoomLevels[0];
-  //       if (options.notCentered) {
-  //         map.setCenter(zoomLevel.centerPoint);
-  //       }
-  //       events = _.map(zoomLevel.events,
-  //         function(event) {
-  //           return {
-  //             location: new google.maps.LatLng(event.lat, event.lng),
-  //             weight: event.weight,
-  //             eventId: event.eventId,
-  //             tag: event.tag
-  //           };
-  //         });
-  //     } else {
-  //       events = [];
-  //     }
-  //     heatmapLayer.setMap(map);
-  //     heatmapLayer.setData(events);
-  //     // addMarkers(events, map);
-  //   };
-  // }
-
   function resizeMap(map, elem) {
     var parent = $('#' + elem.parent()[0].id);
     var doResize = function doResize () {

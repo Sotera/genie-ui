@@ -4,8 +4,7 @@ angular.module('genie.eventsMap')
     '$http', 'ENV', 'CoreService', 'mapControlService',
     function(ZoomLevel, stylesService, tweetService, $http, ENV, CoreService,
       mapControlService) {
-    var heatmapLayer = new google.maps.visualization.HeatmapLayer(),
-      events = [],
+      var events = [],
       minsInDay = 24*60,
       minutesAgo = minsInDay*5;
 
@@ -102,15 +101,15 @@ angular.module('genie.eventsMap')
       .$promise;
     }
 
-    function getEvents(options) {
+    function getZoomLevel(options) {
       return findZoomLevel(options)
       .then(function(zoomLevels) {
         if (zoomLevels.length) {
-          var zoomLevel = zoomLevels[0],
-            events = parseEvents(zoomLevel.events);
-          return events;
+          var zoomLevel = zoomLevels[0];
+          zoomLevel.events = parseEvents(zoomLevel.events);
+          return zoomLevel;
         } else {
-          return []; // no events at zoom or time
+          return {}; // no record found for zoom or time
         }
       });
 
@@ -161,7 +160,6 @@ angular.module('genie.eventsMap')
     return {
       // displayHeatmap: displayHeatmap,
       // getEvents: function() { return events; },
-      findZoomLevel: findZoomLevel,
-      getEvents: getEvents
+      getZoomLevel: getZoomLevel
     };
   }]);

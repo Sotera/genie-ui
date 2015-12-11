@@ -7,14 +7,14 @@ angular.module('genie.eventsMap')
 
     scope.$watchCollection(
       function(scope) {
-        return scope.events;
+        return scope.zoomLevelObj;
       },
       reheat
     );
 
     function reheat() {
       heatmapLayer.setMap(scope.map);
-      heatmapLayer.setData(scope.events);
+      heatmapLayer.setData(scope.zoomLevelObj.events);
     }
   }
 
