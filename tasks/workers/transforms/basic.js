@@ -21,22 +21,29 @@ function run() {
     return numDays * 24 * 60;
   }
 
-  for (let i of util.range(0, 10)) {
-    i = daysToMinutes(i);
+  let time0 = '2015-06-05';
+  let rangeQuery = {};
+  let mins;
+  // range: ex. 1 to n days
+  for (let i of util.range(1, 7)) {
+    mins = daysToMinutes(i);
+    rangeQuery = {
+      gte: time0 + '||-' + mins + 'm'
+    };
+    if (i > 1) { // add upper bounds after first day
+      rangeQuery.lt = time0 + '||-' + daysToMinutes(i-1) + 'm';
+    }
     ClusteredEventSource.find({
       native: {
         from: 0,
         // size: 999,
         query: {
           range: {
-            post_date: {
-              gte: 'now-' + i + 'm',
-              lt: 'now'
-            }
+            post_date: rangeQuery
           }
         }
       }
-    }, processEventSources(i))
+    }, processEventSources(mins))
   }
 }
 

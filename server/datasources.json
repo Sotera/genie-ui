@@ -18,15 +18,15 @@
     "hosts": [
       {
         "protocol": "http",
-        "host": "172.21.10.140",
+        "host": "localhost",
         "port": 9200
       }
     ],
-    "apiVersion": "1.1",
+    "apiVersion": "2.0",
     "requestTimeout": 5000,
     "log": "trace",
     "defaultSize": 50,
-    "index": "jag_hc2_clusters",
+    "index": "genie",
     "type": "post"
   }
 }

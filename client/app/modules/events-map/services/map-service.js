@@ -1,38 +1,10 @@
 'use strict';
 angular.module('genie.eventsMap')
-  .factory('mapService', ['ZoomLevel', 'stylesService', 'tweetService',
-    '$http', 'ENV', 'CoreService', 'mapControlService',
-    function(ZoomLevel, stylesService, tweetService, $http, ENV, CoreService,
-      mapControlService) {
+  .factory('mapService', ['ZoomLevel', '$http',
+    function(ZoomLevel, $http) {
       var events = [],
       minsInDay = 24*60,
       minutesAgo = minsInDay*5;
-
-    // function regenerateHeatmap(options) {
-    //   var map = options.map;
-    //   return function(zoomLevels) {
-    //     if (zoomLevels.length) {
-    //       var zoomLevel = zoomLevels[0];
-    //       if (options.notCentered) {
-    //         map.setCenter(zoomLevel.centerPoint);
-    //       }
-    //       events = _.map(zoomLevel.events,
-    //         function(event) {
-    //           return {
-    //             location: new google.maps.LatLng(event.lat, event.lng),
-    //             weight: event.weight,
-    //             eventId: event.eventId,
-    //             tag: event.tag
-    //           };
-    //         });
-    //     } else {
-    //       events = [];
-    //     }
-    //     heatmapLayer.setMap(map);
-    //     heatmapLayer.setData(events);
-    //     // addMarkers(events, map);
-    //   };
-    // }
 
     // function getTweets(eventId, onSuccess) {
     //   // TODO: replace with loopback resource
@@ -104,12 +76,14 @@ angular.module('genie.eventsMap')
     function getZoomLevel(options) {
       return findZoomLevel(options)
       .then(function(zoomLevels) {
+        var zoomLevel = zoomLevels[0];
         if (zoomLevels.length) {
-          var zoomLevel = zoomLevels[0];
           zoomLevel.events = parseEvents(zoomLevel.events);
           return zoomLevel;
         } else {
-          return {}; // no record found for zoom or time
+          zoomLevel = new ZoomLevel();
+          zoomLevel.events = []
+          return zoomLevel; // no record found for zoom or time
         }
       });
 
@@ -125,15 +99,6 @@ angular.module('genie.eventsMap')
           })
       }
     }
-    // function changeFocus(options) {
-    //   var zoomLevel = options.zoomLevel || options.map.getZoom();
-    //   minutesAgo = +options.minutesAgo || minutesAgo;
-
-    //   findZoomLevel(zoomLevel, minutesAgo)
-    //   .then(
-    //     regenerateHeatmap({map: options.map, notCentered: options.notCentered})
-    //   );
-    // }
 
     // function createControls(map) {
     //   var slider = mapControlService.createSlider({
@@ -147,14 +112,6 @@ angular.module('genie.eventsMap')
     //   });
 
     //   map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(slider);
-    // }
-
-    // function displayHeatmap(options) {
-    //   var map = createMap(options.elem);
-    //   // createControls(map);
-    //   // notCentered on initial view
-    //   changeFocus({zoomLevel: options.zoomLevel, map: map, notCentered: true});
-    //   return map;
     // }
 
     return {

@@ -6,7 +6,12 @@ angular.module('genie.eventsMap')
   function link(scope, elem, attrs) {
     var mapOptions = {
       zoom: +attrs.zoom || 10,
-      styles: stylesService.dark
+      styles: stylesService.dark,
+      streetViewControl: false,
+      mapTypeControl: false,
+      zoomControlOptions: {
+        position: google.maps.ControlPosition.TOP_LEFT
+      },
     };
 
     var map = new google.maps.Map(elem[0], mapOptions);

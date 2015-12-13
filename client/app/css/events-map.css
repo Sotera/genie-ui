@@ -2,13 +2,13 @@ div.events-map-cloud {
   width: 400px;
   height: 300px;
   position: absolute;
-  top: 30px;
+  bottom: 50px;
   right: 10px;
 }
 
 div.time-series {
-  width: 800px;
-  height: 400px;
+  width: 100%;
+  height: 160px;
 }
 
 /* override google chart styles */
