@@ -2,6 +2,11 @@
   "name": "GENIE",
   "version": "0.2.1",
   "dependencies": {
+    "api-check": {
+      "version": "7.5.5",
+      "from": "api-check@7.5.5",
+      "resolved": "https://registry.npmjs.org/api-check/-/api-check-7.5.5.tgz"
+    },
     "async": {
       "version": "1.5.0",
       "from": "async@>=1.4.2 <2.0.0",
@@ -7517,35 +7522,6 @@
               }
             }
           }
-        }
-      }
-    },
-    "websocket": {
-      "version": "1.0.22",
-      "from": "websocket@>=1.0.22 <2.0.0",
-      "resolved": "https://registry.npmjs.org/websocket/-/websocket-1.0.22.tgz",
-      "dependencies": {
-        "nan": {
-          "version": "2.0.9",
-          "from": "nan@>=2.0.5 <2.1.0",
-          "resolved": "https://registry.npmjs.org/nan/-/nan-2.0.9.tgz"
-        },
-        "typedarray-to-buffer": {
-          "version": "3.0.4",
-          "from": "typedarray-to-buffer@>=3.0.3 <3.1.0",
-          "resolved": "https://registry.npmjs.org/typedarray-to-buffer/-/typedarray-to-buffer-3.0.4.tgz",
-          "dependencies": {
-            "is-typedarray": {
-              "version": "1.0.0",
-              "from": "is-typedarray@>=1.0.0 <2.0.0",
-              "resolved": "https://registry.npmjs.org/is-typedarray/-/is-typedarray-1.0.0.tgz"
-            }
-          }
-        },
-        "yaeti": {
-          "version": "0.0.4",
-          "from": "yaeti@>=0.0.4 <0.1.0",
-          "resolved": "https://registry.npmjs.org/yaeti/-/yaeti-0.0.4.tgz"
         }
       }
     }
