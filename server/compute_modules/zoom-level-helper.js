@@ -1,7 +1,7 @@
 'use strict';
 //var log = require('debug')('compute_modules:zoom-level-helper');
-var createObj = require('../util/createObj');
-var updateObj = require('../util/updateObj');
+var createObj = require('../util/create-obj');
+var updateObj = require('../util/update-obj');
 var async = require('async');
 var apiCheck = require('api-check')({
   output: {
