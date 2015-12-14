@@ -3,7 +3,7 @@
 // to enable these logs set `DEBUG=boot:node-red` or `DEBUG=boot:*`
 var log = require('debug')('boot:node-red');
 var async = require('async');
-var getSettings = require('../util/getSettings');
+var getSettings = require('../util/get-settings');
 const webSocketServiceName = 'node-red-to-loopback-service-channel';
 
 module.exports = function (app, cb) {

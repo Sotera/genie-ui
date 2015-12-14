@@ -2,7 +2,7 @@
 
 // to enable these logs set `DEBUG=boot:03-load-content` or `DEBUG=boot:*`
 var log = require('debug')('boot:03-load-content');
-var getSettings = require('../util/getSettings');
+var getSettings = require('../util/get-settings');
 
 module.exports = function (app, cb) {
   getSettings([
@@ -13,7 +13,7 @@ module.exports = function (app, cb) {
     if (settings['loadUpSomeClusteredEventsBaby']) {
       log('Loading up the dummy ClusteredEvents, Baby!');
       var async = require('async');
-      var findOrCreateObj = require('../util/findOrCreateObj');
+      var findOrCreateObj = require('../util/find-or-create-obj');
       var Random = require('random-js');
       var random = new Random(Random.engines.mt19937().autoSeed())
       for (var i = 0; i <= 18; i++) {
