@@ -9,104 +9,95 @@
  fileContents = fileContents.replace(/MONGO_HOST_PORT/g, mongoPort);
  fs.writeFileSync(__dirname + '/datasources.json', fileContents);
  */
-var loopback = require('loopback');
+
+// to enable these logs set `DEBUG=server:server` or `DEBUG=server:*`
+var log = require('debug')('server:server');
+var cluster = require('cluster');
 var boot = require('loopback-boot');
-var path = require('path');
-var app = module.exports = loopback();
-var env = require('get-env')({
-  test: 'test'
-});
+//EXPERIMENTAL -- Hear we are going to try to bring up a master process that only hosts NodeRED &
+//some process control routes. The 'master' app will not be a loopback app. It will just be a vanilla
+//Express4 app. Later we may add loopback for access to in memory database to manage the cluster.
+if (cluster.isMaster) {
+  var http = require('http');
+  var express = require("express");
+  var RED = require("node-red");
+  var app = express();
 
-app.RED = require('node-red');
-app.server = require('http').createServer(app);
-
-//NodeRED-->BEGIN
-//Monkey patch loopback/application.listen because we need the actual http.server object to initialize NodeRED
-app.listen = function (cb) {
-  var self = this;
-
-  var server = this.server;
-
-  server.on('listening', function () {
-    self.set('port', this.address().port);
-
-    var listeningOnAll = false;
-    var host = self.get('host');
-    if (!host) {
-      listeningOnAll = true;
-      host = this.address().address;
-      self.set('host', host);
-    } else if (host === '0.0.0.0' || host === '::') {
-      listeningOnAll = true;
-    }
-
-    if (!self.get('url')) {
-      if (process.platform === 'win32' && listeningOnAll) {
-        // Windows browsers don't support `0.0.0.0` host in the URL
-        // We are replacing it with localhost to build a URL
-        // that can be copied and pasted into the browser.
-        host = 'localhost';
-      }
-      var url = 'http://' + host + ':' + self.get('port') + '/';
-      self.set('url', url);
-    }
+  //Hijack loopback boot to read config file. Honors NODE_ENV.
+  var config = boot.ConfigLoader.loadAppConfig(__dirname, app.get('env'));
+  cluster.on('online', function (worker) {
+    log('Worker ' + worker.process.pid + ' is online');
   });
 
-  var useAppConfig =
-    arguments.length === 0 ||
-    (arguments.length == 1 && typeof arguments[0] == 'function');
+  cluster.on('exit', function (worker, code, signal) {
+    log('Worker ' + worker.process.pid + ' died with code: ' + code + ', and signal: ' + signal);
+    log('Starting a new worker');
+    cluster.fork();
+  });
 
-  if (useAppConfig) {
-    server.listen(this.get('port'), this.get('host'), cb);
-  } else {
-    server.listen.apply(server, arguments);
+  var server = http.createServer(app);
+
+  //Initialise the runtime with a server and settings
+  RED.init(server, config.REDsettings);
+  //Serve the editor UI from /red
+  app.use(config.REDsettings.httpAdminRoot, RED.httpAdmin);
+  //Serve the http nodes UI from /api
+  app.use(config.REDsettings.httpNodeRoot, RED.httpNode);
+  server.listen(config.REDsettings.port);
+  //Start the runtime
+  RED.start();
+
+  //Fire up the workers!
+  var numWorkers = config.numberOfWorkers;
+  numWorkers = (numWorkers === -1)
+    ? require('os').cpus().length
+    : (numWorkers < 1)
+    ? 1
+    : (numWorkers > 16)
+    ? 16
+    : numWorkers;
+  console.log('Master cluster setting up ' + numWorkers + ' workers...');
+  for (var i = 0; i < numWorkers; i++) {
+    cluster.fork();
   }
-  app.RED.start();
-  return server;
-};
-//NodeRED-->END
+} else {
+  //EXPERIMENTAL -- If we aren't the master process of the cluster then start up like regular loopback app
+  var loopback = require('loopback');
+  var path = require('path');
+  var app = module.exports = loopback();
 
-// Set up the /favicon.ico
-app.use(loopback.favicon(path.join(__dirname, 'waveicon16.png')));
-
-// request pre-processing middleware
-//app.use(loopback.compress());
-
-// -- Add your pre-processing middleware here --
-
-
-// boot scripts mount components like REST API
-boot(app, __dirname, function () {
-  var staticPath = null;
-
-  if (env !== 'prod') {
-    staticPath = path.resolve(__dirname, '../client/app/');
-    console.log("Running app in development mode");
-  } else {
-    staticPath = path.resolve(__dirname, '../dist/');
-    console.log("Running app in production mode");
-  }
-
-  app.use(loopback.static(staticPath));
-
-// Requests that get this far won't be handled
-// by any middleware. Convert them into a 404 error
-// that will be handled later down the chain.
-  app.use(loopback.urlNotFound());
-
-// The ultimate error handler.
-  app.use(loopback.errorHandler());
+  app.use(loopback.favicon(path.join(__dirname, 'waveicon16.png')));
 
   app.start = function () {
     // start the web server
     return app.listen(function () {
       app.emit('started');
-      console.log('Web server listening at: %s', app.get('url'));
+      var baseUrl = app.get('url').replace(/\/$/, '');
+      console.log('Web server listening at: %s', baseUrl);
+      if (app.get('loopback-component-explorer')) {
+        var explorerPath = app.get('loopback-component-explorer').mountPath;
+        console.log('Browse your REST API at %s%s', baseUrl, explorerPath);
+      }
     });
   };
 
-// start the server if `$ node server.js`
-  if (require.main === module) {
-    app.start();
-  }
-});
+  // Bootstrap the application, configure models, datasources and middleware.
+  // Sub-apps like REST API are mounted via boot scripts.
+  boot(app, __dirname, function (err) {
+    if (err) {
+      throw err;
+    }
+
+    var staticPath = path.resolve(__dirname, '../client/app/');
+
+    app.use(loopback.static(staticPath));
+    app.use(loopback.urlNotFound());
+    app.use(loopback.errorHandler());
+
+    // start the server if `$ node server.js`
+    if (require.main === module) {
+      app.start();
+    }
+  });
+}
+

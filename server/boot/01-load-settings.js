@@ -3,7 +3,7 @@
 // to enable these logs set `DEBUG=boot:01-load-settings` or `DEBUG=boot:*`
 var log = require('debug')('boot:01-load-settings');
 var async = require('async');
-var findOrCreateObj = require('../util/findOrCreateObj');
+var findOrCreateObj = require('../util/find-or-create-obj');
 
 module.exports = function (app, cb) {
   var Setting = app.models.Setting;
