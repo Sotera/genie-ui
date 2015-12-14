@@ -16,5 +16,6 @@ module.exports = function(model, query, objToCreate, cb) {
       });
   } catch (err) {
     log(err);
+    cb(err);
   }
 }

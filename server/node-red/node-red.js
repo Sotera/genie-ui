@@ -1,12 +1,59 @@
 'use strict';
 
 // to enable these logs set `DEBUG=boot:node-red` or `DEBUG=boot:*`
-const webSocketServiceName = 'node-red-to-loopback-service-channel';
 var log = require('debug')('boot:node-red');
 var async = require('async');
 var getSettings = require('../util/getSettings');
+const webSocketServiceName = 'node-red-to-loopback-service-channel';
 
 module.exports = function (app, cb) {
+  app.RED = require('node-red');
+  //NodeRED-->BEGIN
+  //Monkey patch loopback/application.listen because we need the actual http.server object to initialize NodeRED
+  app.listen = function (cb) {
+    var self = this;
+
+    var server = this.server;
+
+    server.on('listening', function () {
+      self.set('port', this.address().port);
+
+      var listeningOnAll = false;
+      var host = self.get('host');
+      if (!host) {
+        listeningOnAll = true;
+        host = this.address().address;
+        self.set('host', host);
+      } else if (host === '0.0.0.0' || host === '::') {
+        listeningOnAll = true;
+      }
+
+      if (!self.get('url')) {
+        if (process.platform === 'win32' && listeningOnAll) {
+          // Windows browsers don't support `0.0.0.0` host in the URL
+          // We are replacing it with localhost to build a URL
+          // that can be copied and pasted into the browser.
+          host = 'localhost';
+        }
+        var url = 'http://' + host + ':' + self.get('port') + '/';
+        self.set('url', url);
+      }
+    });
+
+    var useAppConfig =
+      arguments.length === 0 ||
+      (arguments.length == 1 && typeof arguments[0] == 'function');
+
+    if (useAppConfig) {
+      server.listen(this.get('port'), this.get('host'), cb);
+    } else {
+      server.listen.apply(server, arguments);
+    }
+    app.RED.start();
+    return server;
+  };
+  //NodeRED-->END
+
   getSettings([
     'nodeRedFlowFile',
     'nodeRedNodesFolder',
