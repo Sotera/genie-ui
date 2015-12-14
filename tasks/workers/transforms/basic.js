@@ -10,7 +10,7 @@ let loopback = require('loopback'),
   log = require('debug')('transforms:' + filename),
   maxZoom = 18, minZoom=0,
   clusterType = filename,
-  util = require('../../../lib/util/collections');
+  util = require('../../../server/util/collections');
 
 module.exports = {
   run: run
