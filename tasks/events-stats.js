@@ -4,13 +4,12 @@
 let app = require('../server/server'),
   request = require('request'),
   StatsChip = app.models.StatsChip,
+  ClusteredEventSource = app.models.ClusteredEventSource,
   log = require('debug')('task:events-stats'),
-  ds = StatsChip.getDataSource();
-
-// TODO: we need to query ES, not clustered events
+  ds = ClusteredEventSource.getDataSource();
 
 ds.on('connected', function() {
-  let statsAggObj = {
+  const statsAggObj = {
     "size":0,
     "aggregations" : {
       "event_stats" : {
@@ -22,17 +21,22 @@ ds.on('connected', function() {
     }
   };
 
+  const settings = ds.settings,
+    host = settings.hosts[0],
+    url = [host.protocol, '://', host.host, ':', host.port, '/'].join('') +
+      [settings.index, settings.type, '_search'].join('/');
+
+console.log(url)
   request.post({
-    url: 'http://172.21.10.140:9200/jag_hc2_clusters/post/_search',
+    url: url,
     json: true,
     body: statsAggObj
-  }, function (error, response, body) {
-    if (response) {
+  }, (err, res, body) => {
+    if (res) {
       log(body);
       createStats(body);
-    }
-    else if (error) {
-      log(error);
+    } else if (err) {
+      throw err;
     }
   });
 });
@@ -40,11 +44,9 @@ ds.on('connected', function() {
 function createStats(results) {
   // TODO: use mapping once we have more ES data
   // let rows = results.map((result,i) => ({"row": [ i, result.total ]}));
-  let rows = [];
-  results.aggregations.event_stats.buckets.forEach(function(aggregation){
-      rows.push([aggregation.key_as_string,aggregation.doc_count]);
-    }
-  );
+  let rows = results.aggregations.event_stats.buckets.map(function(aggregation){
+    return [aggregation.key_as_string,aggregation.doc_count];
+  });
 
   StatsChip.destroyAll();
 

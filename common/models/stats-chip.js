@@ -1,3 +1,3 @@
-module.exports = function(statsChip) {
+module.exports = function(StatsChip) {
 
 };
