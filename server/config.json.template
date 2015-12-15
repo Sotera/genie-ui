@@ -6,6 +6,7 @@
   "cookieSecret": "secret",
   "legacyExplorer": false,
   "numberOfWorkers": 1,
+  "clusterOn": false,
   "REDsettings": {
     "httpAdminRoot": "/",
     "httpNodeRoot": "/api",
