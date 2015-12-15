@@ -1,3 +1,4 @@
+'use strict';
 
 module.exports = {
   run: run
@@ -5,5 +6,5 @@ module.exports = {
 
 function run (options) {
   var transform = require('./transforms/' + options.transform);
-  transform.run(options.eventSources);
+  transform.run();
 }

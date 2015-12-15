@@ -59,5 +59,9 @@
   "StatsChip": {
     "dataSource": "db",
     "public": true
+  },
+  "Chart": {
+    "dataSource": "db",
+    "public": true
   }
 }

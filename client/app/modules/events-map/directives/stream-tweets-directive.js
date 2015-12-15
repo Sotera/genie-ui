@@ -4,7 +4,7 @@ angular.module('genie.eventsMap')
 .directive('streamTweets', ['CoreService', 'mapControlService', 'tweetService',
   '$window', function (CoreService, mapControlService, tweetService, $window) {
 
-  function link(scope, elem, attrs, mapCtrl) {
+  function link(scope, elem, attrs) {
     init(scope.map);
     $window.addEventListener('unload', tweetService.stop);
   }
@@ -50,7 +50,7 @@ angular.module('genie.eventsMap')
   }
 
   return {
-    restrict: 'E',
+    restrict: 'AE',
     link: link
   };
 }]);

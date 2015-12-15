@@ -14,52 +14,15 @@
 var log = require('debug')('server:server');
 var cluster = require('cluster');
 var boot = require('loopback-boot');
-//EXPERIMENTAL -- Hear we are going to try to bring up a master process that only hosts NodeRED &
+var master = require('./master-red');
+//Hijack loopback boot to read config file. Honors NODE_ENV.
+var config = boot.ConfigLoader.loadAppConfig(__dirname, process.env.NODE_ENV);
+
+//EXPERIMENTAL -- Here we are going to try to bring up a master process that only hosts NodeRED &
 //some process control routes. The 'master' app will not be a loopback app. It will just be a vanilla
 //Express4 app. Later we may add loopback for access to in memory database to manage the cluster.
-if (cluster.isMaster) {
-  var http = require('http');
-  var express = require("express");
-  var RED = require("node-red");
-  var app = express();
-
-  //Hijack loopback boot to read config file. Honors NODE_ENV.
-  var config = boot.ConfigLoader.loadAppConfig(__dirname, app.get('env'));
-  cluster.on('online', function (worker) {
-    log('Worker ' + worker.process.pid + ' is online');
-  });
-
-  cluster.on('exit', function (worker, code, signal) {
-    log('Worker ' + worker.process.pid + ' died with code: ' + code + ', and signal: ' + signal);
-    log('Starting a new worker');
-    cluster.fork();
-  });
-
-  var server = http.createServer(app);
-
-  //Initialise the runtime with a server and settings
-  RED.init(server, config.REDsettings);
-  //Serve the editor UI from /red
-  app.use(config.REDsettings.httpAdminRoot, RED.httpAdmin);
-  //Serve the http nodes UI from /api
-  app.use(config.REDsettings.httpNodeRoot, RED.httpNode);
-  server.listen(config.REDsettings.port);
-  //Start the runtime
-  RED.start();
-
-  //Fire up the workers!
-  var numWorkers = config.numberOfWorkers;
-  numWorkers = (numWorkers === -1)
-    ? require('os').cpus().length
-    : (numWorkers < 1)
-    ? 1
-    : (numWorkers > 16)
-    ? 16
-    : numWorkers;
-  console.log('Master cluster setting up ' + numWorkers + ' workers...');
-  for (var i = 0; i < numWorkers; i++) {
-    cluster.fork();
-  }
+if (config.clusterOn && cluster.isMaster) {
+  master(config, cluster);
 } else {
   //EXPERIMENTAL -- If we aren't the master process of the cluster then start up like regular loopback app
   var loopback = require('loopback');
