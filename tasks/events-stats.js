@@ -26,7 +26,6 @@ ds.on('connected', function() {
     url = [host.protocol, '://', host.host, ':', host.port, '/'].join('') +
       [settings.index, settings.type, '_search'].join('/');
 
-console.log(url)
   request.post({
     url: url,
     json: true,
