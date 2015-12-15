@@ -25,14 +25,6 @@ const randomishPointsOnEarth = [
   , {lat: 39.75, lng: -104.9}//Denver
   , {lat: 25.75, lng: -80.2}//Miami
 ];
-var randomishNumPosts = [];
-for (var i = 0; i < random.integer(5, 50); ++i) {
-  randomishNumPosts.push(random.integer(5, 50))
-}
-var randomishNumUsers = [];
-for (var i = 0; i < random.integer(5, 50); ++i) {
-  randomishNumUsers.push(random.integer(5, 50))
-}
 module.exports = class {
   constructor(app) {
     this.ClusteredEventSource = app.models.ClusteredEventSource;
@@ -42,9 +34,26 @@ module.exports = class {
     this.ClusteredEventSource.deleteAll(cb);
   }
 
-  getAllForClustererInput(cb) {
-    apiCheck.warn([apiCheck.func], arguments);
-    this.ClusteredEventSource.find(function (err, ces) {
+  randomDate(start, end) {
+    return new Date(start.getTime() + random.real(0, 1, false) * (end.getTime() - start.getTime()));
+  }
+
+  getAllForClustererInput(options, cb) {
+    if ((arguments.length === 1 && typeof arguments[0] !== 'function') ||
+      (arguments.length >= 2 && typeof arguments[1] !== 'function')) {
+      throw new Error('Syntax: addClusteredEventSources([options], callback)');
+    }
+    if (arguments.length === 1) {
+      cb = arguments[0];
+    }
+    var startDate = new Date(2014, 10, 1);
+    var endDate = new Date(2014, 10, 31)
+
+    this.ClusteredEventSource.find({
+      where: {
+        post_date: {between: [startDate, endDate]}
+      }
+    }, function (err, ces) {
       if (err) {
         cb(err, null);
         return;
@@ -60,37 +69,43 @@ module.exports = class {
   addClusteredEventSources(options, cb) {
     var ClusteredEventSource = this.ClusteredEventSource;
     options = options || {};
-/*    apiCheck.warn([apiCheck.shape({
-      clusterCountMin: apiCheck.number
-      , clusterCountMax: apiCheck.number
-      , tags: apiCheck.arrayOf(apiCheck.number)
-      , numUsers: apiCheck.arrayOf(apiCheck.number)
-      , numPosts: apiCheck.arrayOf(apiCheck.number)
-      , locCenters: apiCheck.arrayOf(
-        apiCheck.shape(
-          {
-            lat: apiCheck.number,
-            lng: apiCheck.number
-          }))
-      , distFromCenterMin: apiCheck.number
-      , distFromCenterMax: apiCheck.number
-    }).optional, apiCheck.func], arguments);*/
+    /*    apiCheck.warn([apiCheck.shape({
+     clusterCountMin: apiCheck.number
+     , clusterCountMax: apiCheck.number
+     , tags: apiCheck.arrayOf(apiCheck.number)
+     , numUsers: apiCheck.arrayOf(apiCheck.number)
+     , numPosts: apiCheck.arrayOf(apiCheck.number)
+     , locCenters: apiCheck.arrayOf(
+     apiCheck.shape(
+     {
+     lat: apiCheck.number,
+     lng: apiCheck.number
+     }))
+     , distFromCenterMin: apiCheck.number
+     , distFromCenterMax: apiCheck.number
+     }).optional, apiCheck.func], arguments);*/
     if ((arguments.length === 0) ||
       (arguments.length === 1 && typeof arguments[0] !== 'function') ||
       (arguments.length >= 2 && typeof arguments[1] !== 'function')) {
       throw new Error('Syntax: addClusteredEventSources([options], callback)');
     }
     //Setup some defaults for options
+    var now = new Date();
+    var sixMonthsAgo = new Date(new Date(now).setMonth(now.getMonth() - 6));
     options.clusterCountMin = options.clusterCountMin || 30;
     options.clusterCountMax = options.clusterCountMax || 75;
     options.tags = options.tags || randomishTags;
-    options.numUsers = options.numUsers || randomishNumUsers;
-    options.numPosts = options.numPosts || randomishNumPosts;
+    options.maxNumUsers = options.maxNumUsers || 35;
+    options.minNumUsers = options.minNumUsers || 5;
+    options.maxNumPosts = options.maxNumPosts || 35;
+    options.minNumPosts = options.minNumPosts || 5;
     options.locCenters = options.locCenters || randomishPointsOnEarth;
     options.distFromCenterMin = options.distFromCenterMin || 0.05;
     options.distFromCenterMax = options.distFromCenterMax || 0.5;
-    options.postDate = options.postDate || new Date();
-    options.indexedDate = options.indexedDate || new Date();
+    options.maxPostDate = options.maxPostDate || now;
+    options.minPostDate = options.minPostDate || sixMonthsAgo;
+    options.maxIndexDate = options.maxIndexDate || now;
+    options.minIndexDate = options.minIndexDate || sixMonthsAgo;
 
     var clusterCount = random.integer(options.clusterCountMin, options.clusterCountMax);
     var newClusteredEventSources = [];
@@ -102,11 +117,11 @@ module.exports = class {
       var lng = options.locCenters[idx]['lng'] + (r * Math.sin(theta));
       newClusteredEventSources.push(
         {
-          num_users: options.numUsers[random.integer(0, options.numUsers.length - 1)],
-          indexed_date: options.indexedDate,
-          post_date: options.postDate,
+          num_users: random.integer(options.minNumUsers, options.maxNumUsers),
+          num_posts: random.integer(options.minNumPosts, options.maxNumPosts),
+          indexed_date: this.randomDate(options.minIndexDate, options.maxIndexDate),
+          post_date: this.randomDate(options.minPostDate, options.maxPostDate),
           tag: options.tags[random.integer(0, options.tags.length - 1)],
-          num_posts: options.numPosts[random.integer(0, options.numPosts.length - 1)],
           location: {
             type: 'point',
             coordinates: [lng, lat]

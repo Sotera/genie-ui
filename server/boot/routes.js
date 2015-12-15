@@ -42,6 +42,10 @@ module.exports = function (app) {
     msg += ' [' + clustersPerZoomLevel[zoomLevel - 1] + '] clusters.';
     res.status(200).end(msg);
     clusteredEventSourceHelper.getAllForClustererInput(function (err, vectorToCluster) {
+      if (err) {
+        log(err);
+        return;
+      }
       clustererKMeans.geoCluster(vectorToCluster, clustersPerZoomLevel[zoomLevel], function (err, clusters) {
         if (err) {
           log(err);
@@ -57,33 +61,34 @@ module.exports = function (app) {
   });
 
   app.post('/addSomeClusteredEvents', function (req, res) {
-    var date = randomDate(new Date(2015, 0, 1), new Date())
-    var options = req.body || {
-        clusterCountMin: 10,
-        clusterCountMax: 30,
-        tags: ['north', 'south', 'east', 'west'],
-        numUsers: random.integer(3, 8),
-        numPosts: random.integer(3, 8),
-        distFromCenterMin: 0.1,
-        distFromCenterMax: 1.0,
-        postDate: date,
-        indexDate: date,
-        locCenters: [
-          {lat: 20.25, lng: -97.5}
-          , {lat: 30.25, lng: -100.5}
-          , {lat: 40.25, lng: -103.5}
-          , {lat: 50.25, lng: -105.5}
-          , {lat: 60.25, lng: -100.5}
-          , {lat: 70.25, lng: -97.5}
-        ]
-      };
+    var now = new Date(2015, 3, 1);
+    var sixMonthsAgo = new Date(new Date(now).setMonth(now.getMonth() - 6));
+    var options = {
+      clusterCountMin: req.body.clusterCountMin || 10,
+      clusterCountMax: req.body.clusterCountMax || 30,
+      tags: req.body.tags || ['north', 'south', 'east', 'west', 'green', 'blue', 'purple'],
+      maxNumUsers: req.body.maxNumUsers = req.body.maxNumUsers || 35,
+      minNumUsers: req.body.minNumUsers = req.body.minNumUsers || 5,
+      maxNumPosts: req.body.maxNumPosts = req.body.maxNumPosts || 35,
+      minNumPosts: req.body.minNumPosts = req.body.minNumPosts || 5,
+      distFromCenterMin: req.body.distFromCenterMin || 0.1,
+      distFromCenterMax: req.body.distFromCenterMax || 1.0,
+      minPostDate: req.body.minPostDate || sixMonthsAgo,
+      maxPostDate: req.body.maxPostDate || now,
+      minIndexDate: req.body.minIndexDate || sixMonthsAgo,
+      maxIndexDate: req.body.maxIndexDate || now,
+      locCenters: req.body.locCenters || [
+        {lat: 20.25, lng: -97.5}
+        , {lat: 30.25, lng: -100.5}
+        , {lat: 40.25, lng: -103.5}
+        , {lat: 50.25, lng: -105.5}
+        , {lat: 60.25, lng: -100.5}
+        , {lat: 70.25, lng: -97.5}
+      ]
+    };
     clusteredEventSourceHelper.addClusteredEventSources(options, function (err, addedEventSources) {
       res.status(200).end(addedEventSources.length + ' clustered events added');
     });
   });
-
-  function randomDate(start, end) {
-    return new Date(start.getTime() + random.real(0, 1, false) * (end.getTime() - start.getTime()));
-  }
 }
 
