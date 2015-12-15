@@ -28,7 +28,8 @@
     "ng-websocket": "~0.2.1",
     "jquery": "~2.1.4",
     "es5-shim": "~4.3.1",
-    "json3": "~3.3.2"
+    "json3": "~3.3.2",
+    "moment": "~2.10.6"
   },
   "devDependencies": {},
   "overrides": {

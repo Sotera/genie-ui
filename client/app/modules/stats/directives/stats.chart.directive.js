@@ -1,76 +1,94 @@
 'use strict';
 
 angular.module('com.module.stats')
-  .directive('statsChart', ['StatsChip', '$window',
-    function (StatsChip, $window) {
 
-      function main(scope, element, attrs) {
-        StatsChip.findOne().$promise
-          .then(function (instance) {
+.directive('statsChart', ['StatsChip', '$window',
+  function (StatsChip, $window) {
 
-            var data = new google.visualization.DataTable();
-            _.map(instance.columns,
-              function (column) {
-                data.addColumn(column.type, column.name);
-              });
+    function main(scope, element, attrs) {
+      StatsChip.findOne().$promise
+        .then(function (instance) {
 
-            _.map(instance.rows,
-              function (row) {
-                var dateRow = [new Date(row[0]),row[1]];
-                data.addRow(dateRow);
-              });
+          var baseColor = '#181818';
 
-            var options = {
-              chart: {
-                'backgroundColor': {
-                  'fill': '#181818'
-                }
-              },
-              'chartArea': {
-                'backgroundColor': '#181818'
-              },
-              hAxis: {
-                gridlines: {
-                  count: 25,
-                  units: {
-                    days: {format: ['MMM dd']},
-                    hours: {format: ['HH:mm', 'ha']}
-                  }
-                }
-              },
-              axes: {
-                x: {
-                  0: {side: 'bottom'}
+          var data = new google.visualization.DataTable();
+          _.map(instance.columns,
+            function (column) {
+              data.addColumn(column.type, column.name);
+            });
+
+          _.map(instance.rows,
+            function (row) {
+              var dateRow = [new Date(row[0]),row[1]];
+              data.addRow(dateRow);
+            });
+
+          var options = {
+            legend: {
+              position: 'none'
+            },
+            chart: {
+              backgroundColor: {
+                fill: baseColor
+              }
+            },
+            chartArea: {
+              backgroundColor: baseColor
+            },
+            hAxis: {
+              gridlines: {
+                color: baseColor,
+                count: 25,
+                units: {
+                  days: {format: ['MMM dd']},
+                  hours: {format: ['HH:mm', 'ha']}
                 }
               }
-            };
+            },
+            vAxis: {
+              gridlines: {
+                color: baseColor
+              }
+            },
+            axes: {
+              x: {
+                0: {side: 'bottom'}
+              }
+            }
+          };
 
-            var chart = new google.charts.Line(document.getElementById('stats_chart_div'));
-            angular.element($window).bind('resize', _.throttle(doResize(chart, element,data,options), 33.33));
-            $(document).ready(doResize(chart, element, data, options));
+          var chart = new google.charts.Line(document.getElementById('stats_chart_div'));
 
+          function drawChart() {
+            chart.draw(data, google.charts.Line.convertOptions(options));
           }
-        ).catch(function (err) {
-          console.log(err);
-        })
 
-      }
+          angular.element($window)
+            .bind('resize', _.throttle(doResize(element, drawChart), 33.33));
 
-      function doResize (chart, element, data, options) {
-        return function() {
-          var parent = $("#" + element.parent()[0].id);
-          var height = parent.height();
-          var width = parent.width();
-          element.css('height', height + 'px');
-          element.css('width', width + 'px');
-          chart.draw(data, google.charts.Line.convertOptions(options));
+          $(document).ready(doResize(element, drawChart));
         }
-      }
+      ).catch(function (err) {
+        console.log(err);
+      })
 
-      return {
-        template: '<div id="stats_chart_div" style="width: 100%; height: 100%;">',
-        restrict: 'E',
-        link: main
+    }
+
+    function doResize (element, cb) {
+      var parent = $("#" + element.parent()[0].id);
+      return function() {
+        var height = parent.height();
+        var width = parent.width();
+        element.css('height', height + 'px');
+        element.css('width', width + 'px');
+        cb();
       };
+    }
 
-    }]);
+    return {
+      template: '<div id="stats_chart_div" style="width: 100%; height: 100%;">',
+      restrict: 'E',
+      link: main
+    };
+
+  }]);
