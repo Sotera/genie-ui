@@ -1,6 +1,7 @@
 # GENIE
 
 ```
+cp server/config.json.template server/config.json
 npm install -g strongloop
 npm install
 lb-ng server/server.js client/app/js/lb-services.js # if models change
@@ -10,6 +11,7 @@ lb-ng server/server.js client/app/js/lb-services.js # if models change
 
 ```
 cp .env.template .env
+cp server/config.json.template server/config.json
 npm run realtime
 ```
 

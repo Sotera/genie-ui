@@ -1,6 +1,6 @@
 'use strict';
 //var log = require('debug')('compute_modules:clustered-event-source-helper');
-var createObj = require('../util/createObj');
+var createObj = require('../util/create-obj');
 var async = require('async');
 var Random = require('random-js');
 var random = new Random(Random.engines.mt19937().autoSeed());
