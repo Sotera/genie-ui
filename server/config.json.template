@@ -3,9 +3,9 @@
   "host": "0.0.0.0",
   "port": 3000,
   "url": "http://localhost:3000/",
-  "cookieSecret": "F1FEE670-3C72-11E4-916C-0800200C9A66",
+  "cookieSecret": "secret",
   "legacyExplorer": false,
-  "numberOfWorkers": 8,
+  "numberOfWorkers": 1,
   "REDsettings": {
     "httpAdminRoot": "/",
     "httpNodeRoot": "/api",
@@ -14,6 +14,7 @@
     "flowFile": "genie-ui-flows.json",
     "port": 8888,
     "functionGlobalContext": {
+      "importDir": "./import",
       "port": 3000
     }
   }

@@ -7,5 +7,6 @@ dist/
 .idea/
 .env
 # Will re-ignore this once flows are stored in database
-# server/node-red
+server/node-red/*.backup
 server/node-red/.config.json
+server/config.json
