@@ -12,6 +12,13 @@
 
 // to enable these logs set `DEBUG=server:server` or `DEBUG=server:*`
 var log = require('debug')('server:server');
+require('dotenv').load();
+/*var twitterClientOptions = {
+  consumer_key: process.env.CONSUMER_KEY,
+  consumer_secret: process.env.CONSUMER_SECRET,
+  access_token_key: process.env.ACCESS_TOKEN,
+  access_token_secret: process.env.ACCESS_TOKEN_SECRET
+};*/
 var cluster = require('cluster');
 var boot = require('loopback-boot');
 var master = require('./master-red');

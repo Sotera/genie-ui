@@ -1,5 +1,5 @@
 'use strict';
-//var log = require('debug')('compute_modules:zoom-level-helper');
+var log = require('debug')('compute_modules:zoom-level-helper');
 var createObj = require('../util/create-obj');
 var updateObj = require('../util/update-obj');
 var async = require('async');
@@ -58,11 +58,15 @@ module.exports = class {
           log(msg);
         }
         zoomLevels[0].updateAttributes(newClusteredEvent, function (err) {
-          log(err);
+          if(err){
+            log(err);
+          }
         });
       } else {
         createObj(ZoomLevel, newClusteredEvent, function (err) {
-          log(err);
+          if(err){
+            log(err);
+          }
         });
       }
     });
