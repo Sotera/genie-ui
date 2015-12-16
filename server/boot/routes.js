@@ -37,21 +37,38 @@ module.exports = function (app) {
   }
 
   app.post('/clusterEvents', function (req, res) {
-    var zoomLevel = req.body.zoomLevel;
+    var zoomLevel = req.body.zoomLevel || 8;
+    var endDate = req.body.endDate || new Date();
+    var intervalDurationMinutes = req.body.intervalDurationMinutes || (24 * 60);
+    var intervalsAgo = req.body.intervalsAgo || 1;
     var msg = 'Clustering @ zoomLevel: ' + zoomLevel;
+    msg += ', endDate: ' + endDate;
+    msg += ', intervalDurationMinutes: ' + intervalDurationMinutes;
+    msg += ', intervalsAgo: ' + intervalsAgo;
     msg += ' [' + clustersPerZoomLevel[zoomLevel - 1] + '] clusters.';
     res.status(200).end(msg);
-    clusteredEventSourceHelper.getAllForClustererInput(function (err, vectorToCluster) {
+    clusteredEventSourceHelper.getEventsForClustererInput({
+      endDate,
+      intervalDurationMinutes,
+      intervalsAgo
+    }, function (err, clustererInput) {
       if (err) {
         log(err);
         return;
       }
-      clustererKMeans.geoCluster(vectorToCluster, clustersPerZoomLevel[zoomLevel], function (err, clusters) {
+      var vectorToCluster = clustererInput.vectorToCluster;
+      var minutesAgo = clustererInput.minutesAgo;
+      var clusterCount = vectorToCluster.length < clustersPerZoomLevel[zoomLevel]
+        ? vectorToCluster.length
+        : clustersPerZoomLevel[zoomLevel];
+      clustererKMeans.geoCluster(vectorToCluster, clusterCount, function (err, clusters) {
         if (err) {
           log(err);
           return;
         }
-        zoomLevelHelper.updateZoomLevels(clusters, zoomLevel, function (err) {
+        zoomLevelHelper.updateZoomLevels({
+          clusterType: 'k-means', clusters, zoomLevel, minutesAgo
+        }, function (err) {
           if (err) {
             log(err);
           }

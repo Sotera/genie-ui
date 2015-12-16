@@ -1,5 +1,6 @@
 'use strict';
 //var log = require('debug')('compute_modules:clustered-event-source-helper');
+var moment = require('moment');
 var createObj = require('../util/create-obj');
 var async = require('async');
 var Random = require('random-js');
@@ -38,20 +39,35 @@ module.exports = class {
     return new Date(start.getTime() + random.real(0, 1, false) * (end.getTime() - start.getTime()));
   }
 
-  getAllForClustererInput(options, cb) {
-    if ((arguments.length === 1 && typeof arguments[0] !== 'function') ||
-      (arguments.length >= 2 && typeof arguments[1] !== 'function')) {
-      throw new Error('Syntax: addClusteredEventSources([options], callback)');
+  getEventsForClustererInput(options, cb) {
+    var endDate = new Date();//Today
+    var intervalDurationMinutes = (24 * 60);
+    var intervalsAgo = 1;
+    if (arguments.length === 0) {
+      throw new Error('Syntax: getEventsForClustererInput([options], callback)');
     }
-    if (arguments.length === 1) {
+    else if (arguments.length === 1) {
+      if (typeof arguments[0] !== 'function') {
+        throw new Error('Syntax: getEventsForClustererInput([options], callback)');
+      }
       cb = arguments[0];
+    } else if (arguments.length >= 2) {
+      if (typeof arguments[1] !== 'function') {
+        throw new Error('Syntax: getEventsForClustererInput([options], callback)');
+      }
+      endDate = options.endDate || endDate;
+      intervalDurationMinutes = options.intervalDurationMinutes || intervalDurationMinutes;
+      intervalsAgo = options.intervalsAgo || intervalsAgo;
     }
-    var startDate = new Date(2014, 10, 1);
-    var endDate = new Date(2014, 10, 31)
+
+    var minutesAgo = intervalsAgo * intervalDurationMinutes;
+    var filterStartDate = moment(endDate);
+    filterStartDate.subtract(minutesAgo, 'minutes');
+    var filterEndDate = moment(filterStartDate).add(intervalDurationMinutes, 'minutes');
 
     this.ClusteredEventSource.find({
       where: {
-        post_date: {between: [startDate, endDate]}
+        post_date: {between: [filterStartDate, filterEndDate]}
       }
     }, function (err, ces) {
       if (err) {
@@ -62,7 +78,7 @@ module.exports = class {
       for (var i = 0; i < ces.length; ++i) {
         vectorToCluster[i] = {lat: ces[i].location.coordinates[1], lng: ces[i].location.coordinates[0]};
       }
-      cb(err, vectorToCluster);
+      cb(err, {minutesAgo, vectorToCluster});
     });
   }
 
@@ -102,10 +118,10 @@ module.exports = class {
     options.locCenters = options.locCenters || randomishPointsOnEarth;
     options.distFromCenterMin = options.distFromCenterMin || 0.05;
     options.distFromCenterMax = options.distFromCenterMax || 0.5;
-    options.maxPostDate = options.maxPostDate || now;
-    options.minPostDate = options.minPostDate || sixMonthsAgo;
-    options.maxIndexDate = options.maxIndexDate || now;
-    options.minIndexDate = options.minIndexDate || sixMonthsAgo;
+    options.maxPostDate = this.convertToDate(options.maxPostDate) || now;
+    options.minPostDate = this.convertToDate(options.minPostDate) || sixMonthsAgo;
+    options.maxIndexDate = this.convertToDate(options.maxIndexDate) || now;
+    options.minIndexDate = this.convertToDate(options.minIndexDate) || sixMonthsAgo;
 
     var clusterCount = random.integer(options.clusterCountMin, options.clusterCountMax);
     var newClusteredEventSources = [];
@@ -136,6 +152,17 @@ module.exports = class {
         newClusteredEventSource));
     });
     async.parallel(functionArray, cb);
+  }
+
+  convertToDate(obj) {
+    if (obj instanceof Date) {
+      return obj;
+    }
+    try {
+      return new Date(obj);
+    } catch (err) {
+      return null;
+    }
   }
 }
 

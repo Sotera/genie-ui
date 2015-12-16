@@ -16,40 +16,56 @@ module.exports = class {
     this.ZoomLevel = app.models.ZoomLevel;
   }
 
-  updateZoomLevels(clusters, zoomLevel, cb) {
+  updateZoomLevels(zoomLevelInfo, cb) {
     var ZoomLevel = this.ZoomLevel;
     //apiCheck.warn([apiCheck.arrayOf(apiCheck.object), apiCheck.number, apiCheck.func], arguments);
-    var coordinates = [];
+    var clusters = zoomLevelInfo.clusters;
+    var zoomLevel = zoomLevelInfo.zoomLevel;
+    var minutesAgo = zoomLevelInfo.minutesAgo;
+    var clusterType = zoomLevelInfo.clusterType;
+    var events = [];
     var latSum = 0;
     var lngSum = 0;
     var len = clusters.length;
     for (var i = 0; i < len; ++i) {
-      coordinates.push({
-        lat: clusters[i].centroid[0],
-        lng: clusters[i].centroid[1]
-      });
-      latSum += clusters[i].centroid[0];
-      lngSum += clusters[i].centroid[1];
+      var lat = clusters[i].centroid[0];
+      var lng = clusters[i].centroid[1];
+      events.push({lat, lng});
+      latSum += lat;
+      lngSum += lng;
     }
-    var centroid = {lat: latSum / len, lng: lngSum / len};
+    var centerPoint = {lat: latSum / len, lng: lngSum / len};
     var newClusteredEvent =
     {
       zoomLevel,
-      startTime: new Date(),
-      endTime: new Date(),
-      clusterType: 'Random',
-      events: coordinates,
-      centerPoint: centroid
+      minutesAgo,
+      events,
+      centerPoint,
+      clusterType
     };
-    updateObj(ZoomLevel,
-      {zoomLevel: newClusteredEvent.zoomLevel},
-      newClusteredEvent,
-      function (err) {
-        if (err) {
-          log('Error inserting Clustered Events: ' + err);
+    ZoomLevel.find({
+      where: {
+        and: [
+          {zoomLevel: newClusteredEvent.zoomLevel},
+          {minutesAgo: newClusteredEvent.minutesAgo}
+        ]
+      }
+    }, function (err, zoomLevels) {
+      if (zoomLevels.length) {
+        if (zoomLevels.length > 1) {
+          var msg = 'Too many ZoomLevels for zoomLevel: ' + newClusteredEvent.zoomLevel;
+          msg += ' and minutesAgo: ' + newClusteredEvent.minutesAgo;
+          log(msg);
         }
-        cb(err);
-      });
+        zoomLevels[0].updateAttributes(newClusteredEvent, function (err) {
+          log(err);
+        });
+      } else {
+        createObj(ZoomLevel, newClusteredEvent, function (err) {
+          log(err);
+        });
+      }
+    });
   }
 
   initialize(cb) {
@@ -63,8 +79,7 @@ module.exports = class {
       for (var i = 1; i <= 18; ++i) {
         clusters.push({
           zoomLevel: i,
-          startTime: new Date(),
-          endTime: new Date(),
+          minutesAgo: 0,
           clusterType: 'Initialized',
           events: [{lat: 0, lng: 0}],
           centerPoint: {lat: 0, lng: 0}
