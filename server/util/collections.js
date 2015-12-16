@@ -1,3 +1,4 @@
+// def: misc. collection-related helpers
 'use strict';
 
 module.exports = {
