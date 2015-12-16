@@ -1,7 +1,10 @@
 {
   "name": "Setting",
-  "plural": "settings",
   "base": "PersistedModel",
+  "strict": "throw",
+  "options": {
+    "validateUpsert": true
+  },
   "properties": {
     "key": {
       "type": "string",
@@ -9,6 +12,12 @@
     },
     "value": {
       "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "options": {
+      "type": "array"
     }
   },
   "validations": [],
