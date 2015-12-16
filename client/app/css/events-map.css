@@ -9,6 +9,7 @@ div.events-map-cloud {
 div.time-series {
   width: 100%;
   height: 160px;
+  padding-left: 0px;
 }
 
 /* override google chart styles */

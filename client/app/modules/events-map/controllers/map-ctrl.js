@@ -26,9 +26,10 @@ angular.module('genie.eventsMap')
       }
       $scope.zoomLevelObj = zoomLevelObj;
       //jqcloud tag collection
-      $scope.words = _.map(zoomLevelObj.events, function(event) {
+      // TODO: remove .uniq() once the server has TagCloud api
+      $scope.words = _.uniq(_.map(zoomLevelObj.events, function(event) {
         return {text: event.tag, weight: event.weight};
-      });
+      }), 'text');
     })
   }
 }]);
