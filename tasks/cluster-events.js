@@ -3,7 +3,7 @@
 
 var app = require('../server/server'),
   Task = app.models.Task,
-  log = require('debug')('task:clustered-events'),
+  log = require('debug')('task:cluster-events'),
   taskName = 'clustered events',
   worker = require('./workers/clusterer');
 

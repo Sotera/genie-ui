@@ -64,22 +64,36 @@ module.exports = function (app, cb) {
     type: 'string',
     key: 'nodeRedAdminRoot',
     value: '/red'
-  },
-    {
-      type: 'boolean',
-      key: 'loadUpSomeClusteredEventsBaby',
-      value: false
-    }
+  }, {
+    type: 'boolean',
+    key: 'loadUpSomeClusteredEventsBaby',
+    value: false
+  }, {
+    type: 'string',
+    key: 'zoomLevels:startDate',
+    value: '2014-08-17'
+  }, {
+    type: 'string',
+    key: 'zoomLevels:endDate',
+    value: '2014-08-20'
+  }, {
+    type: 'int',
+    key: 'map:minZoom',
+    value: 0
+  }, {
+    type: 'int',
+    key: 'map:maxZoom',
+    value: 18
+  }
   ];
 
-  var functionArray = [];
-  newSettings.forEach(function (newSetting) {
-    functionArray.push(async.apply(findOrCreateObj,
+  var createSettings = newSettings.map(newSetting => {
+    return async.apply(findOrCreateObj,
       Setting,
       {where: {key: newSetting.key}},
-      newSetting));
+      newSetting);
   });
-  async.parallel(functionArray, function (err) {
+  async.parallel(createSettings, (err, settings) => {
     if (err) {
       log(err);
     }
