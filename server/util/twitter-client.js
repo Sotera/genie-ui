@@ -57,31 +57,40 @@ module.exports = class {
         stream.on('data', function (tweet) {
           try {
             //Hashtags check is quicker so do it first
-            /*            if (options.onlyWithHashtags && !tweet.entities.hashtags.length) {
-             log('No Hashtags');
-             return;
-             }*/
+            if (options.onlyWithHashtags && !tweet.entities.hashtags.length) {
+              log('No Hashtags');
+              return;
+            }
             if (options.onlyWithCoordinates) {
-              if (!tweet.entities.coordinates) {
-                //Let's check the 'place' property
-                if (!tweet.place || !tweet.place.bounding_box || !tweet.place.bounding_box.coordinates) {
-                  return;
+              if (tweet.geo) {
+                if (tweet.geo.type === 'Point') {
+                  if (tweet.geo.coordinates && tweet.geo.coordinates.length == 2) {
+                    tweet.genieLoc = {lng: tweet.geo.coordinates[1], lat: tweet.geo.coordinates[0]};
+                  }
                 }
+              }
+              if (!tweet.genieLoc && tweet.coordinates) {
+                tweet.genieLoc = {lng: tweet.coordinates[1], lat: tweet.coordinates[0]};
+              }
+              //Let's check the 'place' property
+              if (!tweet.genieLoc && tweet.place && tweet.place.bounding_box && tweet.place.bounding_box.coordinates) {
                 var coords = tweet.place.bounding_box.coordinates;
                 if (coords instanceof Array) {
                   if (coords.length == 1 && coords[0] instanceof Array) {
-                    var dist = diagonalDistanceOfBoundingBoxInMeters(coords[0]);
-                    if(dist < 999){
-                      log('We have place coordinates! Dist: ' + dist + ' meters.');
+                    var distanceInfo = diagonalDistanceOfBoundingBoxInMeters(coords[0]);
+                    if (distanceInfo.distanceMeters < options.maxPlaceSizeMeters) {
+                      tweet.genieLoc = {lng: distanceInfo.center.lng, lat: distanceInfo.center.lat};
                     }
                   }
                 }
               }
-              else {
-                log('We have tweet coordinates!');
+              if (!tweet.genieLoc) {
+                return;
               }
+              log('We have coordinates! CenterPoint: [' + tweet.genieLoc.lng + ',' + tweet.genieLoc.lat + ']');
             }
-            //log(tweet);
+            //Save-o the Tweet-o!
+
           } catch (err) {
             log(err);
           }
@@ -112,9 +121,9 @@ function diagonalDistanceOfBoundingBoxInMeters(coords) {
     minLat = coord[1] < minLat ? coord[1] : minLat;
     maxLat = coord[1] > maxLat ? coord[1] : maxLat;
   });
-  var retVal = geoDistance.getDistance(
+  var distanceMeters = geoDistance.getDistance(
     {lat: minLat, lng: minLng},
     {lat: maxLat, lng: maxLng}
   );
-  return retVal;
+  return {distanceMeters, center: {lng: (maxLng + minLng) / 2, lat: (maxLat + minLat) / 2}};
 }

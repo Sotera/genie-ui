@@ -7,10 +7,15 @@ module.exports = function (app, cb) {
     var options = {
       onlyWithHashtags: true,
       onlyWithCoordinates: true,
-      boundingBoxLatSouth: 37.58,
+/*      boundingBoxLatSouth: 37.58,
       boundingBoxLatNorth: 42.92,
       boundingBoxLngWest: -91.71,
-      boundingBoxLngEast: -80.54
+      boundingBoxLngEast: -80.54,*/
+      boundingBoxLatSouth: 20,
+      boundingBoxLatNorth: 50,
+      boundingBoxLngWest: -130,
+      boundingBoxLngEast: -80,
+      maxPlaceSizeMeters: 5000
     };
     try {
       tc.captureTweetsByLocation(options, function (err, twitterClient) {
