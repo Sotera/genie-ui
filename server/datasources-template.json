@@ -7,20 +7,20 @@
     "connector": "mongodb"
   },
   "es": {
-    "name": "elasticsearch",
+    "name": "es",
     "connector": "es",
     "hosts": [
       {
         "protocol": "http",
-        "host": "",
-        "port": 9200
+        "host": ES_HOST_ADDR,
+        "port": ES_HOST_PORT
       }
     ],
-    "apiVersion": "1.1",
+    "apiVersion": "2.0",
     "requestTimeout": 5000,
     "log": "trace",
     "defaultSize": 50,
-    "index": "",
-    "type": ""
+    "index": "genie",
+    "type": "post"
   }
 }

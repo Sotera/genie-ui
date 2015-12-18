@@ -1,13 +1,8 @@
 'use strict';
 
-var mongoAddr = '"' + process.env.MONGO_PORT_27017_TCP_ADDR + '"';
-var mongoPort = process.env.MONGO_PORT_27017_TCP_PORT;
-var fs = require('fs');
-
-var fileContents = fs.readFileSync(__dirname + '/datasources-template.json', 'utf8');
-fileContents = fileContents.replace(/MONGO_HOST_ADDR/g, mongoAddr);
-fileContents = fileContents.replace(/MONGO_HOST_PORT/g, mongoPort);
-fs.writeFileSync(__dirname + '/datasources.json', fileContents);
+// build config for Docker containers
+var dockerConf = require('./docker-conf');
+dockerConf.updateDatasources();
 
 // to enable these logs set `DEBUG=server:server` or `DEBUG=server:*`
 var log = require('debug')('server:server');

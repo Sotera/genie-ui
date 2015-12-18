@@ -20,8 +20,8 @@
   "scripts": {
     "start": "node server/server.js",
     "predev": "npm install",
-    "dev": "nodemon server/server.js -w server -w common -i server/node-red --ext js,json ",
-    "realtime": "nodemon server/real-time/server.js -w server -i server/node-red --ext js,json ",
+    "dev": "nodemon server/server.js -w server -w common -i server/node-red -i server/datasources.json --ext js,json",
+    "realtime": "nodemon server/real-time/server.js -w server -i server/node-red --ext js,json",
     "postinstall": "bower install"
   },
   "main": "server/server.js",
