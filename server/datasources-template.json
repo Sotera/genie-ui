@@ -1,13 +1,9 @@
 {
   "db": {
-    "name": "db",
-    "connector": "memory"
-  },
-  "MongoDB": {
     "host": MONGO_HOST_ADDR,
     "port": MONGO_HOST_PORT,
     "database": "genie",
-    "name": "MongoDB",
+    "name": "db",
     "connector": "mongodb"
   },
   "es": {
