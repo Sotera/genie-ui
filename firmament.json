@@ -53,9 +53,6 @@
 
       }
     },
-    "Env": [
-      "NODE_ENV=production"
-    ],
     "HostConfig": {
       "Links": [
         "mongo:mongo",
