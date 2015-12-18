@@ -12,7 +12,7 @@
     "hosts": [
       {
         "protocol": "http",
-        "host": HOST,
+        "host": "",
         "port": 9200
       }
     ],
@@ -20,7 +20,7 @@
     "requestTimeout": 5000,
     "log": "trace",
     "defaultSize": 50,
-    "index": INDEX,
-    "type": TYPE
+    "index": "",
+    "type": ""
   }
 }
