@@ -1,0 +1,101 @@
+[
+  {
+    "name": "elasticsearch",
+    "Image": "elasticsearch:2.1",
+    "DockerFilePath": "",
+    "Hostname": "elasticsearch",
+    "ExposedPorts": {
+      "9200\/tcp": {
+        
+      }
+    },
+    "HostConfig": {
+      "PortBindings": {
+        "9200\/tcp": [
+          {
+            "HostPort": "9200"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "data-container",
+    "Image": "jreeme\/data-container:1.1",
+    "DockerFilePath": "docker\/data-container",
+    "Hostname": "data-container"
+  },
+  {
+    "name": "mongo",
+    "Image": "jreeme\/mongo:2.6",
+    "DockerFilePath": "docker\/mongo\/2.6",
+    "Hostname": "mongo",
+    "HostConfig": {
+      "VolumesFrom": [
+        "data-container"
+      ],
+      "PortBindings": {
+        "27017\/tcp": [
+          {
+            "HostPort": "27017"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "genie-strongloop",
+    "Image": "lukewendling\/strong-pm:1",
+    "DockerFilePath": "",
+    "Hostname": "genie-strongloop",
+    "ExposedPorts": {
+      "3000\/tcp": {
+        
+      }
+    },
+    "HostConfig": {
+      "Links": [
+        "mongo:mongo"
+      ],
+      "PortBindings": {
+        "3000\/tcp": [
+          {
+            "HostPort": "80"
+          }
+        ],
+        "8701\/tcp": [
+          {
+            "HostPort": "8701"
+          }
+        ]
+      }
+    },
+    "ExpressApps": [
+      {
+        "GitUrl": "git@github.com:sotera\/genie-ui",
+        "GitSrcBranchName": "master",
+        "StrongLoopBranchName": "deploy",
+        "StrongLoopServerUrl": "http:\/\/localhost:8701",
+        "ServiceName": "GenieUI",
+        "Scripts": [
+          {
+            "RelativeWorkingDir": ".",
+            "Command": "bower",
+            "Args": [
+              "install",
+              "--config.interactive=false"
+            ]
+          },
+          {
+            "RelativeWorkingDir": ".",
+            "Command": "cp",
+            "Args": [
+              "server\/config.json.template",
+              "server\/config.json"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
