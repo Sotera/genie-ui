@@ -6,7 +6,7 @@
     "Hostname": "elasticsearch",
     "ExposedPorts": {
       "9200\/tcp": {
-        
+
       }
     },
     "HostConfig": {
@@ -50,12 +50,13 @@
     "Hostname": "genie-strongloop",
     "ExposedPorts": {
       "3000\/tcp": {
-        
+
       }
     },
     "HostConfig": {
       "Links": [
-        "mongo:mongo"
+        "mongo:mongo",
+        "elasticsearch:elasticsearch"
       ],
       "PortBindings": {
         "3000\/tcp": [
