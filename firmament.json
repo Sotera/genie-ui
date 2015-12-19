@@ -10,6 +10,9 @@
       }
     },
     "HostConfig": {
+      "VolumesFrom": [
+        "data-container"
+      ],
       "PortBindings": {
         "9200\/tcp": [
           {
