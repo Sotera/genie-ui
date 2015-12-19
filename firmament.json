@@ -1,5 +1,11 @@
 [
   {
+    "name": "data-container",
+    "Image": "lukewendling\/data-container:1",
+    "DockerFilePath": "",
+    "Hostname": "data-container"
+  },
+  {
     "name": "elasticsearch",
     "Image": "elasticsearch:2.1",
     "DockerFilePath": "",
@@ -21,12 +27,6 @@
         ]
       }
     }
-  },
-  {
-    "name": "data-container",
-    "Image": "jreeme\/data-container:1.1",
-    "DockerFilePath": "docker\/data-container",
-    "Hostname": "data-container"
   },
   {
     "name": "mongo",
