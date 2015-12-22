@@ -1,17 +1,10 @@
 'use strict';
 //var log = require('debug')('compute_modules:clustered-event-source-helper');
 var moment = require('moment');
-var createObj = require('../util/create-obj');
+var LoopbackModelHelper = require('../util/loopback-model-helper');
 var async = require('async');
 var Random = require('random-js');
 var random = new Random(Random.engines.mt19937().autoSeed());
-var apiCheck = require('api-check')({
-  output: {
-    prefix: 'compute_modules:clustered-event-source-helper',
-    docsBaseUrl: 'http://www.example.com/error-docs#'
-  },
-  verbose: false
-});
 const randomishTags = [
   'disney',
   'waltdisneyworld',
@@ -26,13 +19,14 @@ const randomishPointsOnEarth = [
   , {lat: 39.75, lng: -104.9}//Denver
   , {lat: 25.75, lng: -80.2}//Miami
 ];
+var clusteredEventSourceHelper = new LoopbackModelHelper('ClusteredEventSource');
+
 module.exports = class {
-  constructor(app) {
-    this.ClusteredEventSource = app.models.ClusteredEventSource;
+  constructor() {
   }
 
   initialize(cb) {
-    this.ClusteredEventSource.deleteAll(cb);
+    clusteredEventSourceHelper.deleteAll(cb);
   }
 
   randomDate(start, end) {
@@ -65,7 +59,7 @@ module.exports = class {
     filterStartDate.subtract(minutesAgo, 'minutes');
     var filterEndDate = moment(filterStartDate).add(intervalDurationMinutes, 'minutes');
 
-    this.ClusteredEventSource.find({
+    clusteredEventSourceHelper.find({
       where: {
         post_date: {between: [filterStartDate, filterEndDate]}
       }
@@ -83,7 +77,6 @@ module.exports = class {
   }
 
   addClusteredEventSources(options, cb) {
-    var ClusteredEventSource = this.ClusteredEventSource;
     options = options || {};
     /*    apiCheck.warn([apiCheck.shape({
      clusterCountMin: apiCheck.number
@@ -145,13 +138,7 @@ module.exports = class {
         }
       );
     }
-    var functionArray = [];
-    newClusteredEventSources.forEach(function (newClusteredEventSource) {
-      functionArray.push(async.apply(createObj,
-        ClusteredEventSource,
-        newClusteredEventSource));
-    });
-    async.parallel(functionArray, cb);
+    clusteredEventSourceHelper.createMany(newClusteredEventSources, cb);
   }
 
   convertToDate(obj) {

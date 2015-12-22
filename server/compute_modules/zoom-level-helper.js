@@ -1,24 +1,13 @@
 'use strict';
 var log = require('debug')('compute_modules:zoom-level-helper');
-var createObj = require('../util/create-obj');
-var updateObj = require('../util/update-obj');
-var async = require('async');
-var apiCheck = require('api-check')({
-  output: {
-    prefix: 'compute_modules:zoom-level-helper',
-    docsBaseUrl: 'http://www.example.com/error-docs#'
-  },
-  verbose: false
-});
+var LoopbackModelHelper = require('../util/loopback-model-helper');
 
 module.exports = class {
   constructor(app) {
-    this.ZoomLevel = app.models.ZoomLevel;
+    this.zoomLevelHelper = new LoopbackModelHelper('ZoomLevel');
   }
 
   updateZoomLevels(zoomLevelInfo, cb) {
-    var ZoomLevel = this.ZoomLevel;
-    //apiCheck.warn([apiCheck.arrayOf(apiCheck.object), apiCheck.number, apiCheck.func], arguments);
     var clusters = zoomLevelInfo.clusters;
     var zoomLevel = zoomLevelInfo.zoomLevel;
     var minutesAgo = zoomLevelInfo.minutesAgo;
@@ -43,7 +32,7 @@ module.exports = class {
       centerPoint,
       clusterType
     };
-    ZoomLevel.find({
+    this.zoomLevelHelper.find({
       where: {
         and: [
           {zoomLevel: newClusteredEvent.zoomLevel},
@@ -63,7 +52,7 @@ module.exports = class {
           }
         });
       } else {
-        createObj(ZoomLevel, newClusteredEvent, function (err) {
+        this.zoomLevelHelper.create(newClusteredEvent, function (err) {
           if(err){
             log(err);
           }
@@ -73,8 +62,7 @@ module.exports = class {
   }
 
   initialize(cb) {
-    var ZoomLevel = this.ZoomLevel;
-    ZoomLevel.deleteAll(function (err) {
+    this.zoomLevelHelper.deleteAll(function (err) {
       if (err) {
         cb(err);
         return;
@@ -89,13 +77,7 @@ module.exports = class {
           centerPoint: {lat: 0, lng: 0}
         });
       }
-      var functionArray = [];
-      clusters.forEach(function (cluster) {
-        functionArray.push(async.apply(createObj,
-          ZoomLevel,
-          cluster));
-      });
-      async.parallel(functionArray, cb);
+      this.zoomLevelHelper.createMany(clusters, cb);
     });
   }
 }

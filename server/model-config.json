@@ -63,5 +63,9 @@
   "Chart": {
     "dataSource": "db",
     "public": true
+  },
+  "GeoTweet": {
+    "dataSource": "db",
+    "public": true
   }
 }

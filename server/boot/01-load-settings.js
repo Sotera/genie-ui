@@ -3,11 +3,10 @@
 // to enable these logs set `DEBUG=boot:01-load-settings` or `DEBUG=boot:*`
 var log = require('debug')('boot:01-load-settings');
 var async = require('async');
-var findOrCreateObj = require('../util/find-or-create-obj');
+var LoopbackModelHelper = require('../util/loopback-model-helper');
 
 module.exports = function (app, cb) {
-  var Setting = app.models.Setting;
-
+  log('Checking Settings collection');
   var newSettings = [{
     type: 'string',
     key: 'appName',
@@ -72,18 +71,10 @@ module.exports = function (app, cb) {
     }
   ];
 
-  var functionArray = [];
-  newSettings.forEach(function (newSetting) {
-    functionArray.push(async.apply(findOrCreateObj,
-      Setting,
-      {where: {key: newSetting.key}},
-      newSetting));
-  });
-  async.parallel(functionArray, function (err) {
-    if (err) {
-      log(err);
-    }
-    cb();
-  });
+  var settingHelper = new LoopbackModelHelper('Setting');
+  var queries = newSettings.map(function (newSetting) {
+    return {where: {key: newSetting.key}};
+  })
+  settingHelper.findOrCreateMany(queries, newSettings, cb);
 };
 

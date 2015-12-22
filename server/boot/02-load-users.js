@@ -2,18 +2,12 @@
 // to enable these logs set `DEBUG=boot:02-load-users` or `DEBUG=boot:*`
 var async = require('async');
 var log = require('debug')('boot:02-load-users');
-module.exports = function (app) {
-  //JReeme sez: setMaxListeners so we don't have to see that ridiculous memory leak warning
-  app.models.AminoUser.getDataSource().setMaxListeners(0);
-  app.models.Role.getDataSource().setMaxListeners(0);
-  app.models.RoleMapping.getDataSource().setMaxListeners(0);
-  var AminoUser = app.models.AminoUser;
-  var Role = app.models.Role;
-  var RoleMapping = app.models.RoleMapping;
-  var alphabet = 'ABCDEF'.split('');
-  //var alphabet = 'ABCDEFGHIJKLM'.split('');
-  //var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-  var adminRoles = ['admins', 'users', 'guests'];
+var LoopbackModelHelper = require('../util/loopback-model-helper');
+var aminoUserHelper = new LoopbackModelHelper('AminoUser');
+var roleHelper = new LoopbackModelHelper('Role');
+var roleMappingHelper = new LoopbackModelHelper('RoleMapping');
+module.exports = function (app,cb) {
+  var roles = [{name: 'admins'}, {name: 'users'}, {name: 'guests'}];
   var adminUsers = [{
     firstName: 'Admin',
     lastName: 'User',
@@ -27,74 +21,60 @@ module.exports = function (app) {
     username: 'jreeme',
     password: 'password'
   }];
-  async.parallel([
-      createAdminUsers
-      , createAdminRoles
-    ], function (err, result) {
-      if (err) {
+
+  var queries = roles.map(function (role) {
+    return {where: {name: role.name}};
+  })
+  roleHelper.findOrCreateMany(queries, roles, function(err, createdAdminRoles){
+    if(err){
+      log(err);
+      cb();
+      return;
+    }
+    queries = adminUsers.map(function (user) {
+      return {where: {username: user.username}};
+    })
+    aminoUserHelper.findOrCreateMany(queries, adminUsers, function(err, createdAdminUsers){
+      if(err){
         log(err);
+        cb();
         return;
       }
-      var createdAdminUsers = result[0];
-      var createdAdminRoles = result[1];
-      //Add admin to admins group
-      createdAdminRoles.filter(function (role) {
-        return role.name === 'admins';
-      }).forEach(function (adminRole) {
-        async.map(createdAdminUsers, function (adminUser) {
+      var adminRoles  = createdAdminRoles.filter(function (role) {
+          return role.name === 'admins';
+        });
+      async.each(adminRoles, function(adminRole, adminRolesCallback){
+        async.each(createdAdminUsers, function(createdAdminUser, createdAdminUserCallback){
           adminRole.principals(function (err, roleMappings) {
-            if (roleMappings.length) {
-              return;
-            }
-            adminRole.principals.create(
-              {
-                principalType: RoleMapping.USER,
-                principalId: adminUser.id
-              },
-              function (err, roleMapping) {
-                if (err) {
-                  log('error creating rolePrincipal', err);
-                } else {
-                  log('created roleMapping: ' + roleMapping);
+            if (!roleMappings.length) {
+              adminRole.principals.create(
+                {
+                  principalType: app.models.RoleMapping.USER,
+                  principalId: createdAdminUser.id
+                },
+                function (err, roleMapping) {
+                  if (err) {
+                    log('error creating rolePrincipal', err);
+                  } else {
+                    log('created roleMapping: ' + roleMapping);
+                  }
+                  createdAdminUserCallback(err);
                 }
-              }
-            );
+              );
+            }else{
+              createdAdminUserCallback(err);
+            }
           });
+        }, function(err){
+          adminRolesCallback(err);
         });
+      },
+      function(err){
+        if(err){
+          log(err);
+        }
+        cb();
       });
-    }
-  );
-
-  function createAdminRoles(cb) {
-    var functionArray = [];
-    adminRoles.forEach(function (roleName) {
-      functionArray.push(async.apply(findOrCreateObj, Role, {where: {name: roleName}},
-        {name: roleName}));
     });
-    async.parallel(functionArray, cb);
-  }
-
-  function createAdminUsers(cb) {
-    var functionArray = [];
-    adminUsers.forEach(function (user) {
-      functionArray.push(async.apply(findOrCreateObj, AminoUser, {where: {username: user.username}}, user));
-    });
-    async.parallel(functionArray, cb);
-  }
-
-  function findOrCreateObj(model, query, objToCreate, cb) {
-    try {
-      model.findOrCreate(
-        query,
-        objToCreate, // create
-        function (err, createdObj) {
-          if (err) {
-            log(err);
-          }
-          cb(err, createdObj);
-        });
-    } catch (err) {
-      log(err);
-    }
-  }
+  });
 };

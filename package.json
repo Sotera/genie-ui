@@ -36,7 +36,6 @@
     "errorhandler": "1.4.2",
     "express": "^4.13.3",
     "express-session": "1.12.1",
-    "geolib": "^2.0.18",
     "get-env": "0.4.0",
     "jade": "1.11.0",
     "jszip": "^2.5.0",

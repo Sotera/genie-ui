@@ -13,6 +13,7 @@
 // to enable these logs set `DEBUG=server:server` or `DEBUG=server:*`
 var log = require('debug')('server:server');
 require('dotenv').load();
+var LoopbackModelHelper = require('./util/loopback-model-helper');
 /*var twitterClientOptions = {
   consumer_key: process.env.CONSUMER_KEY,
   consumer_secret: process.env.CONSUMER_SECRET,
@@ -35,6 +36,8 @@ if (config.clusterOn && cluster.isMaster) {
   var loopback = require('loopback');
   var path = require('path');
   var app = module.exports = loopback();
+  //This should be the only time LoopbackModelHelper is constructed with 'app'
+  (new LoopbackModelHelper(app));
 
   app.use(loopback.favicon(path.join(__dirname, 'waveicon16.png')));
 

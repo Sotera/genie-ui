@@ -1,7 +1,8 @@
 'use strict';
 var log = require('debug')('util:twitter-client');
 var Twitter = require('twitter');
-var geoDistance = require('geolib');
+var loopback = require('loopback');
+var LoopbackModelHelper = require('../util/loopback-model-helper');
 var apiCheck = require('api-check')({
   output: {
     prefix: 'compute_modules:clustered-event-source-helper',
@@ -17,12 +18,10 @@ var freeTwitterClients = twitterKeys.map(function (twitterKey) {
   return new Twitter(twitterKey);
 });
 
+var geoTweetHelper = new LoopbackModelHelper('GeoTweet');
+
 module.exports = class {
   constructor() {
-    try {
-    } catch (err) {
-      log(err);
-    }
   }
 
   captureTweetsByLocation(options, cb) {
@@ -57,7 +56,8 @@ module.exports = class {
         stream.on('data', function (tweet) {
           try {
             //Hashtags check is quicker so do it first
-            if (options.onlyWithHashtags && !tweet.entities.hashtags.length) {
+            if (options.onlyWithHashtags &&
+              (!tweet.entities || !tweet.entities.hashtags || !tweet.entities.hashtags.length)) {
               log('No Hashtags');
               return;
             }
@@ -70,7 +70,7 @@ module.exports = class {
                 }
               }
               if (!tweet.genieLoc && tweet.coordinates) {
-                tweet.genieLoc = {lng: tweet.coordinates[1], lat: tweet.coordinates[0]};
+                tweet.genieLoc = {lng: tweet.coordinates[0], lat: tweet.coordinates[1]};
               }
               //Let's check the 'place' property
               if (!tweet.genieLoc && tweet.place && tweet.place.bounding_box && tweet.place.bounding_box.coordinates) {
@@ -90,7 +90,10 @@ module.exports = class {
               log('We have coordinates! CenterPoint: [' + tweet.genieLoc.lng + ',' + tweet.genieLoc.lat + ']');
             }
             //Save-o the Tweet-o!
-
+            geoTweetHelper.find(function(err,geoTweets){
+              var gt = geoTweets;
+            });
+            geoTweetHelper.create({location: tweet.genieLoc, fullTweet: JSON.stringify(tweet)});
           } catch (err) {
             log(err);
           }
@@ -121,9 +124,8 @@ function diagonalDistanceOfBoundingBoxInMeters(coords) {
     minLat = coord[1] < minLat ? coord[1] : minLat;
     maxLat = coord[1] > maxLat ? coord[1] : maxLat;
   });
-  var distanceMeters = geoDistance.getDistance(
-    {lat: minLat, lng: minLng},
-    {lat: maxLat, lng: maxLng}
-  );
+  var loc0 = new loopback.GeoPoint({lat: minLat, lng: minLng});
+  var loc1 = new loopback.GeoPoint({lat: maxLat, lng: maxLng});
+  var distanceMeters = loopback.GeoPoint.distanceBetween(loc0, loc1, {type: 'meters'});
   return {distanceMeters, center: {lng: (maxLng + minLng) / 2, lat: (maxLat + minLat) / 2}};
 }
