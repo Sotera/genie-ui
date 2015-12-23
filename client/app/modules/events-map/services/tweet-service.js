@@ -5,10 +5,12 @@ angular.module('genie.eventsMap')
   var connected = false,
     socket = null;
 
-  // needs a google map object and tweets data store (array)
+  // needs a google map object, tweets data store (array),
+  // and images data store (array)
   function init(options) {
     var map = options.map,
-      tweets = options.tweets;
+      tweets = options.tweets,
+      images = options.images;
 
     if (io !== undefined) {
       if (!connected) {
@@ -18,6 +20,9 @@ angular.module('genie.eventsMap')
 
         // listen on the "twitter-steam" channel
         socket.on('twitter-stream', function (tweet) {
+          // collect images
+          tweet.images.forEach(function(img) { images.push(img) });
+
           //Add tweet to the heat map array.
           tweetLocation = new google.maps.LatLng(tweet.lng, tweet.lat);
           tweets.push(tweetLocation);

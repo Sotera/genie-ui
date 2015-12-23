@@ -27,7 +27,7 @@ io.on('connection', socket => {
 
   socket.on('start tweets', data => {
     var bounds = data.bounds,
-    coord, box, base;
+    coord, box, base, media, images;
 
     console.log(bounds);
 
@@ -68,8 +68,19 @@ io.on('connection', socket => {
 
       console.log('*********', coord)
 
+      // harvest images from tweet
+      media = tweet.entities.media;
+
+      if (media && media.length) {
+        images = media.filter(m => {
+          return m.type == 'photo' && m.media_url;
+        });
+      } else {
+        images = [];
+      }
+
       // create a lean return obj
-      base = {user: tweet.user, text: tweet.text};
+      base = {user: tweet.user, text: tweet.text, images: images};
 
       _.extend(base, coord);
 
