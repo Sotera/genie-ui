@@ -3,14 +3,14 @@ angular.module('genie.eventsMap')
 .factory('tweetService', ['ENV', '$timeout', function(ENV, $timeout) {
 
   var connected = false,
-    socket = null;
+    socket = null,
+    images = [];
 
-  // needs a google map object, tweets data store (array),
-  // and images data store (array)
+  // needs a google map object.
+  // TODO: move map marker creation to another service or directive?
   function init(options) {
     var map = options.map,
-      tweets = options.tweets,
-      images = options.images;
+      tweets = options.tweets;
 
     if (io !== undefined) {
       if (!connected) {
@@ -20,8 +20,7 @@ angular.module('genie.eventsMap')
 
         // listen on the "twitter-steam" channel
         socket.on('twitter-stream', function (tweet) {
-          // collect images
-          tweet.images.forEach(function(img) { images.push(img) });
+          addImages(tweet.images);
 
           //Add tweet to the heat map array.
           tweetLocation = new google.maps.LatLng(tweet.lng, tweet.lat);
@@ -68,6 +67,21 @@ angular.module('genie.eventsMap')
     socket && socket.emit('stop tweets');
   }
 
+  // add images to store and truncate as needed.
+  function addImages(newImages) {
+    if (newImages.length) {
+      var max = 20;
+      if (images.length > max) {
+        images = images.slice(max*-1)
+      }
+      images = images.concat(newImages);
+    }
+  }
+
+  function getImages() {
+    return images;
+  }
+
   // twitter wants lng-lat pairs: reorder map.getBounds() output
   function boundForTwitter(mapBounds) {
     var bounds = mapBounds.toUrlValue().split(',');
@@ -98,6 +112,7 @@ angular.module('genie.eventsMap')
   return {
     init: init,
     start: start,
-    stop: stop
+    stop: stop,
+    getImages: getImages
   };
 }]);

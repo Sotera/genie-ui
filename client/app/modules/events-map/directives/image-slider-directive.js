@@ -1,18 +1,18 @@
 'use strict';
 angular.module('genie.eventsMap')
 
-.directive('imageSlider', [function () {
+.directive('imageSlider', ['tweetService', function(tweetService) {
 
   function link(scope, elem, attrs) {
     scope.$watchCollection(
-      function(scope) {
-        return scope.images;
+      function() {
+        return tweetService.getImages();
       },
       updateSlider
     );
 
-    function updateSlider(newColl, oldColl) {
-      var newImages = _.difference(newColl, oldColl);
+    function updateSlider(newImages, oldImages) {
+      var newImages = _.difference(newImages, oldImages);
 
       if (newImages.length) {
         newImages.forEach(function(image) {
