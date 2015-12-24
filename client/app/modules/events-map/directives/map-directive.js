@@ -28,21 +28,7 @@ angular.module('genie.eventsMap')
     resizeMap(map, elem);
 
     scope.map = map;
-
-    // createControls(map);
-    // notCentered on initial view
-    // changeFocus({zoomLevel: options.zoomLevel, map: map, notCentered: true});
   }
-
-  // function changeFocus(options) {
-  //   var zoomLevel = options.zoomLevel || options.map.getZoom();
-  //   minutesAgo = +options.minutesAgo || minutesAgo;
-
-  //   mapService.findZoomLevel(zoomLevel, minutesAgo)
-  //   .then(
-  //     regenerateHeatmap({map: options.map, notCentered: options.notCentered})
-  //   );
-  // }
 
   function resizeMap(map, elem) {
     var parent = $('#' + elem.parent()[0].id);
