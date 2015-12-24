@@ -4,13 +4,13 @@ angular.module('genie.eventsMap')
 
   var connected = false,
     socket = null,
-    images = [];
+    images = [], //just a simple array. getters, setters defined here.
+    tweets = new google.maps.MVCArray(); // provides own getters, setters.
 
   // needs a google map object.
   // TODO: move map marker creation to another service or directive?
   function init(options) {
-    var map = options.map,
-      tweets = options.tweets;
+    var map = options.map;
 
     if (io !== undefined) {
       if (!connected) {
@@ -113,6 +113,7 @@ angular.module('genie.eventsMap')
     init: init,
     start: start,
     stop: stop,
-    getImages: getImages
+    getImages: getImages,
+    tweets: tweets
   };
 }]);

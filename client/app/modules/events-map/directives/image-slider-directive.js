@@ -36,7 +36,7 @@ angular.module('genie.eventsMap')
     });
 
     // tried a simple $interval scheduler but it doesn't play nicely. don't know...
-    var slowReload = _.debounce(imageSlider.reloadSlider, 15000);
+    var slowReload = _.throttle(imageSlider.reloadSlider, 15000);
   }
 
   return {

@@ -8,7 +8,12 @@ angular.module('genie.eventsMap')
     $window.addEventListener('unload', tweetService.stop);
 
     var map = scope.map;
-    var liveTweets = createLiveHeatmap(map);
+    var liveHeatmap = new google.maps.visualization.HeatmapLayer({
+      radius: 10,
+      data: tweetService.tweets,
+      map: map
+    });
+
     var startButton = document.createElement('div');
     var stopButton = document.createElement('div');
     var controls = map.controls[google.maps.ControlPosition.TOP_CENTER];
@@ -22,7 +27,7 @@ angular.module('genie.eventsMap')
       var minZoomForStreaming = 9;
       if (map.getZoom() >= minZoomForStreaming) {
         CoreService.toastSuccess('Start', 'Starting Twitter stream');
-        tweetService.init({map: map, tweets: liveTweets});
+        tweetService.init({map: map});
         tweetService.start({bounds: map.getBounds()});
       } else {
         CoreService.toastInfo('Zoom', 'Please zoom in before streaming');
@@ -36,16 +41,6 @@ angular.module('genie.eventsMap')
 
     controls.push(startButton);
     controls.push(stopButton);
-  }
-
-  function createLiveHeatmap(map) {
-    var liveTweets = new google.maps.MVCArray();
-    var liveHeatmap = new google.maps.visualization.HeatmapLayer({
-      data: liveTweets,
-      radius: 10
-    });
-    liveHeatmap.setMap(map);
-    return liveTweets;
   }
 
   return {
