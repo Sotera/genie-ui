@@ -21,7 +21,6 @@ angular.module('genie.eventsMap')
       console.log(newZoom, 'zoom');
       scope.inputs.zoomLevel = newZoom;
       scope.$apply();
-      // changeFocus({zoomLevel: map.getZoom(), map: map});
       // tweetService.stop();
     });
 
