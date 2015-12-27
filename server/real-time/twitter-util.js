@@ -7,7 +7,7 @@ const _ = require('lodash'),
 module.exports = {
   // get what we need from tweet message
   parseTweet: function parseTweet(tweet) {
-    let coord, box, msg, media, images;
+    let coord, box, msg, media, images, hashtags;
 
     if (tweet.coordinates) { // exact location
       coord = {
@@ -23,9 +23,10 @@ module.exports = {
       };
     }
 
-    // harvest images from tweet
     media = tweet.entities.media;
+    hashtags = tweet.entities.hashtags;
 
+    // harvest images from tweet
     if (media && media.length) {
       images = media.filter(m => {
         return m.type == 'photo' && m.media_url;
@@ -34,8 +35,14 @@ module.exports = {
       images = [];
     }
 
+    // just need the text
+    hashtags = hashtags.map(tag => tag.text);
+
     // create a lean return obj
-    msg = {user: tweet.user, text: tweet.text, images: images};
+    msg = {
+      user: tweet.user, text: tweet.text,
+      images: images, hashtags: hashtags
+    };
 
     _.extend(msg, coord);
 

@@ -1,7 +1,8 @@
 'use strict';
 angular.module('genie.eventsMap')
 .controller('MapCtrl', ['$scope', 'mapService', 'ZoomLevel',
-  function($scope, mapService, ZoomLevel) {
+  'tweetService',
+  function($scope, mapService, ZoomLevel, tweetService) {
 
   // Set init values
   $scope.inputs = {zoomLevel: 18, minutesAgo: 1440};
@@ -18,6 +19,9 @@ angular.module('genie.eventsMap')
     getZoomLevel
   );
 
+  // Watch live hashtags
+  $scope.liveTags = tweetService.getHashtags();
+
   function getZoomLevel() {
     mapService.getZoomLevel($scope.inputs)
     .then(function(zoomLevelObj) {
@@ -27,7 +31,7 @@ angular.module('genie.eventsMap')
       $scope.zoomLevelObj = zoomLevelObj;
       //jqcloud tag collection
       // TODO: remove .uniq() once the server has TagCloud api
-      $scope.words = _.uniq(_.map(zoomLevelObj.events, function(event) {
+      $scope.tags = _.uniq(_.map(zoomLevelObj.events, function(event) {
         return {text: event.tag, weight: event.weight};
       }), 'text');
     })

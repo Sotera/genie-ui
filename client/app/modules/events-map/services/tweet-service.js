@@ -5,7 +5,8 @@ angular.module('genie.eventsMap')
   var connected = false,
     socket = null,
     images = [], //just a simple array. getters, setters defined here.
-    tweets = new google.maps.MVCArray(); // provides own getters, setters.
+    tweets = new google.maps.MVCArray(), // provides own getters, setters.
+    hashtags = [];
 
   // needs a google map object.
   // TODO: move map marker creation to another service or directive?
@@ -21,6 +22,8 @@ angular.module('genie.eventsMap')
         // listen on the "twitter-steam" channel
         socket.on('twitter-stream', function (tweet) {
           addImages(tweet.images);
+          addHashtags(tweet.hashtags);
+          console.log(tweet.hashtags)
 
           //Add tweet to the heat map array.
           tweetLocation = new google.maps.LatLng(tweet.lng, tweet.lat);
@@ -82,6 +85,32 @@ angular.module('genie.eventsMap')
     return images;
   }
 
+  // add hashtags to store and updates item weight.
+  // TODO: refactor
+  function addHashtags(newTags) {
+    var found;
+    if (newTags.length) {
+      newTags.forEach(function(newTag) {
+        found = _.detect(hashtags, function(existTag) {
+          return existTag.text === newTag;
+        });
+        if (found) {
+          found.weight += 1;
+          _.remove(hashtags, function(tag) {
+            return tag.text === found.text;
+          });
+          hashtags.push(found);
+        } else {
+          hashtags.push({text: newTag, weight: 1});
+        }
+      });
+    }
+  }
+
+  function getHashtags() {
+    return hashtags;
+  }
+
   // twitter wants lng-lat pairs: reorder map.getBounds() output
   function boundForTwitter(mapBounds) {
     var bounds = mapBounds.toUrlValue().split(',');
@@ -114,6 +143,7 @@ angular.module('genie.eventsMap')
     start: start,
     stop: stop,
     getImages: getImages,
+    getHashtags: getHashtags,
     tweets: tweets
   };
 }]);
