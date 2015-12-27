@@ -72,13 +72,15 @@ angular.module('genie.eventsMap')
 
   // add images to store and truncate as needed.
   function addImages(newImages) {
-    if (newImages.length) {
-      var max = 20;
-      if (images.length > max) {
-        images = images.slice(max*-1)
-      }
-      images = images.concat(newImages);
+    if (!newImages.length) return;
+
+    var max = 20;
+    if (images.length > max) {
+      // truncate to last n items
+      images = images.slice(max*-1);
     }
+    // add new images
+    images = images.concat(newImages);
   }
 
   function getImages() {
@@ -86,25 +88,21 @@ angular.module('genie.eventsMap')
   }
 
   // add hashtags to store and updates item weight.
-  // TODO: refactor
+  // expects array of strings.
   function addHashtags(newTags) {
     var found;
-    if (newTags.length) {
-      newTags.forEach(function(newTag) {
-        found = _.detect(hashtags, function(existTag) {
-          return existTag.text === newTag;
-        });
-        if (found) {
-          found.weight += 1;
-          _.remove(hashtags, function(tag) {
-            return tag.text === found.text;
-          });
-          hashtags.push(found);
-        } else {
-          hashtags.push({text: newTag, weight: 1});
-        }
+    if (!newTags.length) return;
+
+    newTags.forEach(function(newTag) {
+      found = _.detect(hashtags, function(existTag) {
+        return existTag.text === newTag;
       });
-    }
+      if (found) { // update weight
+        found.weight += 1;
+      } else { // create object
+        hashtags.push({text: newTag, weight: 1});
+      }
+    });
   }
 
   function getHashtags() {
