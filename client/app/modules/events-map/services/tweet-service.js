@@ -23,7 +23,7 @@ angular.module('genie.eventsMap')
         socket.on('twitter-stream', function (tweet) {
           addImages(tweet.images);
           addHashtags(tweet.hashtags);
-          console.log(tweet.hashtags)
+          // console.log(tweet.hashtags)
 
           //Add tweet to the heat map array.
           tweetLocation = new google.maps.LatLng(tweet.lng, tweet.lat);
