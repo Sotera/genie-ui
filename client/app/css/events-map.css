@@ -6,6 +6,14 @@ div.events-map-cloud {
   right: 10px;
 }
 
+div.live-cloud {
+  width: 400px;
+  height: 300px;
+  position: absolute;
+  bottom: 50px;
+  left: 10px;
+}
+
 div.time-series {
   width: 100%;
   height: 160px;

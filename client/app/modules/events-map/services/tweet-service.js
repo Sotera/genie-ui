@@ -5,7 +5,8 @@ angular.module('genie.eventsMap')
   var connected = false,
     socket = null,
     images = [], //just a simple array. getters, setters defined here.
-    tweets = new google.maps.MVCArray(); // provides own getters, setters.
+    tweets = new google.maps.MVCArray(), // provides own getters, setters.
+    hashtags = [];
 
   // needs a google map object.
   // TODO: move map marker creation to another service or directive?
@@ -21,6 +22,8 @@ angular.module('genie.eventsMap')
         // listen on the "twitter-steam" channel
         socket.on('twitter-stream', function (tweet) {
           addImages(tweet.images);
+          addHashtags(tweet.hashtags);
+          // console.log(tweet.hashtags)
 
           //Add tweet to the heat map array.
           tweetLocation = new google.maps.LatLng(tweet.lng, tweet.lat);
@@ -69,17 +72,41 @@ angular.module('genie.eventsMap')
 
   // add images to store and truncate as needed.
   function addImages(newImages) {
-    if (newImages.length) {
-      var max = 20;
-      if (images.length > max) {
-        images = images.slice(max*-1)
-      }
-      images = images.concat(newImages);
+    if (!newImages.length) return;
+
+    var max = 20;
+    if (images.length > max) {
+      // truncate to last n items
+      images = images.slice(max*-1);
     }
+    // add new images
+    images = images.concat(newImages);
   }
 
   function getImages() {
     return images;
+  }
+
+  // add hashtags to store and updates item weight.
+  // expects array of strings.
+  function addHashtags(newTags) {
+    var found;
+    if (!newTags.length) return;
+
+    newTags.forEach(function(newTag) {
+      found = _.detect(hashtags, function(existTag) {
+        return existTag.text === newTag;
+      });
+      if (found) { // update weight
+        found.weight += 1;
+      } else { // create object
+        hashtags.push({text: newTag, weight: 1});
+      }
+    });
+  }
+
+  function getHashtags() {
+    return hashtags;
   }
 
   // twitter wants lng-lat pairs: reorder map.getBounds() output
@@ -114,6 +141,7 @@ angular.module('genie.eventsMap')
     start: start,
     stop: stop,
     getImages: getImages,
+    getHashtags: getHashtags,
     tweets: tweets
   };
 }]);

@@ -9,6 +9,7 @@ angular.module('genie.eventsMap')
       styles: stylesService.dark,
       streetViewControl: false,
       mapTypeControl: false,
+      scrollwheel: false,
       zoomControlOptions: {
         position: google.maps.ControlPosition.TOP_LEFT
       },

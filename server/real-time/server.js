@@ -1,10 +1,14 @@
+'use strict';
+
 // def: a socket.io server
 var Twit = require('twit'),
     app = require('express')(),
     http = require('http').Server(app),
     io = require('socket.io')(http),
     _ = require('lodash'),
-    port = process.env.REALTIME_PORT || 3001;
+    port = process.env.REALTIME_PORT || 3001,
+    twitterUtil = require('./twitter-util'),
+    log = require('debug')('realtime:twitter-stream');
 
 require('dotenv').load();
 
@@ -26,10 +30,7 @@ http.listen(port, () => console.log("Socket.IO server listening on %s", port));
 io.on('connection', socket => {
 
   socket.on('start tweets', data => {
-    var bounds = data.bounds,
-    coord, box, base, media, images;
-
-    console.log(bounds);
+    var bounds = data.bounds, parsedTweet;
 
     // stream.start() could work if it accepted params
     stream = twit.stream('statuses/filter', {locations: bounds});
@@ -51,43 +52,13 @@ io.on('connection', socket => {
     });
 
     stream.on('tweet', tweet => {
-      console.log(tweet);
-      if (tweet.coordinates) { // exact location
-        coord = {
-          lat: tweet.coordinates.coordinates[0],
-          lng: tweet.coordinates.coordinates[1]
-        };
-      } else { // fallback to place obj
-        // TODO: for now, just get one of the box coords
-        box = tweet.place.bounding_box.coordinates[0][0];
-        coord = {
-          lat: box[0],
-          lng: box[1]
-        };
-      }
+      log(tweet);
+      parsedTweet = twitterUtil.parseTweet(tweet);
 
-      console.log('*********', coord)
-
-      // harvest images from tweet
-      media = tweet.entities.media;
-
-      if (media && media.length) {
-        images = media.filter(m => {
-          return m.type == 'photo' && m.media_url;
-        });
-      } else {
-        images = [];
-      }
-
-      // create a lean return obj
-      base = {user: tweet.user, text: tweet.text, images: images};
-
-      _.extend(base, coord);
-
-      socket.broadcast.emit('twitter-stream', base);
+      socket.broadcast.emit('twitter-stream', parsedTweet);
 
       //Send out to web sockets channel.
-      socket.emit('twitter-stream', base);
+      socket.emit('twitter-stream', parsedTweet);
     });
   });
 
