@@ -8,7 +8,7 @@ var Twit = require('twit'),
     _ = require('lodash'),
     port = process.env.REALTIME_PORT || 3001,
     twitterUtil = require('./twitter-util'),
-    log = require('debug')('twitter-stream');
+    log = require('debug')('realtime:twitter-stream');
 
 require('dotenv').load();
 

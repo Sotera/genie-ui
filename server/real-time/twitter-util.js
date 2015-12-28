@@ -2,7 +2,7 @@
 'use strict';
 
 const _ = require('lodash'),
-  log = require('debug')('twitter-util');
+  log = require('debug')('realtime:twitter-util');
 
 module.exports = {
   // get what we need from tweet message
