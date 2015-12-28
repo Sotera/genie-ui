@@ -24,16 +24,19 @@ angular.module('genie.eventsMap')
 
   function getZoomLevel() {
     mapService.getZoomLevel($scope.inputs)
-    .then(function(zoomLevelObj) {
-      if (!$scope.map.getCenter()) { // center not set
-        $scope.map.setCenter(zoomLevelObj.centerPoint);
-      }
-      $scope.zoomLevelObj = zoomLevelObj;
-      //jqcloud tag collection
-      // TODO: remove .uniq() once the server has TagCloud api
-      $scope.tags = _.uniq(_.map(zoomLevelObj.events, function(event) {
-        return {text: event.tag, weight: event.weight};
-      }), 'text');
-    })
+    .then(updateMap);
+  }
+
+  function updateMap(zoomLevelObj) {
+    if (!$scope.map.getCenter()) { // center not set
+      $scope.map.setCenter(zoomLevelObj.centerPoint);
+    }
+    $scope.zoomLevelObj = zoomLevelObj;
+    //jqcloud tag collection
+    var tags = _.map(zoomLevelObj.events, function(event) {
+      return {text: event.tag, weight: event.weight};
+    });
+    // TODO: remove .uniq() once the server has TagCloud api
+    $scope.tags = _.uniq(tags, 'text');
   }
 }]);
