@@ -16,6 +16,6 @@ npm run dev
 
 ```
 cp .env.template .env # and update as needed
-docker build --no-cache --rm -t genie-realtime .
+docker build --no-cache --force-rm -t genie-realtime .
 docker run -d -p 3001:3001 --name genie --env-file .env genie-realtime
 ```
