@@ -12,8 +12,8 @@
     "connectionTimeout": 10000,
     "connector": "mongodb"
   },
-  "es": {
-    "name": "es",
+  "es-scored-geo-tweets": {
+    "name": "es-scored-geo-tweets",
     "connector": "es",
     "hosts": [
       {
@@ -26,7 +26,24 @@
     "requestTimeout": 5000,
     "log": "trace",
     "defaultSize": 50,
-    "index": "genie",
-    "type": "post"
+    "index": "scored-geo-tweet",
+    "type": "ScoredGeoTweet"
+  },
+  "es-geo-tweets": {
+    "name": "es-geo-tweets",
+    "connector": "es",
+    "hosts": [
+      {
+        "protocol": "http",
+        "host": "localhost",
+        "port": 9200
+      }
+    ],
+    "apiVersion": "2.0",
+    "requestTimeout": 5000,
+    "log": "trace",
+    "defaultSize": 50,
+    "index": "geo-tweet",
+    "type": "GeoTweet"
   }
 }

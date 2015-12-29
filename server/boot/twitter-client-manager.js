@@ -6,6 +6,13 @@ module.exports = function (app, cb) {
     res.status(200).end('Initialized GeoTweet');
   });
 
+  app.post('/testTwitter2', function (req, res) {
+    var tc = new TwitterClient();
+    tc.scoreNextGeoTweet(function(err){
+      restResponse(err, res);
+    });
+  });
+
   app.post('/testTwitter', function (req, res) {
     var tc = new TwitterClient();
     var options = {
@@ -23,14 +30,7 @@ module.exports = function (app, cb) {
     };
     try {
       tc.captureTweetsByLocation(options, function (err, twitterClient) {
-        if (err) {
-          res.status(200).end(err.toString());
-        } else {
-          res.status(200).end('TwitterClient started: ' + (new Date()).toISOString());
-        }
-        /*        setTimeout(function () {
-         twitterClient.destroy();
-         }, 3000);*/
+        restResponse(err, res);
       });
     } catch (err) {
       res.status(200).end(err.toString());
@@ -39,3 +39,10 @@ module.exports = function (app, cb) {
   cb();
 }
 
+function restResponse(err, res){
+  if (err) {
+    res.status(200).end(err.toString());
+  } else {
+    res.status(200).end('SUCCESS: ' + (new Date()).toISOString());
+  }
+}

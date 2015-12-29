@@ -65,7 +65,11 @@
     "public": true
   },
   "GeoTweet": {
-    "dataSource": "db",
+    "dataSource": "es-geo-tweets",
+    "public": true
+  },
+  "ScoredGeoTweet": {
+    "dataSource": "es-scored-geo-tweets",
     "public": true
   }
 }

@@ -13,8 +13,16 @@ module.exports = class {
     }
   }
 
+  getModel(){
+    return this.model;
+  }
+
   deleteAll(cb) {
     this.model.deleteAll(cb);
+  }
+
+  findOne(query, cb) {
+    this.model.findOne(query, cb);
   }
 
   find(query, cb) {

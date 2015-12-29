@@ -24,6 +24,19 @@ module.exports = class {
   constructor() {
   }
 
+  scoreNextGeoTweet(cb){
+    geoTweetHelper.findOne({where: {scored: false}}, function(err, tweet){
+      if(err){
+        cb(err);
+        return;
+      }
+      //Now shall we score the tweet
+      tweet.updateAttribute('scored', true, function(err, tweet){
+        cb(null);
+      });
+    });
+  }
+
   captureTweetsByLocation(options, cb) {
     apiCheck.throw([apiCheck.shape({
       onlyWithHashtags: apiCheck.bool
@@ -90,10 +103,16 @@ module.exports = class {
               log('We have coordinates! CenterPoint: [' + tweet.genieLoc.lng + ',' + tweet.genieLoc.lat + ']');
             }
             //Save-o the Tweet-o!
-            geoTweetHelper.find(function(err,geoTweets){
+/*            geoTweetHelper.find(function(err,geoTweets){
               var gt = geoTweets;
+            });*/
+/*            var connector = geoTweetHelper.getModel().getDataSource().connector;
+            var cc = connector.getClientConfig();*/
+            geoTweetHelper.create({
+              location: tweet.genieLoc,
+              scored: false,
+              fullTweet: JSON.stringify(tweet)
             });
-            geoTweetHelper.create({location: tweet.genieLoc, fullTweet: JSON.stringify(tweet)});
           } catch (err) {
             log(err);
           }

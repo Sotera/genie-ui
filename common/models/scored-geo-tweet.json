@@ -1,0 +1,38 @@
+{
+  "name": "ScoredGeoTweet",
+  "plural": "ScoredGeoTweets",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+  },
+  "properties": {
+    "user": {
+      "type": "string",
+      "required": true
+    },
+    "caption": {
+      "type": "string",
+      "required": true
+    },
+    "cluster": {
+      "type": "string",
+      "required": true
+    },
+    "location": {
+      "type": "geopoint",
+      "required": true
+    },
+    "post_date": {
+      "type": "date",
+      "required": true
+    },
+    "tags": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
