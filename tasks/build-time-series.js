@@ -14,7 +14,7 @@ settings(['map:maxZoom', 'zoomLevels:endDate'], findZoomLevel);
 
 function findZoomLevel(settings) {
   ZoomLevel.find(
-    { where: {zoomLevel: settings.maxZoom} },
+    { where: {zoomLevel: settings['map:maxZoom']} },
     createChart(settings)
   );
 }
@@ -29,7 +29,8 @@ function createChart(settings) {
     let endDate = moment(settings['zoomLevels:endDate'] || moment());
 
     let rows = zoomLevels.map(zoomLevel => {
-      let date = endDate.subtract(zoomLevel.minutesAgo, 'minutes');
+      // moments are mutable
+      let date = endDate.clone().subtract(zoomLevel.minutesAgo, 'minutes');
       return [date.format('YYYY-MM-DD'), zoomLevel.events.length];
     });
 
