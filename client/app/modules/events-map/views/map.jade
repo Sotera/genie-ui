@@ -3,10 +3,15 @@ time-series
 twitter-stream( stream-controls )
   #map( map heat-map zoom='9' class='events-map' )
 
-jqcloud(words='tags' delay='10' steps='7' class='events-map-cloud'
-  font-size='{from:0.1, to:0.04}')
+.container-fluid
+  .row
+    .col-md-6
+      jqcloud(words='tags' delay='10' steps='7' class='events-cloud'
+        font-size='{from:0.08, to:0.02}')
 
-jqcloud(words='liveTags' delay='10' steps='7' class='live-cloud'
-  font-size='{from:0.1, to:0.04}')
-
-image-slider
+    .col-md-6
+      jqcloud(words='liveTags' delay='10' steps='7' class='live-cloud'
+        font-size='{from:0.08, to:0.02}')
+  .row
+    .col-md-12
+      image-slider

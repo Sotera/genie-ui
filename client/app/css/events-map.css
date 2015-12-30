@@ -1,17 +1,5 @@
-div.events-map-cloud {
-  width: 400px;
-  height: 300px;
-  position: absolute;
-  bottom: 50px;
-  right: 10px;
-}
-
-div.live-cloud {
-  width: 400px;
-  height: 300px;
-  position: absolute;
-  bottom: 50px;
-  left: 10px;
+div.events-cloud, div.live-cloud {
+  height: 220px;
 }
 
 div.time-series {
