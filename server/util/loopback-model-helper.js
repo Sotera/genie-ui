@@ -13,7 +13,7 @@ module.exports = class {
     }
   }
 
-  getModel(){
+  getModel() {
     return this.model;
   }
 

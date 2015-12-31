@@ -1,7 +1,6 @@
 'use strict';
 var log = require('debug')('boot:event-clustering');
 var kmeans = require('node-kmeans');
-var async = require('async');
 var ClusteredEventSourceHelper = require('../compute_modules/clustered-event-source-helper');
 var ZoomLevelHelper = require('../compute_modules/zoom-level-helper');
 var ClustererKMeans = require('../compute_modules/clusterer-kmeans');

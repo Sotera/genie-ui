@@ -1,6 +1,7 @@
 'use strict';
 var log = require('debug')('util:twitter-client');
 var Twitter = require('twitter');
+var async = require('async');
 var loopback = require('loopback');
 var LoopbackModelHelper = require('../util/loopback-model-helper');
 var apiCheck = require('api-check')({
@@ -24,17 +25,74 @@ module.exports = class {
   constructor() {
   }
 
-  scoreNextGeoTweet(cb){
-    geoTweetHelper.findOne({where: {scored: false}}, function(err, tweet){
-      if(err){
-        cb(err);
-        return;
+  scoreNextGeoTweet(cb) {
+    apiCheck.throw([apiCheck.func], arguments);
+    var unscoredGeoTweetsQuery = {where: {scored: false}};
+    async.waterfall(
+      [
+        function (cb) {
+          geoTweetHelper.getModel().count(unscoredGeoTweetsQuery, function (err, count) {
+            cb(err, count);
+          });
+        },
+        function (count, cb) {
+          geoTweetHelper.find({where: {scored: false}, limit: count}, function (err, geoTweets) {
+            cb(err, geoTweets)
+          });
+        },
+        function (geoTweets, cb) {
+          var scoreRecords = [];
+          geoTweets.forEach(function (geoTweet) {
+            var scoreRecord = {};
+            try {
+              if (!geoTweet) {
+                throw new Error('<null> GeoTweet!');
+              }
+              var fullTweet = JSON.parse(geoTweet.fullTweet);
+              //Now shall we score the tweet
+              scoreRecord = {
+                id: fullTweet.id.toString(),
+                lat: fullTweet.genieLoc.lat,
+                lng: fullTweet.genieLoc.lng,
+                text: fullTweet.text,
+                username: fullTweet.user.screen_name,
+                tags: fullTweet.entities.hashtags.map(function (hashtag) {
+                  return hashtag.text;
+                }),
+                dt: fullTweet.created_at,
+                cluster: -1
+              };
+              /*        geoTweet.updateAttribute('scored', false, function (err, tweet) {
+               cb(null);
+               });*/
+              scoreRecords.push(scoreRecord);
+            } catch (err) {
+              log(err);
+            }
+          });
+          cb(null, scoreRecords);
+        },
+        function (scoreRecords, cb) {
+          var newRecords = {};
+          scoreRecords.forEach(function (sr) {
+            sr.tags.forEach(function (tag) {
+              if (newRecords[tag]) {
+                newRecords[tag].push(sr);
+              } else {
+                newRecords[tag] = [sr];
+              }
+            });
+          });
+          var blacklist = ['job', 'jobs', 'hiring', 'careerarc'];
+          for (var nr in newRecords) {
+            log(nr);
+          }
+        }
+      ],
+      function (err, result) {
+        var e = err;
       }
-      //Now shall we score the tweet
-      tweet.updateAttribute('scored', true, function(err, tweet){
-        cb(null);
-      });
-    });
+    );
   }
 
   captureTweetsByLocation(options, cb) {
@@ -103,11 +161,11 @@ module.exports = class {
               log('We have coordinates! CenterPoint: [' + tweet.genieLoc.lng + ',' + tweet.genieLoc.lat + ']');
             }
             //Save-o the Tweet-o!
-/*            geoTweetHelper.find(function(err,geoTweets){
-              var gt = geoTweets;
-            });*/
-/*            var connector = geoTweetHelper.getModel().getDataSource().connector;
-            var cc = connector.getClientConfig();*/
+            /*            geoTweetHelper.find(function(err,geoTweets){
+             var gt = geoTweets;
+             });*/
+            /*            var connector = geoTweetHelper.getModel().getDataSource().connector;
+             var cc = connector.getClientConfig();*/
             geoTweetHelper.create({
               location: tweet.genieLoc,
               scored: false,
