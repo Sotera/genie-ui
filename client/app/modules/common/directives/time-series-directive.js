@@ -6,7 +6,7 @@ angular.module('genie.common')
   function link(scope, elem, attrs) {
     var chart = new google.visualization.AnnotationChart(elem[0]);
     var bgColor = StylesService.darkColor;
-    var slowSelectionChange = _.debounce(selectionChange, 500);
+    var slowSelectionChange = _.debounce(selectionChange, 300);
 
     google.visualization.events.addListener(chart, 'select',
       slowSelectionChange);
@@ -14,6 +14,9 @@ angular.module('genie.common')
     function selectionChange() {
       var selection = chart.getSelection()[0];
       if (selection) {
+        var selectedVal = data.getValue(selection.row, 0);
+        // check for external handler and invoke it
+        scope.timeChanged && scope.timeChanged(selectedVal);
         scope.$apply(function() {
           scope.inputs.minutesAgo = (selection.row+1) * 1440;
         });
@@ -28,6 +31,7 @@ angular.module('genie.common')
       displayRangeSelector: false,
       displayLegendDots: false,
       fill: 10,
+      min: 0,
       chart: {
         backgroundColor: bgColor,
         chartArea: {
