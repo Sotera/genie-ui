@@ -6,8 +6,8 @@
     "name": "db",
     "connector": "mongodb"
   },
-  "es": {
-    "name": "es",
+  "es-events": {
+    "name": "es-events",
     "connector": "es",
     "hosts": [
       {
@@ -22,5 +22,22 @@
     "defaultSize": 50,
     "index": "genie",
     "type": "post"
+  },
+  "es-instagram": {
+    "name": "es-instagram",
+    "connector": "es",
+    "hosts": [
+      {
+        "protocol": "http",
+        "host": ES_HOST_ADDR,
+        "port": ES_HOST_PORT
+      }
+    ],
+    "apiVersion": "2.0",
+    "requestTimeout": 5000,
+    "log": "trace",
+    "defaultSize": 50,
+    "index": "instagram_remap",
+    "type": "test"
   }
 }

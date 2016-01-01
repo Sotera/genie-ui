@@ -1,14 +1,15 @@
 'use strict';
-angular.module('genie.eventsMap')
-.directive('timeSeries', ['$window', 'timeSeriesService',
-  function ($window, timeSeriesService) {
+angular.module('genie.common')
+.directive('timeSeries', ['$window', 'ChartService', 'StylesService',
+  function ($window, ChartService, StylesService) {
 
   function link(scope, elem, attrs) {
     var chart = new google.visualization.AnnotationChart(elem[0]);
-    var bgColor = '#181818';
+    var bgColor = StylesService.darkColor;
     var slowSelectionChange = _.debounce(selectionChange, 500);
 
-    google.visualization.events.addListener(chart, 'select', slowSelectionChange);
+    google.visualization.events.addListener(chart, 'select',
+      slowSelectionChange);
 
     function selectionChange() {
       var selection = chart.getSelection()[0];
@@ -45,7 +46,7 @@ angular.module('genie.eventsMap')
       }
     };
 
-    timeSeriesService.getData()
+    ChartService.getData(attrs.chartName)
       .then(function(chartData) {
         chartData.columns.forEach(function(col) {
           data.addColumn(col);
