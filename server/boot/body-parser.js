@@ -17,9 +17,10 @@ module.exports = function(app, cb) {
     model: app.models.accessToken
   }));
 
-  app.use(loopback.cookieParser(app.get('cookieSecret')));
+  var secret = app.get('cookieSecret');
+  app.use(loopback.cookieParser(secret));
   app.use(loopback.session({
-    secret: app.get('cookieSecret'),
+    secret,
     saveUninitialized: true,
     resave: true
   }));
