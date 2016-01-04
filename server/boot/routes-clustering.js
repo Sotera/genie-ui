@@ -1,5 +1,5 @@
 'use strict';
-var log = require('debug')('boot:routes');
+var log = require('debug')('boot:routes:clustering');
 var kmeans = require('node-kmeans');
 var async = require('async');
 var updateObj = require('../util/update-obj');

@@ -1,13 +1,13 @@
 'use strict';
-angular.module('genie.eventsMap')
-.factory('timeSeriesService', ['Chart', function(Chart) {
+angular.module('genie.common')
+.factory('ChartService', ['Chart', function(Chart) {
 
-  function getData() {
+  function getData(chartName) {
 
     return Chart.findOne({
       filter: {
         where: {
-          name: 'time-series'
+          name: chartName
         }
       }
     })

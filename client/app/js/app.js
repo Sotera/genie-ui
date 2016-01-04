@@ -40,7 +40,9 @@ angular.module('loopbackApp', [
     'gettext',
     'com.module.core',
     'com.module.about',
+    'genie.common',
     'genie.eventsMap',
+    'genie.scraper',
     'com.module.stats',
     'com.module.settings',
     'com.module.users'

@@ -45,7 +45,7 @@
     "public": true
   },
   "ClusteredEventSource": {
-    "dataSource": "es",
+    "dataSource": "es-events",
     "public": true
   },
   "Task": {
@@ -62,6 +62,10 @@
   },
   "Chart": {
     "dataSource": "db",
+    "public": true
+  },
+  "InstagramSource": {
+    "dataSource": "es-instagram",
     "public": true
   }
 }
