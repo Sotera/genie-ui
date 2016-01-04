@@ -5,6 +5,7 @@ try {
   var async = require('async');
   var loopback = require('loopback');
   var LoopbackModelHelper = require('../util/loopback-model-helper');
+  var ScoreBin = require('../util/twitter-score-bin');
   var apiCheck = require('api-check')({
     output: {
       prefix: 'compute_modules:clustered-event-source-helper',
@@ -21,6 +22,7 @@ try {
   });
 
   var geoTweetHelper = new LoopbackModelHelper('GeoTweet');
+  var scoredGeoTweetHelper = new LoopbackModelHelper('ScoredGeoTweet');
 
   module.exports = class {
     constructor() {
@@ -85,12 +87,52 @@ try {
               });
             });
             var blacklist = ['job', 'jobs', 'hiring', 'careerarc'];
-            for (var nr in newRecords) {
-              log(nr);
+            for (var tagText in newRecords) {
+              if (blacklist.indexOf(tagText) != -1) {
+                continue;
+              }
+              async.waterfall([
+                  function (cb) {
+                    scoredGeoTweetHelper.getModel().find({where: {tags: tagText}}, function (err, scoredGeoTweets) {
+                      try {
+                        if (err) {
+                          log(err);
+                          cb(null, 0);
+                        }else{
+                          cb(null, scoredGeoTweets.length);
+                        }
+                      } catch (err) {
+                        cb(null, 0);
+                      }
+                    });
+                  },
+                  function (existingRecordCount, cb) {
+                    var newRecord = newRecords[tagText];
+                    var newRecordCount = newRecord.length;
+                    var totalRecordCount = (newRecordCount + existingRecordCount);
+                    if (totalRecordCount < 5) {
+                      log('--> only' + totalRecordCount + ' entries (insufficient for clustering)')
+                      var queries = newRecord.map(function (nr) {
+                        return {where: {twitterId: nr.id}};
+                      });
+                      scoredGeoTweetHelper.findOrCreateMany(queries, newRecord, function (err, xx) {
+                        var e = err;
+                      });
+                    }
+                    cb(null);
+                  }
+                ],
+                function (err, results) {
+                  var e = err;
+                });
+              /*              var tweetMetaDataArray = newRecords[tagText];
+               var len =tweetMetaDataArray.length;
+               var scoreBin = new ScoreBin(tagText);*/
             }
+            cb(null);
           }
         ],
-        function (err, result) {
+        function (err, results) {
           var e = err;
         }
       );
@@ -141,6 +183,12 @@ try {
           }
           log('We have coordinates! CenterPoint: [' + tweet.genieLoc.lng + ',' + tweet.genieLoc.lat + ']');
         }
+        //Let's lowercase those hashtags (for string comparisons later)!
+        if (tweet.entities && tweet.entities.hashtags) {
+          for (var i = 0; i < tweet.entities.hashtags.length; ++i) {
+            tweet.entities.hashtags[i].text = tweet.entities.hashtags[i].text.toLowerCase();
+          }
+        }
         //Save-o the Tweet-o!
         /*            geoTweetHelper.find(function(err,geoTweets){
          var gt = geoTweets;
@@ -167,6 +215,7 @@ try {
         , boundingBoxLngEast: apiCheck.number
       }), apiCheck.func], arguments);
       if (freeTwitterClients.length) {
+        var self = this;
         var locations = options.boundingBoxLngWest.toString();
         locations += ',' + options.boundingBoxLatSouth.toString();
         locations += ',' + options.boundingBoxLngEast.toString();
@@ -187,10 +236,10 @@ try {
           }
           //Sign up for stream events we care about
           stream.on('data', function (tweet) {
-            this.writeTweetToGeoTweetCollection(tweet, options);
+            self.writeTweetToGeoTweetCollection(tweet, options);
           });
           stream.on('end', function () {
-            var idxToRemove = inUseTwitterClients.indexOf(this.twitterClient);
+            var idxToRemove = inUseTwitterClients.indexOf(self.twitterClient);
             freeTwitterClients = freeTwitterClients.concat(inUseTwitterClients.splice(idxToRemove, 1));
           });
           stream.on('error', function (err) {
