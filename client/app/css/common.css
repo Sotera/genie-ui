@@ -10,3 +10,8 @@ div.time-series {
 div.time-series .border {
   background-color: #181818
 }
+
+/* general purpose block styles */
+.pad-top-md {
+  padding-top: 10px;
+}

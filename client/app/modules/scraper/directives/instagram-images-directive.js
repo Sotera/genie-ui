@@ -13,8 +13,8 @@ angular.module('genie.scraper')
 
     var $images = elem.find('#images');
 
-    function updateImages(newImages, oldImages) {
-      var newImages = _.difference(newImages, oldImages);
+    function updateImages(newImages, _) {
+      $images.empty(); // clear previous nodes
 
       if (newImages.length) {
         newImages.forEach(function(image) {

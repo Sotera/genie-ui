@@ -26,10 +26,10 @@ parser.add_argument('-key', dest='key', action='store', required=True,
                     help='Instagram API Client Key - see https://instagram.com/developer/clients/manage/')
 
 parser.add_argument('-start_date', dest='start_date', action='store', required=True,
-                    help='Start date from which to pull data from in form 20140131')
+                    help='Start date from which to pull data from in form 2014013100')
 
 parser.add_argument('-end_date', dest='end_date', action='store',
-                    help='End date from which to pull data from in form 20140131. If left out, this process will '
+                    help='End date from which to pull data from in form 2014013100. If left out, this process will '
                          'continued to pull images forever for the last 5 minutes.')
 
 parser.add_argument('-bb', dest='bb', action='store',

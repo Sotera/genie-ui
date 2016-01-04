@@ -1,6 +1,6 @@
 'use strict';
-angular.module('genie.eventsMap')
-.directive('map', ['$window', 'StylesService',
+angular.module('genie.scraper')
+.directive('scraperMap', ['$window', 'StylesService',
   function ($window, StylesService) {
 
   function link(scope, elem, attrs) {
@@ -16,6 +16,10 @@ angular.module('genie.eventsMap')
     };
 
     var map = new google.maps.Map(elem[0], mapOptions);
+
+    //TODO: what to use here?
+    var toronto = {lat: 43.7, lng: -79.4};
+    map.setCenter(toronto);
 
     map.addListener('zoom_changed', function() {
       var newZoom = map.getZoom();
