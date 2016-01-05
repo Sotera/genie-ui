@@ -19,7 +19,10 @@
   <link rel="stylesheet" href="/css/skin-blue.css"/>
   <link rel="stylesheet" href="/css/skin-midnight.css"/>
   <link rel="stylesheet" href="/css/social.css"/>
+  <link rel="stylesheet" href="/css/common.css"/>
   <link rel="stylesheet" href="/css/events-map.css"/>
+  <link rel="stylesheet" href="/css/scraper.css"/>
+  <link rel="stylesheet" href="/css/pin-map.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bxslider/4.2.5/jquery.bxslider.min.css">
 </head>
 <body class="{{getSetting('appTheme') }} {{ getSetting('appLayout') }} "
@@ -43,7 +46,7 @@
 <script src="bower_components/jquery/dist/jquery.min.js"></script>
 <script src="bower_components/moment/min/moment.min.js"></script>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAkYlCyB4YD2XSoTmSt0-PpVvb7JcQxpvc&libraries=visualization"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAkYlCyB4YD2XSoTmSt0-PpVvb7JcQxpvc&libraries=visualization,drawing"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.7/socket.io.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bxslider/4.2.5/jquery.bxslider.min.js"></script>
 
@@ -140,7 +143,6 @@
 <script src="/modules/events-map/directives/events-map-directive.js"></script>
 <script src="/modules/events-map/directives/twitter-stream-directive.js"></script>
 <script src="/modules/events-map/directives/chipmap-directive.js"></script>
-<script src="/modules/events-map/directives/time-series-directive.js"></script>
 <script src="/modules/events-map/directives/heatmap-directive.js"></script>
 <script src="/modules/events-map/directives/image-slider-directive.js"></script>
 <script src="/modules/events-map/directives/stream-controls-directive.js"></script>
