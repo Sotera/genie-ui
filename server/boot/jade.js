@@ -52,6 +52,14 @@ module.exports = function (app) {
     res.render('scraper/views/map', {title: 'Scraper'});
   });
 
+  /* Pin Map */
+  app.get('/modules/pin-map/views/main', function (req, res) {
+    res.render('pin-map/views/main', {title: 'Pin Map'});
+  });
+  app.get('/modules/pin-map/views/map', function (req, res) {
+    res.render('pin-map/views/map', {title: 'Pin Map'});
+  });
+
   /*Blank*/
   app.get('/modules/blank/views/main', function (req, res) {
     res.render('blank/views/main', {title: 'Main'});
