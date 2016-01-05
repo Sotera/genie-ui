@@ -1,0 +1,24 @@
+.container-fluid
+  .row
+    .col-md-12
+      #map( pin-map zoom='3' class='pin-map' )
+  .row( class='pad-top-md' )
+    .col-md-12
+      .form-group
+        label Change Zoom
+        select.form-control( ng-model='zoom' ng-change='changeZoom()' )
+          option( value='15' ) Very close
+          option( value='12' ) Close
+          option( value='9' ) Middle
+          option( value='6' ) Far
+          option( value='3' ) Very far
+  .row( class='pad-top-md' )
+    .col-md-12
+      .form-group
+        label Add JSON data
+        textarea#data.form-control( style='height: 200px' ng-model='data' )
+
+      button.btn.btn-primary( ng-click='createPins()' ) Create Pins
+      button.btn.btn-link( ng-click='clearPins()' ) Clear Pins
+
+script( src='http://google-maps-utility-library-v3.googlecode.com/svn/tags/markerclustererplus/2.1.2/markerclustererplus/src/markerclusterer_packed.js' )

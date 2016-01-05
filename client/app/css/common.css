@@ -15,3 +15,7 @@ div.time-series .border {
 .pad-top-md {
   padding-top: 10px;
 }
+
+.form-group label {
+  color: white;
+}
