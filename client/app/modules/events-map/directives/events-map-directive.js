@@ -1,12 +1,12 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('map', ['$window', 'stylesService',
-  function ($window, stylesService) {
+.directive('eventsMap', ['$window', 'StylesService',
+  function ($window, StylesService) {
 
   function link(scope, elem, attrs) {
     var mapOptions = {
       zoom: +attrs.zoom || 10,
-      styles: stylesService.dark,
+      styles: StylesService.dark,
       streetViewControl: false,
       mapTypeControl: false,
       scrollwheel: false,
@@ -22,7 +22,6 @@ angular.module('genie.eventsMap')
       console.log(newZoom, 'zoom');
       scope.inputs.zoomLevel = newZoom;
       scope.$apply();
-      // tweetService.stop();
     });
 
     resizeMap(map, elem);

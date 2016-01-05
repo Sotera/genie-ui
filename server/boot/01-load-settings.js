@@ -84,6 +84,10 @@ module.exports = function (app, cb) {
     type: 'int',
     key: 'map:maxZoom',
     value: 18
+  }, {
+    type: 'string',
+    key: 'scraper:instagramAccessToken',
+    value: ''
   }
   ];
 

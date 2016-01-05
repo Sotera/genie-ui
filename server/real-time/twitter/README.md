@@ -1,4 +1,4 @@
-### Genie web socket server
+# Genie web socket server
 
 ## Dependencies
 

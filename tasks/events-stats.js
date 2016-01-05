@@ -41,11 +41,8 @@ ds.on('connected', function() {
 });
 
 function createStats(results) {
-  // TODO: use mapping once we have more ES data
-  // let rows = results.map((result,i) => ({"row": [ i, result.total ]}));
-  let rows = results.aggregations.event_stats.buckets.map(function(aggregation){
-    return [aggregation.key_as_string,aggregation.doc_count];
-  });
+  let rows = results.aggregations.event_stats.buckets
+    .map(agg => [agg.key_as_string, agg.doc_count]);
 
   StatsChip.destroyAll();
 

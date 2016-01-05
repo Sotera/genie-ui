@@ -4,7 +4,7 @@
 var app = require('../server/server'),
   Chart = app.models.Chart,
   ZoomLevel = app.models.ZoomLevel,
-  log = require('debug')('task:build-time-series'),
+  log = require('debug')('task:chart:events'),
   moment = require('moment'),
   settings = require('../server/util/get-settings'),
   time = require('../server/util/time');
