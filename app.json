@@ -1,7 +1,0 @@
-{
-  "name": "GENIE",
-  "description": "GENIE UI",
-  "repository": "https://github.com/sotera/genie-ui",
-  "logo": "https://node-js-sample.herokuapp.com/node.svg",
-  "keywords": ["node", "angular", "loopback", "admin", "amino", "genie"]
-}
