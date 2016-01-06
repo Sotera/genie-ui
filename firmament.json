@@ -52,7 +52,7 @@
     "DockerFilePath": "",
     "Hostname": "genie-strongloop",
     "ExposedPorts": {
-      "3000\/tcp": {
+      "3001\/tcp": {
 
       }
     },
@@ -65,7 +65,7 @@
         "elasticsearch:elasticsearch"
       ],
       "PortBindings": {
-        "3000\/tcp": [
+        "3001\/tcp": [
           {
             "HostPort": "80"
           }
