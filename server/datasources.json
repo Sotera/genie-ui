@@ -23,8 +23,8 @@
       }
     ],
     "apiVersion": "2.0",
-    "requestTimeout": 5000,
-    "log": "trace",
+    "requestTimeout": 10000,
+    "log": "error",
     "defaultSize": 50,
     "index": "scored-geo-tweet",
     "type": "ScoredGeoTweet"
@@ -40,7 +40,7 @@
       }
     ],
     "apiVersion": "2.0",
-    "requestTimeout": 5000,
+    "requestTimeout": 10000,
     "log": "trace",
     "defaultSize": 50,
     "index": "geo-tweet",

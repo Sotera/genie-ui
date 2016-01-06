@@ -20,13 +20,21 @@
     },
     "cluster": {
       "type": "string",
+      "required": false
+    },
+    "lng": {
+      "type": "number",
       "required": true
     },
-    "location": {
-      "type": "geopoint",
+    "lat": {
+      "type": "number",
       "required": true
     },
-    "post_date": {
+    "postDate": {
+      "type": "date",
+      "required": true
+    },
+    "indexedDate": {
       "type": "date",
       "required": true
     },

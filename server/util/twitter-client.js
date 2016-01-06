@@ -3,7 +3,9 @@ var log = require('debug')('util:twitter-client');
 try {
   var Twitter = require('twitter');
   var async = require('async');
+  var moment = require('moment');
   var loopback = require('loopback');
+  var clustering = require('density-clustering');
   var LoopbackModelHelper = require('../util/loopback-model-helper');
   var ScoreBin = require('../util/twitter-score-bin');
   var apiCheck = require('api-check')({
@@ -30,45 +32,55 @@ try {
 
     scoreNextGeoTweet(cb) {
       apiCheck.throw([apiCheck.func], arguments);
-      var unscoredGeoTweetsQuery = {where: {scored: false}};
       async.waterfall(
         [
+          //Doing it all in memory for now. Later we may add ES query result paging, etc.
+          //(but probably not)
           function (cb) {
-            geoTweetHelper.getModel().count(unscoredGeoTweetsQuery, function (err, count) {
+            //Get number of GeoTweets so we can set an ES query limit. If we don't set one we'll
+            //get 10 documents returned. Note that {where: {scored: false}} is ignored by the ES
+            //Loopback data connector. 'count' will always return the total number of documents.
+
+            //geoTweetHelper.count({where: {scored: false}}, function (err, count) {
+            geoTweetHelper.count(function (err, count) {
               cb(err, count);
             });
           },
           function (count, cb) {
+            //Retrieve all the unscored GeoTweets in one query (no paging)
             geoTweetHelper.find({where: {scored: false}, limit: count}, function (err, geoTweets) {
               cb(err, geoTweets)
             });
           },
           function (geoTweets, cb) {
+            //Map the fields from the full tweet object we need to do clustering and put them in a
+            //nice array
             var scoreRecords = [];
             geoTweets.forEach(function (geoTweet) {
-              var scoreRecord = {};
+              var scoreGeoTweet = {};
               try {
                 if (!geoTweet) {
                   throw new Error('<null> GeoTweet!');
                 }
                 var fullTweet = JSON.parse(geoTweet.fullTweet);
                 //Now shall we score the tweet
-                scoreRecord = {
-                  id: fullTweet.id.toString(),
+                scoreGeoTweet = {
+                  user: fullTweet.user.screen_name,
+                  caption: fullTweet.text,
+                  twitterId: fullTweet.id.toString(),
                   lat: fullTweet.genieLoc.lat,
                   lng: fullTweet.genieLoc.lng,
-                  text: fullTweet.text,
-                  username: fullTweet.user.screen_name,
                   tags: fullTweet.entities.hashtags.map(function (hashtag) {
                     return hashtag.text;
                   }),
-                  dt: fullTweet.created_at,
-                  cluster: -1
+                  postDate: new Date(fullTweet.created_at),
+                  indexedDate: new Date()
                 };
-                /*        geoTweet.updateAttribute('scored', false, function (err, tweet) {
-                 cb(null);
-                 });*/
-                scoreRecords.push(scoreRecord);
+                //Set GeoTweet instance to scored so we don't look at it again
+                geoTweet.updateAttribute('scored', true, function (err, o) {
+                  var e = err;
+                });
+                scoreRecords.push(scoreGeoTweet);
               } catch (err) {
                 log(err);
               }
@@ -76,60 +88,75 @@ try {
             cb(null, scoreRecords);
           },
           function (scoreRecords, cb) {
-            var newRecords = {};
-            scoreRecords.forEach(function (sr) {
-              sr.tags.forEach(function (tag) {
-                if (newRecords[tag]) {
-                  newRecords[tag].push(sr);
+            //Take the nice array of ScoredGeoTweets and slam them in to ES. Check twitterId so we don't
+            //have any repeats (pretty unlikely but pretty easy to check so, why not?)
+            var queries = scoreRecords.map(function (sr) {
+              return {where: {twitterId: sr.id}};
+            });
+            scoredGeoTweetHelper.findOrCreateMany(queries, scoreRecords, function (err, newScoredRecords) {
+              cb(null);
+            });
+          },
+          function (cb) {
+            scoredGeoTweetHelper.count(function (err, count) {
+              cb(err, count);
+            });
+          },
+          function (count, cb) {
+            var refDate = new Date('2016-01-05T20:06:00.000Z');
+            var filterStartDate = moment(refDate);
+            var filterEndDate = moment(refDate);
+            filterStartDate.subtract(2, 'minutes');
+            scoredGeoTweetHelper.find({
+                where: {
+                  and: [
+                    {postDate: {gt: filterStartDate}},
+                    {postDate: {lt: filterEndDate}}
+                  ]
+                },
+                limit: count
+              },
+              function (err, timeWindowedScoredGeoTweets) {
+                /*              var minDate = new Date();
+                 var maxDate = new Date('2000-01-01');
+                 timeWindowedScoredGeoTweets.forEach(function (tweet) {
+                 var postDate = new Date(tweet.postDate);
+                 minDate = (postDate < minDate) ? postDate : minDate;
+                 maxDate = (postDate > maxDate) ? postDate : maxDate;
+                 });
+                 var md = maxDate.toISOString();*/
+                cb(null, timeWindowedScoredGeoTweets);
+              });
+          },
+          function (timeWindowedScoredGeoTweets, cb) {
+            const minTweetsToCluster = 5;
+            var geoTweetBuckets = {};
+            var blacklist = ['job', 'jobs', 'hiring', 'careerarc'];
+            timeWindowedScoredGeoTweets.forEach(function (sr) {
+              var tagArray = sr.tags.split(',');
+              tagArray.forEach(function (tagText) {
+                if (blacklist.indexOf(tagText) != -1) {
+                  return;
+                }
+                if (geoTweetBuckets[tagText]) {
+                  geoTweetBuckets[tagText].push(sr);
                 } else {
-                  newRecords[tag] = [sr];
+                  geoTweetBuckets[tagText] = [sr];
                 }
               });
             });
-            var blacklist = ['job', 'jobs', 'hiring', 'careerarc'];
-            for (var tagText in newRecords) {
-              if (blacklist.indexOf(tagText) != -1) {
-                continue;
-              }
-              async.waterfall([
-                  function (cb) {
-                    scoredGeoTweetHelper.getModel().find({where: {tags: tagText}}, function (err, scoredGeoTweets) {
-                      try {
-                        if (err) {
-                          log(err);
-                          cb(null, 0);
-                        }else{
-                          cb(null, scoredGeoTweets.length);
-                        }
-                      } catch (err) {
-                        cb(null, 0);
-                      }
-                    });
-                  },
-                  function (existingRecordCount, cb) {
-                    var newRecord = newRecords[tagText];
-                    var newRecordCount = newRecord.length;
-                    var totalRecordCount = (newRecordCount + existingRecordCount);
-                    if (totalRecordCount < 5) {
-                      log('--> only' + totalRecordCount + ' entries (insufficient for clustering)')
-                      var queries = newRecord.map(function (nr) {
-                        return {where: {twitterId: nr.id}};
-                      });
-                      scoredGeoTweetHelper.findOrCreateMany(queries, newRecord, function (err, xx) {
-                        var e = err;
-                      });
-                    }
-                    cb(null);
-                  }
-                ],
-                function (err, results) {
-                  var e = err;
-                });
-              /*              var tweetMetaDataArray = newRecords[tagText];
-               var len =tweetMetaDataArray.length;
-               var scoreBin = new ScoreBin(tagText);*/
+            cb();
+          },
+          function(geoTweetBuckets, cb){
+            for (var geoTweetBucket in geoTweetBuckets) {
+              var geoTweetArray = geoTweetBuckets[geoTweetBucket];
+              var dataToCluster = geoTweetArray.map(function (geoTweet) {
+                return [geoTweet.lng, geoTweet.lat];
+              });
+              var dbscan = new clustering.DBSCAN();
+              var clusters = dbscan.run(dataToCluster, 0.2, 3);
             }
-            cb(null);
+            cb();
           }
         ],
         function (err, results) {

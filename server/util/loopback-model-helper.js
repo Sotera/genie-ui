@@ -21,12 +21,35 @@ module.exports = class {
     this.model.deleteAll(cb);
   }
 
-  findOne(query, cb) {
-    this.model.findOne(query, cb);
+  count(query, options, cb) {
+    this.model.count(query, options, cb);
   }
 
-  find(query, cb) {
-    this.model.find(query, cb);
+  findOne(query, options, cb) {
+    this.model.findOne(query, options, cb);
+  }
+
+  find(query, options, cb) {
+    this.model.find(query, options, cb);
+  }
+
+  init(objectToInitWith, cb) {
+    var self = this;
+    self.find(function (err) {
+      if (err) {
+        self.create(objectToInitWith, function (err, newObject) {
+          if (!err) {
+            newObject.destroy(function (err, destroyedObject) {
+              cb(err, destroyedObject);
+            });
+          } else {
+            cb(err, newObject);
+          }
+        });
+      } else {
+        cb(null, {});
+      }
+    });
   }
 
   findOrCreateMany(queries, objectsToCreate, cb) {

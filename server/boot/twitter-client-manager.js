@@ -23,12 +23,8 @@ module.exports = function (app, cb) {
       const folderName = '/home/jreeme/src/hashTagClustering/raw_tweet_data/real-json/';
       var fs = require('fs');
       var path = require('path');
-      const fileNames = [
-        '2016-01-02_07:01:44.003319.real.json'
-/*        ,'2016-01-02_06:55:36.713734.real.json'
-        ,'2016-01-02_06:52:29.395153.real.json'
-        ,'2016-01-02_06:58:40.889817.real.json'*/
-      ];
+      var glob = require('glob-fs')({gitignore: true});
+      const fileNames = glob.readdirSync('*.json',{cwd: folderName});
       fileNames.forEach(function(fileName){
         var fileText = fs.readFileSync(path.join(folderName, fileName), 'utf8');
         var tweets = JSON.parse(fileText);
