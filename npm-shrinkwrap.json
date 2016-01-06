@@ -1,6 +1,6 @@
 {
-  "name": "GENIE",
-  "version": "0.2.1",
+  "name": "genie-ui",
+  "version": "0.1.0",
   "dependencies": {
     "api-check": {
       "version": "7.5.5",

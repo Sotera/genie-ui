@@ -1,8 +1,8 @@
 {
-  "name": "GENIE",
-  "subdomain": "GENIE",
+  "name": "genie-ui",
+  "subdomain": "genie-ui",
   "description": "GENIE User Interface",
-  "version": "0.2.1",
+  "version": "0.1.0",
   "private": true,
   "engines": {
     "node": "4.2.x",
@@ -19,10 +19,8 @@
     "url": "https://github.com/sotera/genie-ui/issues"
   },
   "scripts": {
-    "start": "node server/server.js",
-    "predev": "npm install",
-    "dev": "nodemon server/server.js -w server -w common -i server/node-red -i server/datasources.json --ext js,json",
-    "postinstall": "bower install"
+    "predev": "npm install && bower install",
+    "dev": "nodemon server/server.js -w server -w common -i server/node-red -i server/datasources.json --ext js,json"
   },
   "main": "server/server.js",
   "dependencies": {
