@@ -44,6 +44,17 @@ module.exports = function (app) {
     res.render('events-map/views/chipmap', {title: 'MiniMap'});
   });
 
+  /*GeoTwitter*/
+  app.get('/modules/geo-twitter/views/main', function (req, res) {
+    res.render('geo-twitter/views/main', {title: 'Main'});
+  });
+  app.get('/modules/geo-twitter/views/map', function (req, res) {
+    res.render('geo-twitter/views/map', {title: 'Map'});
+  });
+  app.get('/modules/geo-twitter/views/chip', function (req, res) {
+    res.render('geo-twitter/views/chip', {title: 'Chip'});
+  });
+
   /*Blank*/
   app.get('/modules/blank/views/main', function (req, res) {
     res.render('blank/views/main', {title: 'Main'});

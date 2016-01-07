@@ -41,6 +41,7 @@ angular.module('loopbackApp', [
     'com.module.core',
     'com.module.about',
     'genie.eventsMap',
+    'genie.geoTwitter',
     'com.module.stats',
     'com.module.settings',
     'com.module.users'
