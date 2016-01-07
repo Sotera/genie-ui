@@ -1,0 +1,108 @@
+[
+  {
+    "name": "data-container",
+    "Image": "lukewendling\/data-container:1",
+    "DockerFilePath": "",
+    "Hostname": "data-container"
+  },
+  {
+    "name": "elasticsearch",
+    "Image": "elasticsearch:2.1",
+    "DockerFilePath": "",
+    "Hostname": "elasticsearch",
+    "ExposedPorts": {
+      "9200\/tcp": {
+
+      }
+    },
+    "HostConfig": {
+      "VolumesFrom": [
+        "data-container"
+      ],
+      "PortBindings": {
+        "9200\/tcp": [
+          {
+            "HostPort": "9200"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "mongo",
+    "Image": "jreeme\/mongo:2.6",
+    "DockerFilePath": "docker\/mongo\/2.6",
+    "Hostname": "mongo",
+    "HostConfig": {
+      "VolumesFrom": [
+        "data-container"
+      ],
+      "PortBindings": {
+        "27017\/tcp": [
+          {
+            "HostPort": "27017"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "genie-strongloop",
+    "Image": "lukewendling\/strong-pm:1",
+    "DockerFilePath": "",
+    "Hostname": "genie-strongloop",
+    "ExposedPorts": {
+      "3001\/tcp": {
+
+      }
+    },
+    "Env": [
+      "NODE_ENV=production"
+    ],
+    "HostConfig": {
+      "Links": [
+        "mongo:mongo",
+        "elasticsearch:elasticsearch"
+      ],
+      "PortBindings": {
+        "3001\/tcp": [
+          {
+            "HostPort": "80"
+          }
+        ],
+        "8701\/tcp": [
+          {
+            "HostPort": "8701"
+          }
+        ]
+      }
+    },
+    "ExpressApps": [
+      {
+        "GitUrl": "git@github.com:sotera\/genie-ui",
+        "GitSrcBranchName": "master",
+        "StrongLoopBranchName": "deploy",
+        "StrongLoopServerUrl": "http:\/\/localhost:8701",
+        "ServiceName": "GenieUI",
+        "Scripts": [
+          {
+            "RelativeWorkingDir": ".",
+            "Command": "bower",
+            "Args": [
+              "install",
+              "--config.interactive=false"
+            ]
+          },
+          {
+            "RelativeWorkingDir": ".",
+            "Command": "cp",
+            "Args": [
+              "server\/config.json.template",
+              "server\/config.json"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

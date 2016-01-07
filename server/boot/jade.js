@@ -44,6 +44,22 @@ module.exports = function (app) {
     res.render('events-map/views/chipmap', {title: 'MiniMap'});
   });
 
+  /* Scraper */
+  app.get('/modules/scraper/views/main', function (req, res) {
+    res.render('scraper/views/main', {title: 'Scraper'});
+  });
+  app.get('/modules/scraper/views/map', function (req, res) {
+    res.render('scraper/views/map', {title: 'Scraper'});
+  });
+
+  /* Pin Map */
+  app.get('/modules/pin-map/views/main', function (req, res) {
+    res.render('pin-map/views/main', {title: 'Pin Map'});
+  });
+  app.get('/modules/pin-map/views/map', function (req, res) {
+    res.render('pin-map/views/map', {title: 'Pin Map'});
+  });
+  
   /*GeoTwitter*/
   app.get('/modules/geo-twitter/views/main', function (req, res) {
     res.render('geo-twitter/views/main', {title: 'Main'});
@@ -54,7 +70,7 @@ module.exports = function (app) {
   app.get('/modules/geo-twitter/views/chip', function (req, res) {
     res.render('geo-twitter/views/chip', {title: 'Chip'});
   });
-
+  
   /*Blank*/
   app.get('/modules/blank/views/main', function (req, res) {
     res.render('blank/views/main', {title: 'Main'});

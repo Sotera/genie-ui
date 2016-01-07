@@ -1,0 +1,21 @@
+/* styles for directives in common module */
+
+div.time-series {
+  width: 100%;
+  height: 160px;
+  padding-left: 0px;
+}
+
+/* override google chart styles */
+div.time-series .border {
+  background-color: #181818
+}
+
+/* general purpose block styles */
+.pad-top-md {
+  padding-top: 10px;
+}
+
+.form-group label {
+  color: white;
+}

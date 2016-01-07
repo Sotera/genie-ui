@@ -1,30 +1,77 @@
 {
   "db": {
-    "name": "db",
-    "connector": "memory"
-  },
-  "MongoDB": {
     "host": MONGO_HOST_ADDR,
     "port": MONGO_HOST_PORT,
     "database": "genie",
-    "name": "MongoDB",
+    "name": "db",
     "connector": "mongodb"
   },
-  "es": {
-    "name": "elasticsearch",
+  "es-scored-geo-tweets": {
+    "name": "es-scored-geo-tweets",
     "connector": "es",
     "hosts": [
       {
         "protocol": "http",
-        "host": HOST,
-        "port": 9200
+        "host": ES_HOST_ADDR,
+        "port": ES_HOST_PORT
       }
     ],
-    "apiVersion": "1.1",
+    "apiVersion": "2.0",
+    "requestTimeout": 5000,
+    "log": "error",
+    "defaultSize": 50,
+    "index": "genie",
+    "type": "post"
+  },
+  "es-geo-tweets": {
+    "name": "es-geo-tweets",
+    "connector": "es",
+    "hosts": [
+      {
+        "protocol": "http",
+        "host": ES_HOST_ADDR,
+        "port": ES_HOST_PORT
+      }
+    ],
+    "apiVersion": "2.0",
+    "requestTimeout": 5000,
+    "log": "error",
+    "defaultSize": 50,
+    "index": "genie",
+    "type": "post"
+  },
+  "es-events": {
+    "name": "es-events",
+    "connector": "es",
+    "hosts": [
+      {
+        "protocol": "http",
+        "host": ES_HOST_ADDR,
+        "port": ES_HOST_PORT
+      }
+    ],
+    "apiVersion": "2.0",
     "requestTimeout": 5000,
     "log": "trace",
     "defaultSize": 50,
-    "index": INDEX,
-    "type": TYPE
+    "index": "genie",
+    "type": "post"
+  },
+  "es-instagram": {
+    "name": "es-instagram",
+    "connector": "es",
+    "hosts": [
+      {
+        "protocol": "http",
+        "host": ES_HOST_ADDR,
+        "port": ES_HOST_PORT
+      }
+    ],
+    "apiVersion": "2.0",
+    "requestTimeout": 5000,
+    "log": "trace",
+    "defaultSize": 50,
+    "index": "instagram",
+    "type": "austin"
   }
 }

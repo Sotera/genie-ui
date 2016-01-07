@@ -1,14 +1,15 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('map', ['$window', 'stylesService',
-  function ($window, stylesService) {
+.directive('eventsMap', ['$window', 'StylesService',
+  function ($window, StylesService) {
 
   function link(scope, elem, attrs) {
     var mapOptions = {
       zoom: +attrs.zoom || 10,
-      styles: stylesService.dark,
+      styles: StylesService.dark,
       streetViewControl: false,
       mapTypeControl: false,
+      scrollwheel: false,
       zoomControlOptions: {
         position: google.maps.ControlPosition.TOP_LEFT
       },
@@ -21,34 +22,20 @@ angular.module('genie.eventsMap')
       console.log(newZoom, 'zoom');
       scope.inputs.zoomLevel = newZoom;
       scope.$apply();
-      // changeFocus({zoomLevel: map.getZoom(), map: map});
-      // tweetService.stop();
     });
 
     resizeMap(map, elem);
 
     scope.map = map;
-
-    // createControls(map);
-    // notCentered on initial view
-    // changeFocus({zoomLevel: options.zoomLevel, map: map, notCentered: true});
   }
-
-  // function changeFocus(options) {
-  //   var zoomLevel = options.zoomLevel || options.map.getZoom();
-  //   minutesAgo = +options.minutesAgo || minutesAgo;
-
-  //   mapService.findZoomLevel(zoomLevel, minutesAgo)
-  //   .then(
-  //     regenerateHeatmap({map: options.map, notCentered: options.notCentered})
-  //   );
-  // }
 
   function resizeMap(map, elem) {
     var parent = $('#' + elem.parent()[0].id);
     var doResize = function doResize () {
       var parentMargins = parent.outerHeight(true) - parent.height();
-      var height = $window.innerHeight - elem[0].offsetTop - parentMargins ;
+      var bottomHeight = 220;
+      var height = $window.innerHeight - elem[0].offsetTop - parentMargins -
+        bottomHeight;
       elem.css('height', height + 'px');
 
       google.maps.event.trigger(map, 'resize');

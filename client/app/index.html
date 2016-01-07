@@ -19,7 +19,11 @@
   <link rel="stylesheet" href="/css/skin-blue.css"/>
   <link rel="stylesheet" href="/css/skin-midnight.css"/>
   <link rel="stylesheet" href="/css/social.css"/>
+  <link rel="stylesheet" href="/css/common.css"/>
   <link rel="stylesheet" href="/css/events-map.css"/>
+  <link rel="stylesheet" href="/css/scraper.css"/>
+  <link rel="stylesheet" href="/css/pin-map.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bxslider/4.2.5/jquery.bxslider.min.css">
 </head>
 <body class="{{getSetting('appTheme') }} {{ getSetting('appLayout') }} "
   ng-controller="MainCtrl">
@@ -39,11 +43,12 @@
 {'modules':[{'name':'visualization','version':'1.1','packages':
 ['line','annotationchart']}]}"></script>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBjPIHviN-xZweV8sE9qDcT6S_seHLbf6c&libraries=visualization"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.7/socket.io.js"></script>
-
 <script src="bower_components/jquery/dist/jquery.min.js"></script>
 <script src="bower_components/moment/min/moment.min.js"></script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAkYlCyB4YD2XSoTmSt0-PpVvb7JcQxpvc&libraries=visualization,drawing"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.7/socket.io.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bxslider/4.2.5/jquery.bxslider.min.js"></script>
 
 <script src="bower_components/jqcloud2/dist/jqcloud.min.js"></script>
 <script src="bower_components/lodash/lodash.min.js"></script>
@@ -77,13 +82,13 @@
 <script src="/modules/about/config/about.config.js"></script>
 <script src="/modules/about/config/about.routes.js"></script>
 <script src="/modules/about/controllers/about.controller.js"></script>
-<script src="/modules/blank/app.blank.js"></script>
+<!--script src="/modules/blank/app.blank.js"></script>
 <script src="/modules/blank/config/blank.config.js"></script>
 <script src="/modules/blank/config/blank.routes.js"></script>
 <script src="/modules/blank/controllers/blank.ctrl.js"></script>
 <script src="/modules/blank/directives/blank.chart.directive.js"></script>
 <script src="/modules/blank/directives/blank.directive.js"></script>
-<script src="/modules/blank/services/blank.service.js"></script>
+<script src="/modules/blank/services/blank.service.js"></script-->
 <script src="/modules/geo-twitter/app.geo-twitter.js"></script>
 <script src="/modules/geo-twitter/config/geo-twitter.config.js"></script>
 <script src="/modules/geo-twitter/config/geo-twitter.routes.js"></script>
@@ -115,20 +120,40 @@
 <script src="/modules/core/services/api.service.js"></script>
 <script src="/modules/core/services/core.service.js"></script>
 <script src="/modules/core/services/websocket.service.js"></script>
+
+<script src="/modules/common/app.common.js"></script>
+<script src="/modules/common/services/chart-service.js"></script>
+<script src="/modules/common/services/styles-service.js"></script>
+<script src="/modules/common/directives/time-series-directive.js"></script>
+<script src="/modules/common/directives/drawing-tools-directive.js"></script>
+
+<script src="/modules/scraper/app.scraper.js"></script>
+<script src="/modules/scraper/config/config.js"></script>
+<script src="/modules/scraper/config/routes.js"></script>
+<script src="/modules/scraper/controllers/scraper-ctrl.js"></script>
+<script src="/modules/scraper/directives/instagram-images-directive.js"></script>
+<script src="/modules/scraper/directives/scraper-map-directive.js"></script>
+<script src="/modules/scraper/directives/scraper-controls-directive.js"></script>
+
+<script src="/modules/pin-map/app.pin-map.js"></script>
+<script src="/modules/pin-map/config/config.js"></script>
+<script src="/modules/pin-map/config/routes.js"></script>
+<script src="/modules/pin-map/controllers/pin-map-ctrl.js"></script>
+<script src="/modules/pin-map/directives/pin-map-directive.js"></script>
+
 <script src="/modules/events-map/app.events-map.js"></script>
 <script src="/modules/events-map/config/config.js"></script>
 <script src="/modules/events-map/config/routes.js"></script>
 <script src="/modules/events-map/controllers/map-ctrl.js"></script>
-<script src="/modules/events-map/directives/map-directive.js"></script>
-<script src="/modules/events-map/directives/stream-tweets-directive.js"></script>
+<script src="/modules/events-map/directives/events-map-directive.js"></script>
+<script src="/modules/events-map/directives/twitter-stream-directive.js"></script>
 <script src="/modules/events-map/directives/chipmap-directive.js"></script>
-<script src="/modules/events-map/directives/time-series-directive.js"></script>
 <script src="/modules/events-map/directives/heatmap-directive.js"></script>
+<script src="/modules/events-map/directives/image-slider-directive.js"></script>
+<script src="/modules/events-map/directives/stream-controls-directive.js"></script>
 <script src="/modules/events-map/services/map-service.js"></script>
-<script src="/modules/events-map/services/map-control-service.js"></script>
 <script src="/modules/events-map/services/tweet-service.js"></script>
-<script src="/modules/events-map/services/styles-service.js"></script>
-<script src="/modules/events-map/services/time-series-service.js"></script>
+
 <script src="/modules/settings/app.settings.js"></script>
 <script src="/modules/settings/config/settings.config.js"></script>
 <script src="/modules/settings/config/settings.routes.js"></script>

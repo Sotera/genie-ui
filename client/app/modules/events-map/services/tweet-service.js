@@ -3,12 +3,15 @@ angular.module('genie.eventsMap')
 .factory('tweetService', ['ENV', '$timeout', function(ENV, $timeout) {
 
   var connected = false,
-    socket = null;
+    socket = null,
+    images = [], //just a simple array. getters, setters defined here.
+    tweets = new google.maps.MVCArray(), // provides own getters, setters.
+    hashtags = [];
 
-  // needs a google map object and tweets data store (array)
+  // needs a google map object.
+  // TODO: move map marker creation to another service or directive?
   function init(options) {
-    var map = options.map,
-      tweets = options.tweets;
+    var map = options.map;
 
     if (io !== undefined) {
       if (!connected) {
@@ -18,6 +21,10 @@ angular.module('genie.eventsMap')
 
         // listen on the "twitter-steam" channel
         socket.on('twitter-stream', function (tweet) {
+          addImages(tweet.images);
+          addHashtags(tweet.hashtags);
+          // console.log(tweet.hashtags)
+
           //Add tweet to the heat map array.
           tweetLocation = new google.maps.LatLng(tweet.lng, tweet.lat);
           tweets.push(tweetLocation);
@@ -63,6 +70,45 @@ angular.module('genie.eventsMap')
     socket && socket.emit('stop tweets');
   }
 
+  // add images to store and truncate as needed.
+  function addImages(newImages) {
+    if (!newImages.length) return;
+
+    var max = 20;
+    if (images.length > max) {
+      // truncate to last n items
+      images = images.slice(max*-1);
+    }
+    // add new images
+    images = images.concat(newImages);
+  }
+
+  function getImages() {
+    return images;
+  }
+
+  // add hashtags to store and updates item weight.
+  // expects array of strings.
+  function addHashtags(newTags) {
+    var found;
+    if (!newTags.length) return;
+
+    newTags.forEach(function(newTag) {
+      found = _.detect(hashtags, function(existTag) {
+        return existTag.text === newTag;
+      });
+      if (found) { // update weight
+        found.weight += 1;
+      } else { // create object
+        hashtags.push({text: newTag, weight: 1});
+      }
+    });
+  }
+
+  function getHashtags() {
+    return hashtags;
+  }
+
   // twitter wants lng-lat pairs: reorder map.getBounds() output
   function boundForTwitter(mapBounds) {
     var bounds = mapBounds.toUrlValue().split(',');
@@ -93,6 +139,9 @@ angular.module('genie.eventsMap')
   return {
     init: init,
     start: start,
-    stop: stop
+    stop: stop,
+    getImages: getImages,
+    getHashtags: getHashtags,
+    tweets: tweets
   };
 }]);

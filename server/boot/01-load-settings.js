@@ -63,12 +63,27 @@ module.exports = function (app, cb) {
     type: 'string',
     key: 'nodeRedAdminRoot',
     value: '/red'
-  },
-    {
-      type: 'boolean',
-      key: 'loadUpSomeClusteredEventsBaby',
-      value: false
-    }
+  }, {
+    type: 'string',
+    key: 'zoomLevels:startDate',
+    value: '2014-08-17'
+  }, {
+    type: 'string',
+    key: 'zoomLevels:endDate',
+    value: '2014-08-21'
+  }, {
+    type: 'int',
+    key: 'map:minZoom',
+    value: 0
+  }, {
+    type: 'int',
+    key: 'map:maxZoom',
+    value: 18
+  }, {
+    type: 'string',
+    key: 'scraper:instagramAccessToken',
+    value: ''
+  }
   ];
 
   var settingHelper = new LoopbackModelHelper('Setting');

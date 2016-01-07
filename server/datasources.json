@@ -1,15 +1,9 @@
 {
-  "db-mem": {
-    "name": "db-mem",
-    "connector": "memory",
-    "file": "db.json"
-  },
   "db": {
     "host": "localhost",
     "port": 27017,
     "database": "genie",
     "name": "db",
-    "connectionTimeout": 10000,
     "connector": "mongodb"
   },
   "es-scored-geo-tweets": {
@@ -23,11 +17,11 @@
       }
     ],
     "apiVersion": "2.0",
-    "requestTimeout": 10000,
+    "requestTimeout": 5000,
     "log": "error",
     "defaultSize": 50,
-    "index": "scored-geo-tweet",
-    "type": "ScoredGeoTweet"
+    "index": "genie",
+    "type": "post"
   },
   "es-geo-tweets": {
     "name": "es-geo-tweets",
@@ -40,10 +34,44 @@
       }
     ],
     "apiVersion": "2.0",
-    "requestTimeout": 10000,
+    "requestTimeout": 5000,
+    "log": "error",
+    "defaultSize": 50,
+    "index": "genie",
+    "type": "post"
+  },
+  "es-events": {
+    "name": "es-events",
+    "connector": "es",
+    "hosts": [
+      {
+        "protocol": "http",
+        "host": "localhost",
+        "port": 9200
+      }
+    ],
+    "apiVersion": "2.0",
+    "requestTimeout": 5000,
     "log": "trace",
     "defaultSize": 50,
-    "index": "geo-tweet",
-    "type": "GeoTweet"
+    "index": "genie",
+    "type": "post"
+  },
+  "es-instagram": {
+    "name": "es-instagram",
+    "connector": "es",
+    "hosts": [
+      {
+        "protocol": "http",
+        "host": "localhost",
+        "port": 9200
+      }
+    ],
+    "apiVersion": "2.0",
+    "requestTimeout": 5000,
+    "log": "trace",
+    "defaultSize": 50,
+    "index": "instagram",
+    "type": "austin"
   }
 }

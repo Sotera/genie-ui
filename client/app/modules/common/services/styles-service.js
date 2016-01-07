@@ -1,8 +1,9 @@
 'use strict';
-angular.module('genie.eventsMap')
-  .factory('stylesService', [function() {
+angular.module('genie.common')
+  .factory('StylesService', [function() {
     //TODO: store styles in settings table
     return {
+      darkColor: '#181818',
       dark: [
         {
           "featureType": "all",
@@ -165,7 +166,7 @@ angular.module('genie.eventsMap')
               "color": "#181818"
             },
             {
-              
+
             }
           ]
         }

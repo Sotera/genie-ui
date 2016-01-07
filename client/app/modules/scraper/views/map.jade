@@ -1,0 +1,10 @@
+.container-fluid
+  .row
+    .col-md-12
+      drawing-tools( scraper-controls )
+        #map( scraper-map zoom='9' class='scraper-map' )
+  .row( class='pad-top-md' )
+    .col-md-6
+      time-series( chart_name='instagram-time-series' )
+    .col-md-6
+      instagram-images

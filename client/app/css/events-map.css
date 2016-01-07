@@ -1,22 +1,3 @@
-div.events-map-cloud {
-  width: 400px;
-  height: 300px;
-  position: absolute;
-  bottom: 50px;
-  right: 10px;
-}
-
-div.time-series {
-  width: 100%;
-  height: 160px;
-}
-
-/* override google chart styles */
-div.time-series .border {
-  background-color: #181818
-}
-
-.events-map {
-  width: 100%;
-  height: 100%;
+div.events-cloud, div.live-cloud {
+  height: 220px;
 }

@@ -1,12 +1,12 @@
 'use strict';
 angular.module('genie.eventsMap')
-  .directive('chipmap', ['stylesService', 'mapService', 'ZoomLevel',
-    function (stylesService, mapService, ZoomLevel) {
+  .directive('chipmap', ['StylesService', 'mapService', 'ZoomLevel',
+    function (StylesService, mapService, ZoomLevel) {
 
     function link(scope, elem, attrs) {
       var mapOptions = {
         zoom: +attrs.zoom || 5,
-        styles: stylesService.dark
+        styles: StylesService.dark
       };
 
       scope.map = new google.maps.Map(elem[0], mapOptions);

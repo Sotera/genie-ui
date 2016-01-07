@@ -11,3 +11,4 @@ dist/
 server/node-red/*.backup
 server/node-red/.config.json
 server/config.json
+server/datasources.json
