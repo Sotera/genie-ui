@@ -10,6 +10,6 @@ angular.module('genie.eventsMap')
     .state('app.events-map.show', {
       url: '',
       templateUrl: 'modules/events-map/views/map',
-      controller: 'MapCtrl'
+      controller: 'EventsMapCtrl'
     });
 });

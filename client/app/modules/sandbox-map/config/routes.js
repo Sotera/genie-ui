@@ -10,6 +10,6 @@ angular.module('genie.sandboxMap')
     .state('app.sandbox-map.show', {
       url: '',
       templateUrl: 'modules/sandbox-map/views/map',
-      controller: 'MapCtrl'
+      controller: 'SandboxMapCtrl'
     });
 });

@@ -1,6 +1,6 @@
 'use strict';
 angular.module('genie.eventsMap')
-.controller('MapCtrl', ['$scope', 'mapService', 'ZoomLevel',
+.controller('EventsMapCtrl', ['$scope', 'mapService', 'ZoomLevel',
   'tweetService',
   function($scope, mapService, ZoomLevel, tweetService) {
 
