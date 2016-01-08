@@ -1,0 +1,22 @@
+.box
+  .box-body.no-padding(style='min-height: 120px;')
+    //span User: {{currentUser.username}}
+    table.table.table-striped(st-table='displayedScrapers', st-safe-src='safeDisplayedScrapers')
+      thead
+        tr
+          th
+            button.btn.btn-sm.btn-default(ui-sref='^.scraper-list' ui-sref-opts="{reload: true, notify: true}",title='Refresh Scrapers')
+              i.fa.fa-refresh
+      thead
+        tr
+          th.col-sm-1.col-md-1.col-lg-1 Time Started
+          th.col-sm-1.col-md-1.col-lg-1 Location Box
+          th.col-sm-1.col-md-1.col-lg-1 Tweets Examined
+      tbody
+        tr(ng-repeat='scraper in displayedScrapers')
+          td {{scraper.timeStarted}}
+          td {{scraper.locations}}
+          td {{scraper.tweetsExamined}}
+  .overlay(ng-if='loading')
+  .loading-img(ng-if='loading')
+

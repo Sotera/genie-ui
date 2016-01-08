@@ -24,11 +24,11 @@ module.exports = function (app, cb) {
       var fs = require('fs');
       var path = require('path');
       var glob = require('glob-fs')({gitignore: true});
-      const fileNames = glob.readdirSync('*.json',{cwd: folderName});
-      fileNames.forEach(function(fileName){
+      const fileNames = glob.readdirSync('*.json', {cwd: folderName});
+      fileNames.forEach(function (fileName) {
         var fileText = fs.readFileSync(path.join(folderName, fileName), 'utf8');
         var tweets = JSON.parse(fileText);
-        tweets.forEach(function(tweet){
+        tweets.forEach(function (tweet) {
           twitterClient.writeTweetToGeoTweetCollection(tweet, {
             onlyWithCoordinates: true,
             onlyWithHashtags: true
@@ -51,22 +51,23 @@ module.exports = function (app, cb) {
     });
   });
 
-  app.post('/testTwitter', function (req, res) {
+  app.post('/startTwitterScrape', function (req, res) {
     if (!twitterClient) {
       restResponse(new Error(twitterClientErrorMsg), res);
       return;
     }
+
+    var boundingBoxLatSouth = req.body.coords[0];
+    var boundingBoxLatNorth = req.body.coords[2];
+    var boundingBoxLngWest = req.body.coords[1];
+    var boundingBoxLngEast = req.body.coords[3];
     var options = {
       onlyWithHashtags: true,
       onlyWithCoordinates: true,
-      /*      boundingBoxLatSouth: 37.58,
-       boundingBoxLatNorth: 42.92,
-       boundingBoxLngWest: -91.71,
-       boundingBoxLngEast: -80.54,*/
-      boundingBoxLatSouth: 20,
-      boundingBoxLatNorth: 50,
-      boundingBoxLngWest: -130,
-      boundingBoxLngEast: -80,
+      boundingBoxLatSouth,
+      boundingBoxLatNorth,
+      boundingBoxLngWest,
+      boundingBoxLngEast,
       maxPlaceSizeMeters: 5000
     };
     try {

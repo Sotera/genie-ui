@@ -17,8 +17,8 @@ module.exports = class {
     return this.model;
   }
 
-  deleteAll(cb) {
-    this.model.deleteAll(cb);
+  destroyAll(cb) {
+    this.model.destroyAll(cb);
   }
 
   count(query, options, cb) {

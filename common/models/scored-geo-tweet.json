@@ -3,8 +3,7 @@
   "plural": "ScoredGeoTweets",
   "base": "PersistedModel",
   "idInjection": true,
-  "options": {
-  },
+  "options": {},
   "properties": {
     "user": {
       "type": "string",

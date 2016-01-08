@@ -7,10 +7,30 @@ angular.module('genie.scraper')
   function link(scope, elem, attrs) {
     var map = scope.map;
     var scrapeButton = document.createElement('div');
+    var twitterScrapeButton = document.createElement('div');
     var controls = map.controls[google.maps.ControlPosition.TOP_RIGHT];
 
     createButton(scrapeButton, { label: '▶', title: 'Start scrape' });
+    createButton(twitterScrapeButton, { label: '*', title: 'Add Twitter scrape' });
 
+    twitterScrapeButton.addEventListener('click', function() {
+      // console.log(scope.scraperCoords)
+      var coords = scope.scraperCoords;
+      if (coords && coords.length) {
+        $http.post('/startTwitterScrape',
+          {
+            coords: coords
+          })
+          .then(
+            function(res) {
+              console.log(res)
+            },
+            function(res) {
+              console.log(res)
+            }
+          );
+      }
+    });
     scrapeButton.addEventListener('click', function() {
       // console.log(scope.scraperCoords)
       var coords = scope.scraperCoords;
@@ -34,6 +54,7 @@ angular.module('genie.scraper')
     });
 
     controls.push(scrapeButton);
+    controls.push(twitterScrapeButton);
   }
 
   function createButton(container, options) {

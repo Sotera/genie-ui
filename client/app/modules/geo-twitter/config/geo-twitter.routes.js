@@ -6,9 +6,9 @@ angular.module('genie.geoTwitter')
         abstract: true,
         url: '/geo-twitter',
         templateUrl: 'modules/geo-twitter/views/main'
-      }).state('app.geoTwitter.map', {
+      }).state('app.geoTwitter.scraper-list', {
         url: '',
-        templateUrl: 'modules/geo-twitter/views/map',
+        templateUrl: 'modules/geo-twitter/views/scraper-list',
         controller: 'GeoTwitterCtrl'
       });
   });

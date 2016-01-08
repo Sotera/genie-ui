@@ -65,15 +65,19 @@
     "public": true
   },
   "GeoTweet": {
-    "dataSource": "es-geo-tweets",
+    "dataSource": "db",
     "public": true
   },
   "ScoredGeoTweet": {
-    "dataSource": "es-scored-geo-tweets",
+    "dataSource": "db",
     "public": true
   },
-    "InstagramSource": {
+  "InstagramSource": {
     "dataSource": "es-instagram",
+    "public": true
+  },
+  "GeoTwitterScrape": {
+    "dataSource": "db",
     "public": true
   }
 }

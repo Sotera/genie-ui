@@ -2,8 +2,7 @@
   "name": "GeoTweet",
   "base": "PersistedModel",
   "idInjection": true,
-  "options": {
-  },
+  "options": {},
   "properties": {
     "scored": {
       "type": "boolean",

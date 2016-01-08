@@ -7,7 +7,6 @@ try {
   var loopback = require('loopback');
   var clustering = require('density-clustering');
   var LoopbackModelHelper = require('../util/loopback-model-helper');
-  var ScoreBin = require('../util/twitter-score-bin');
   var apiCheck = require('api-check')({
     output: {
       prefix: 'compute_modules:clustered-event-source-helper',
@@ -24,7 +23,10 @@ try {
   });
 
   var geoTweetHelper = new LoopbackModelHelper('GeoTweet');
+  var geoTwitterScrape = new LoopbackModelHelper('GeoTwitterScrape');
   var scoredGeoTweetHelper = new LoopbackModelHelper('ScoredGeoTweet');
+
+  geoTwitterScrape.destroyAll();
 
   module.exports = class {
     constructor() {
@@ -48,7 +50,8 @@ try {
           },
           function (count, cb) {
             //Retrieve all the unscored GeoTweets in one query (no paging)
-            geoTweetHelper.find({where: {scored: false}, limit: count}, function (err, geoTweets) {
+            //geoTweetHelper.find({where: {scored: false}, limit: count}, function (err, geoTweets) {
+            geoTweetHelper.find({limit: count}, function (err, geoTweets) {
               cb(err, geoTweets)
             });
           },
@@ -77,9 +80,9 @@ try {
                   indexedDate: new Date()
                 };
                 //Set GeoTweet instance to scored so we don't look at it again
-                geoTweet.updateAttribute('scored', true, function (err, o) {
+/*                geoTweet.updateAttribute('scored', true, function (err, o) {
                   var e = err;
-                });
+                });*/
                 scoreRecords.push(scoreGeoTweet);
               } catch (err) {
                 log(err);
@@ -147,7 +150,7 @@ try {
             });
             cb();
           },
-          function(geoTweetBuckets, cb){
+          function (geoTweetBuckets, cb) {
             for (var geoTweetBucket in geoTweetBuckets) {
               var geoTweetArray = geoTweetBuckets[geoTweetBucket];
               var dataToCluster = geoTweetArray.map(function (geoTweet) {
@@ -180,6 +183,7 @@ try {
         if (options.onlyWithHashtags &&
           (!tweet.entities || !tweet.entities.hashtags || !tweet.entities.hashtags.length)) {
           log('No Hashtags');
+          cb(null, null);
           return;
         }
         if (options.onlyWithCoordinates) {
@@ -206,6 +210,7 @@ try {
             }
           }
           if (!tweet.genieLoc) {
+            cb(null, null);
             return;
           }
           log('We have coordinates! CenterPoint: [' + tweet.genieLoc.lng + ',' + tweet.genieLoc.lat + ']');
@@ -243,10 +248,10 @@ try {
       }), apiCheck.func], arguments);
       if (freeTwitterClients.length) {
         var self = this;
-        var locations = options.boundingBoxLngWest.toString();
-        locations += ',' + options.boundingBoxLatSouth.toString();
-        locations += ',' + options.boundingBoxLngEast.toString();
-        locations += ',' + options.boundingBoxLatNorth.toString();
+        var locations = options.boundingBoxLngWest.toFixed(2);
+        locations += ',' + options.boundingBoxLatSouth.toFixed(2);
+        locations += ',' + options.boundingBoxLngEast.toFixed(2);
+        locations += ',' + options.boundingBoxLatNorth.toFixed(2);
         var twitterClientStreamOptions = {
           stall_warnings: true,
           locations
@@ -255,24 +260,30 @@ try {
         inUseTwitterClients.push(twitterClient = freeTwitterClients.pop());
         twitterClient.stream('statuses/filter', twitterClientStreamOptions, function (stream) {
           stream.twitterClient = twitterClient;
-          //MonkeyPatch stream.destroy to emit 'end' event
-          var oldDestroy = stream.destroy;
-          stream.destroy = function () {
-            oldDestroy();
-            stream.emit('end');
-          }
-          //Sign up for stream events we care about
-          stream.on('data', function (tweet) {
-            self.writeTweetToGeoTweetCollection(tweet, options);
+          //Add record to GeoTwitterScrape to keep track of this scraper
+          geoTwitterScrape.create({timeStarted: new Date(), locations}, function (err, geoTwitterScraper) {
+            //MonkeyPatch stream.destroy to emit 'end' event
+            var oldDestroy = stream.destroy;
+            stream.destroy = function () {
+              oldDestroy();
+              stream.emit('end');
+            }
+            //Sign up for stream events we care about
+            stream.on('data', function (tweet) {
+              var newTweetsExamined = (geoTwitterScraper.tweetsExamined || 0) + 1;
+              geoTwitterScraper.updateAttribute('tweetsExamined', newTweetsExamined, function (err, o) {
+                self.writeTweetToGeoTweetCollection(tweet, options);
+              });
+            });
+            stream.on('end', function () {
+              var idxToRemove = inUseTwitterClients.indexOf(self.twitterClient);
+              freeTwitterClients = freeTwitterClients.concat(inUseTwitterClients.splice(idxToRemove, 1));
+            });
+            stream.on('error', function (err) {
+              log(err);
+            });
+            cb(null, stream);
           });
-          stream.on('end', function () {
-            var idxToRemove = inUseTwitterClients.indexOf(self.twitterClient);
-            freeTwitterClients = freeTwitterClients.concat(inUseTwitterClients.splice(idxToRemove, 1));
-          });
-          stream.on('error', function (err) {
-            log(err);
-          });
-          cb(null, stream);
         });
       } else {
         throw new Error('All TwitterClients in use!');
