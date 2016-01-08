@@ -12,6 +12,10 @@ body.skin-midnight{
 
 }
 
+.skin-midnight table {
+  color: #fff;
+}
+
 .skin-midnight .small-box.bg-gray {
   background-color: transparent !important;
   border: 2px solid #eaeaec !important;

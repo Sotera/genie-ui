@@ -44,6 +44,14 @@ module.exports = function (app) {
     res.render('events-map/views/chipmap', {title: 'MiniMap'});
   });
 
+  /* Sandbox Map */
+  app.get('/modules/sandbox-map/views/main', function (req, res) {
+    res.render('sandbox-map/views/main', {title: 'Sandbox Map'});
+  });
+  app.get('/modules/sandbox-map/views/map', function (req, res) {
+    res.render('sandbox-map/views/map', {title: 'Sandbox Map'});
+  });
+
   /* Scraper */
   app.get('/modules/scraper/views/main', function (req, res) {
     res.render('scraper/views/main', {title: 'Scraper'});
