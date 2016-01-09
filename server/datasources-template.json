@@ -20,8 +20,8 @@
     "requestTimeout": 5000,
     "log": "trace",
     "defaultSize": 50,
-    "index": "genie",
-    "type": "post"
+    "index": "hashtags",
+    "type": "event"
   },
   "es-sandbox-events": {
     "name": "es-sandbox-events",
@@ -29,7 +29,7 @@
     "hosts": [
       {
         "protocol": "http",
-        "host": ES_HOST_ADDR,
+        "host": "52.90.177.87",
         "port": ES_HOST_PORT
       }
     ],

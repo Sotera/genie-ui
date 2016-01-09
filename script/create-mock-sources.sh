@@ -1,25 +1,34 @@
 #! /usr/bin/env bash
-# usage ./create-mock-sources
+# usage: ./create-mock-sources
 # delete index and bulk import from file
-curl -X DELETE localhost:9200/genie
+
+set -u
+
+host_port="localhost:9200"
+index="${host_port}/hashtags"
+t="event" # type
+
+echo Creating $index/$t
+
+curl -X DELETE $index
+curl -XPUT $index
 
 # specify type to support range queries
-curl -XPUT localhost:9200/genie -d '{
-  "mappings": {
-    "post": {
-      "properties": {
-        "post_date": {
-          "type": "date"
-        },
-        "indexed_date": {
-          "type": "date"
-        }
+curl -X PUT $index/$t/_mapping -d '{
+  "event": {
+    "properties": {
+      "post_date": {
+        "type": "date",
+        "format": "date_optional_time"
+      },
+      "indexed_date": {
+        "type": "date",
+        "format": "date_optional_time"
       }
     }
   }
 }
 '
 
-curl -X POST localhost:9200/genie/post/_bulk --data-binary @import/ferguson-sources.json
-
-curl localhost:9200/genie/post/_search
+curl -X POST $index/$t/_bulk --data-binary @import/ferguson-sources.json
+curl $index/$t/_search

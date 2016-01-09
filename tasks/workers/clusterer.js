@@ -4,7 +4,7 @@ module.exports = {
   run: run
 };
 
-function run (options) {
+function run(options) {
   var transform = require('./transforms/' + options.transform);
   transform.run();
 }

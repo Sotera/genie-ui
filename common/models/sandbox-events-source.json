@@ -1,9 +1,7 @@
 {
   "name": "SandboxEventsSource",
   "properties": {
-    "created_time": {
-      "type": "number"
-    }
+
   },
   "validations": [],
   "relations": {},
