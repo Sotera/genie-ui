@@ -1,5 +1,5 @@
 {
-  "name": "ClusteredEventSource",
+  "name": "HashtagEventsSource",
   "properties": {
     "uuid": {
       "type": "string"

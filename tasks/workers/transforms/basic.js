@@ -7,7 +7,7 @@ const loopback = require('loopback'),
   clusterType = filename,
   app = require('../../../server/server'),
   ZoomLevel = app.models.ZoomLevel,
-  ClusteredEventSource = app.models.ClusteredEventSource,
+  HashtagEventsSource = app.models.HashtagEventsSource,
   log = require('debug')('transforms:' + filename),
   settings = require('../../../server/util/get-settings'),
   collections = require('../../../server/util/collections'),
@@ -42,7 +42,7 @@ function getEventSources(settings) {
       gte: endDate + '||-' + mins + 'm',
       lt:  endDate + '||-' + time.daysToMinutes(i-1) + 'm'
     };
-    ClusteredEventSource.find({
+    HashtagEventsSource.find({
       native: {
         from: 0,
         // size: 999,

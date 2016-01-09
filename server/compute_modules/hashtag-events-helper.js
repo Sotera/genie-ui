@@ -28,7 +28,7 @@ const randomishPointsOnEarth = [
 ];
 module.exports = class {
   constructor(app) {
-    this.ClusteredEventSource = app.models.ClusteredEventSource;
+    this.ClusteredEventSource = app.models.HashtagEventsSource;
   }
 
   initialize(cb) {

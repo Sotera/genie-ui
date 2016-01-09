@@ -6,8 +6,8 @@
     "name": "db",
     "connector": "mongodb"
   },
-  "es-events": {
-    "name": "es-events",
+  "es-hashtag-events": {
+    "name": "es-hashtag-events",
     "connector": "es",
     "hosts": [
       {
@@ -23,8 +23,8 @@
     "index": "genie",
     "type": "post"
   },
-  "es-instagram": {
-    "name": "es-instagram",
+  "es-sandbox-events": {
+    "name": "es-sandbox-events",
     "connector": "es",
     "hosts": [
       {
@@ -37,7 +37,7 @@
     "requestTimeout": 5000,
     "log": "trace",
     "defaultSize": 50,
-    "index": "instagram",
-    "type": "austin"
+    "index": "sandbox",
+    "type": "event"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "InstagramSource",
+  "name": "SandboxEventsSource",
   "properties": {
     "created_time": {
       "type": "number"

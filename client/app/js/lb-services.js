@@ -5311,13 +5311,13 @@ module.factory(
 
 /**
  * @ngdoc object
- * @name lbServices.ClusteredEventSource
- * @header lbServices.ClusteredEventSource
+ * @name lbServices.HashtagEventsSource
+ * @header lbServices.HashtagEventsSource
  * @object
  *
  * @description
  *
- * A $resource object for interacting with the `ClusteredEventSource` model.
+ * A $resource object for interacting with the `HashtagEventsSource` model.
  *
  * ## Example
  *
@@ -5327,17 +5327,17 @@ module.factory(
  *
  */
 module.factory(
-  "ClusteredEventSource",
+  "HashtagEventsSource",
   ['LoopBackResource', 'LoopBackAuth', '$injector', function(Resource, LoopBackAuth, $injector) {
     var R = Resource(
-      urlBase + "/ClusteredEventSources/:id",
+      urlBase + "/HashtagEventsSources/:id",
       { 'id': '@id' },
       {
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEventSource#create
-         * @methodOf lbServices.ClusteredEventSource
+         * @name lbServices.HashtagEventsSource#create
+         * @methodOf lbServices.HashtagEventsSource
          *
          * @description
          *
@@ -5364,18 +5364,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEventSource` object.)
+         * This usually means the response is a `HashtagEventsSource` object.)
          * </em>
          */
         "create": {
-          url: urlBase + "/ClusteredEventSources",
+          url: urlBase + "/HashtagEventsSources",
           method: "POST"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEventSource#createMany
-         * @methodOf lbServices.ClusteredEventSource
+         * @name lbServices.HashtagEventsSource#createMany
+         * @methodOf lbServices.HashtagEventsSource
          *
          * @description
          *
@@ -5402,19 +5402,19 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEventSource` object.)
+         * This usually means the response is a `HashtagEventsSource` object.)
          * </em>
          */
         "createMany": {
           isArray: true,
-          url: urlBase + "/ClusteredEventSources",
+          url: urlBase + "/HashtagEventsSources",
           method: "POST"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEventSource#upsert
-         * @methodOf lbServices.ClusteredEventSource
+         * @name lbServices.HashtagEventsSource#upsert
+         * @methodOf lbServices.HashtagEventsSource
          *
          * @description
          *
@@ -5441,18 +5441,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEventSource` object.)
+         * This usually means the response is a `HashtagEventsSource` object.)
          * </em>
          */
         "upsert": {
-          url: urlBase + "/ClusteredEventSources",
+          url: urlBase + "/HashtagEventsSources",
           method: "PUT"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEventSource#exists
-         * @methodOf lbServices.ClusteredEventSource
+         * @name lbServices.HashtagEventsSource#exists
+         * @methodOf lbServices.HashtagEventsSource
          *
          * @description
          *
@@ -5477,14 +5477,14 @@ module.factory(
          *  - `exists` – `{boolean=}` - 
          */
         "exists": {
-          url: urlBase + "/ClusteredEventSources/:id/exists",
+          url: urlBase + "/HashtagEventsSources/:id/exists",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEventSource#findById
-         * @methodOf lbServices.ClusteredEventSource
+         * @name lbServices.HashtagEventsSource#findById
+         * @methodOf lbServices.HashtagEventsSource
          *
          * @description
          *
@@ -5508,18 +5508,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEventSource` object.)
+         * This usually means the response is a `HashtagEventsSource` object.)
          * </em>
          */
         "findById": {
-          url: urlBase + "/ClusteredEventSources/:id",
+          url: urlBase + "/HashtagEventsSources/:id",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEventSource#find
-         * @methodOf lbServices.ClusteredEventSource
+         * @name lbServices.HashtagEventsSource#find
+         * @methodOf lbServices.HashtagEventsSource
          *
          * @description
          *
@@ -5541,19 +5541,19 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEventSource` object.)
+         * This usually means the response is a `HashtagEventsSource` object.)
          * </em>
          */
         "find": {
           isArray: true,
-          url: urlBase + "/ClusteredEventSources",
+          url: urlBase + "/HashtagEventsSources",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEventSource#findOne
-         * @methodOf lbServices.ClusteredEventSource
+         * @name lbServices.HashtagEventsSource#findOne
+         * @methodOf lbServices.HashtagEventsSource
          *
          * @description
          *
@@ -5575,18 +5575,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEventSource` object.)
+         * This usually means the response is a `HashtagEventsSource` object.)
          * </em>
          */
         "findOne": {
-          url: urlBase + "/ClusteredEventSources/findOne",
+          url: urlBase + "/HashtagEventsSources/findOne",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEventSource#updateAll
-         * @methodOf lbServices.ClusteredEventSource
+         * @name lbServices.HashtagEventsSource#updateAll
+         * @methodOf lbServices.HashtagEventsSource
          *
          * @description
          *
@@ -5613,14 +5613,14 @@ module.factory(
          * The number of instances updated
          */
         "updateAll": {
-          url: urlBase + "/ClusteredEventSources/update",
+          url: urlBase + "/HashtagEventsSources/update",
           method: "POST"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEventSource#deleteById
-         * @methodOf lbServices.ClusteredEventSource
+         * @name lbServices.HashtagEventsSource#deleteById
+         * @methodOf lbServices.HashtagEventsSource
          *
          * @description
          *
@@ -5642,18 +5642,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEventSource` object.)
+         * This usually means the response is a `HashtagEventsSource` object.)
          * </em>
          */
         "deleteById": {
-          url: urlBase + "/ClusteredEventSources/:id",
+          url: urlBase + "/HashtagEventsSources/:id",
           method: "DELETE"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEventSource#count
-         * @methodOf lbServices.ClusteredEventSource
+         * @name lbServices.HashtagEventsSource#count
+         * @methodOf lbServices.HashtagEventsSource
          *
          * @description
          *
@@ -5678,14 +5678,14 @@ module.factory(
          *  - `count` – `{number=}` - 
          */
         "count": {
-          url: urlBase + "/ClusteredEventSources/count",
+          url: urlBase + "/HashtagEventsSources/count",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEventSource#prototype$updateAttributes
-         * @methodOf lbServices.ClusteredEventSource
+         * @name lbServices.HashtagEventsSource#prototype$updateAttributes
+         * @methodOf lbServices.HashtagEventsSource
          *
          * @description
          *
@@ -5711,18 +5711,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEventSource` object.)
+         * This usually means the response is a `HashtagEventsSource` object.)
          * </em>
          */
         "prototype$updateAttributes": {
-          url: urlBase + "/ClusteredEventSources/:id",
+          url: urlBase + "/HashtagEventsSources/:id",
           method: "PUT"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEventSource#createChangeStream
-         * @methodOf lbServices.ClusteredEventSource
+         * @name lbServices.HashtagEventsSource#createChangeStream
+         * @methodOf lbServices.HashtagEventsSource
          *
          * @description
          *
@@ -5752,7 +5752,7 @@ module.factory(
          *  - `changes` – `{ReadableStream=}` - 
          */
         "createChangeStream": {
-          url: urlBase + "/ClusteredEventSources/change-stream",
+          url: urlBase + "/HashtagEventsSources/change-stream",
           method: "POST"
         },
       }
@@ -5762,8 +5762,8 @@ module.factory(
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEventSource#updateOrCreate
-         * @methodOf lbServices.ClusteredEventSource
+         * @name lbServices.HashtagEventsSource#updateOrCreate
+         * @methodOf lbServices.HashtagEventsSource
          *
          * @description
          *
@@ -5790,15 +5790,15 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEventSource` object.)
+         * This usually means the response is a `HashtagEventsSource` object.)
          * </em>
          */
         R["updateOrCreate"] = R["upsert"];
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEventSource#update
-         * @methodOf lbServices.ClusteredEventSource
+         * @name lbServices.HashtagEventsSource#update
+         * @methodOf lbServices.HashtagEventsSource
          *
          * @description
          *
@@ -5828,8 +5828,8 @@ module.factory(
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEventSource#destroyById
-         * @methodOf lbServices.ClusteredEventSource
+         * @name lbServices.HashtagEventsSource#destroyById
+         * @methodOf lbServices.HashtagEventsSource
          *
          * @description
          *
@@ -5851,15 +5851,15 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEventSource` object.)
+         * This usually means the response is a `HashtagEventsSource` object.)
          * </em>
          */
         R["destroyById"] = R["deleteById"];
 
         /**
          * @ngdoc method
-         * @name lbServices.ClusteredEventSource#removeById
-         * @methodOf lbServices.ClusteredEventSource
+         * @name lbServices.HashtagEventsSource#removeById
+         * @methodOf lbServices.HashtagEventsSource
          *
          * @description
          *
@@ -5881,7 +5881,7 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `ClusteredEventSource` object.)
+         * This usually means the response is a `HashtagEventsSource` object.)
          * </em>
          */
         R["removeById"] = R["deleteById"];
@@ -5889,13 +5889,13 @@ module.factory(
 
     /**
     * @ngdoc property
-    * @name lbServices.ClusteredEventSource#modelName
-    * @propertyOf lbServices.ClusteredEventSource
+    * @name lbServices.HashtagEventsSource#modelName
+    * @propertyOf lbServices.HashtagEventsSource
     * @description
     * The name of the model represented by this $resource,
-    * i.e. `ClusteredEventSource`.
+    * i.e. `HashtagEventsSource`.
     */
-    R.modelName = "ClusteredEventSource";
+    R.modelName = "HashtagEventsSource";
 
 
     return R;
@@ -8271,13 +8271,13 @@ module.factory(
 
 /**
  * @ngdoc object
- * @name lbServices.InstagramSource
- * @header lbServices.InstagramSource
+ * @name lbServices.SandboxEventsSource
+ * @header lbServices.SandboxEventsSource
  * @object
  *
  * @description
  *
- * A $resource object for interacting with the `InstagramSource` model.
+ * A $resource object for interacting with the `SandboxEventsSource` model.
  *
  * ## Example
  *
@@ -8287,17 +8287,17 @@ module.factory(
  *
  */
 module.factory(
-  "InstagramSource",
+  "SandboxEventsSource",
   ['LoopBackResource', 'LoopBackAuth', '$injector', function(Resource, LoopBackAuth, $injector) {
     var R = Resource(
-      urlBase + "/InstagramSources/:id",
+      urlBase + "/SandboxEventsSources/:id",
       { 'id': '@id' },
       {
 
         /**
          * @ngdoc method
-         * @name lbServices.InstagramSource#create
-         * @methodOf lbServices.InstagramSource
+         * @name lbServices.SandboxEventsSource#create
+         * @methodOf lbServices.SandboxEventsSource
          *
          * @description
          *
@@ -8324,18 +8324,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `InstagramSource` object.)
+         * This usually means the response is a `SandboxEventsSource` object.)
          * </em>
          */
         "create": {
-          url: urlBase + "/InstagramSources",
+          url: urlBase + "/SandboxEventsSources",
           method: "POST"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.InstagramSource#createMany
-         * @methodOf lbServices.InstagramSource
+         * @name lbServices.SandboxEventsSource#createMany
+         * @methodOf lbServices.SandboxEventsSource
          *
          * @description
          *
@@ -8362,19 +8362,19 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `InstagramSource` object.)
+         * This usually means the response is a `SandboxEventsSource` object.)
          * </em>
          */
         "createMany": {
           isArray: true,
-          url: urlBase + "/InstagramSources",
+          url: urlBase + "/SandboxEventsSources",
           method: "POST"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.InstagramSource#upsert
-         * @methodOf lbServices.InstagramSource
+         * @name lbServices.SandboxEventsSource#upsert
+         * @methodOf lbServices.SandboxEventsSource
          *
          * @description
          *
@@ -8401,18 +8401,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `InstagramSource` object.)
+         * This usually means the response is a `SandboxEventsSource` object.)
          * </em>
          */
         "upsert": {
-          url: urlBase + "/InstagramSources",
+          url: urlBase + "/SandboxEventsSources",
           method: "PUT"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.InstagramSource#exists
-         * @methodOf lbServices.InstagramSource
+         * @name lbServices.SandboxEventsSource#exists
+         * @methodOf lbServices.SandboxEventsSource
          *
          * @description
          *
@@ -8437,14 +8437,14 @@ module.factory(
          *  - `exists` – `{boolean=}` - 
          */
         "exists": {
-          url: urlBase + "/InstagramSources/:id/exists",
+          url: urlBase + "/SandboxEventsSources/:id/exists",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.InstagramSource#findById
-         * @methodOf lbServices.InstagramSource
+         * @name lbServices.SandboxEventsSource#findById
+         * @methodOf lbServices.SandboxEventsSource
          *
          * @description
          *
@@ -8468,18 +8468,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `InstagramSource` object.)
+         * This usually means the response is a `SandboxEventsSource` object.)
          * </em>
          */
         "findById": {
-          url: urlBase + "/InstagramSources/:id",
+          url: urlBase + "/SandboxEventsSources/:id",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.InstagramSource#find
-         * @methodOf lbServices.InstagramSource
+         * @name lbServices.SandboxEventsSource#find
+         * @methodOf lbServices.SandboxEventsSource
          *
          * @description
          *
@@ -8501,19 +8501,19 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `InstagramSource` object.)
+         * This usually means the response is a `SandboxEventsSource` object.)
          * </em>
          */
         "find": {
           isArray: true,
-          url: urlBase + "/InstagramSources",
+          url: urlBase + "/SandboxEventsSources",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.InstagramSource#findOne
-         * @methodOf lbServices.InstagramSource
+         * @name lbServices.SandboxEventsSource#findOne
+         * @methodOf lbServices.SandboxEventsSource
          *
          * @description
          *
@@ -8535,18 +8535,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `InstagramSource` object.)
+         * This usually means the response is a `SandboxEventsSource` object.)
          * </em>
          */
         "findOne": {
-          url: urlBase + "/InstagramSources/findOne",
+          url: urlBase + "/SandboxEventsSources/findOne",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.InstagramSource#updateAll
-         * @methodOf lbServices.InstagramSource
+         * @name lbServices.SandboxEventsSource#updateAll
+         * @methodOf lbServices.SandboxEventsSource
          *
          * @description
          *
@@ -8573,14 +8573,14 @@ module.factory(
          * The number of instances updated
          */
         "updateAll": {
-          url: urlBase + "/InstagramSources/update",
+          url: urlBase + "/SandboxEventsSources/update",
           method: "POST"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.InstagramSource#deleteById
-         * @methodOf lbServices.InstagramSource
+         * @name lbServices.SandboxEventsSource#deleteById
+         * @methodOf lbServices.SandboxEventsSource
          *
          * @description
          *
@@ -8602,18 +8602,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `InstagramSource` object.)
+         * This usually means the response is a `SandboxEventsSource` object.)
          * </em>
          */
         "deleteById": {
-          url: urlBase + "/InstagramSources/:id",
+          url: urlBase + "/SandboxEventsSources/:id",
           method: "DELETE"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.InstagramSource#count
-         * @methodOf lbServices.InstagramSource
+         * @name lbServices.SandboxEventsSource#count
+         * @methodOf lbServices.SandboxEventsSource
          *
          * @description
          *
@@ -8638,14 +8638,14 @@ module.factory(
          *  - `count` – `{number=}` - 
          */
         "count": {
-          url: urlBase + "/InstagramSources/count",
+          url: urlBase + "/SandboxEventsSources/count",
           method: "GET"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.InstagramSource#prototype$updateAttributes
-         * @methodOf lbServices.InstagramSource
+         * @name lbServices.SandboxEventsSource#prototype$updateAttributes
+         * @methodOf lbServices.SandboxEventsSource
          *
          * @description
          *
@@ -8671,18 +8671,18 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `InstagramSource` object.)
+         * This usually means the response is a `SandboxEventsSource` object.)
          * </em>
          */
         "prototype$updateAttributes": {
-          url: urlBase + "/InstagramSources/:id",
+          url: urlBase + "/SandboxEventsSources/:id",
           method: "PUT"
         },
 
         /**
          * @ngdoc method
-         * @name lbServices.InstagramSource#createChangeStream
-         * @methodOf lbServices.InstagramSource
+         * @name lbServices.SandboxEventsSource#createChangeStream
+         * @methodOf lbServices.SandboxEventsSource
          *
          * @description
          *
@@ -8712,7 +8712,7 @@ module.factory(
          *  - `changes` – `{ReadableStream=}` - 
          */
         "createChangeStream": {
-          url: urlBase + "/InstagramSources/change-stream",
+          url: urlBase + "/SandboxEventsSources/change-stream",
           method: "POST"
         },
       }
@@ -8722,8 +8722,8 @@ module.factory(
 
         /**
          * @ngdoc method
-         * @name lbServices.InstagramSource#updateOrCreate
-         * @methodOf lbServices.InstagramSource
+         * @name lbServices.SandboxEventsSource#updateOrCreate
+         * @methodOf lbServices.SandboxEventsSource
          *
          * @description
          *
@@ -8750,15 +8750,15 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `InstagramSource` object.)
+         * This usually means the response is a `SandboxEventsSource` object.)
          * </em>
          */
         R["updateOrCreate"] = R["upsert"];
 
         /**
          * @ngdoc method
-         * @name lbServices.InstagramSource#update
-         * @methodOf lbServices.InstagramSource
+         * @name lbServices.SandboxEventsSource#update
+         * @methodOf lbServices.SandboxEventsSource
          *
          * @description
          *
@@ -8788,8 +8788,8 @@ module.factory(
 
         /**
          * @ngdoc method
-         * @name lbServices.InstagramSource#destroyById
-         * @methodOf lbServices.InstagramSource
+         * @name lbServices.SandboxEventsSource#destroyById
+         * @methodOf lbServices.SandboxEventsSource
          *
          * @description
          *
@@ -8811,15 +8811,15 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `InstagramSource` object.)
+         * This usually means the response is a `SandboxEventsSource` object.)
          * </em>
          */
         R["destroyById"] = R["deleteById"];
 
         /**
          * @ngdoc method
-         * @name lbServices.InstagramSource#removeById
-         * @methodOf lbServices.InstagramSource
+         * @name lbServices.SandboxEventsSource#removeById
+         * @methodOf lbServices.SandboxEventsSource
          *
          * @description
          *
@@ -8841,7 +8841,7 @@ module.factory(
          *
          * <em>
          * (The remote method definition does not provide any description.
-         * This usually means the response is a `InstagramSource` object.)
+         * This usually means the response is a `SandboxEventsSource` object.)
          * </em>
          */
         R["removeById"] = R["deleteById"];
@@ -8849,13 +8849,13 @@ module.factory(
 
     /**
     * @ngdoc property
-    * @name lbServices.InstagramSource#modelName
-    * @propertyOf lbServices.InstagramSource
+    * @name lbServices.SandboxEventsSource#modelName
+    * @propertyOf lbServices.SandboxEventsSource
     * @description
     * The name of the model represented by this $resource,
-    * i.e. `InstagramSource`.
+    * i.e. `SandboxEventsSource`.
     */
-    R.modelName = "InstagramSource";
+    R.modelName = "SandboxEventsSource";
 
 
     return R;
