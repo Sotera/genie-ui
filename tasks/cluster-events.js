@@ -8,6 +8,16 @@ var app = require('../server/server'),
   worker = require('./workers/clusterer');
 
 // TODO: add Task#running, lastError
+Task.findOrCreate(
+  {
+    code: 'sandbox',
+    lastRun: '2015-11-01',
+    transform: 'sandbox/sandbox_event_converter'
+  },
+  runTask);
+
+
+// TODO: add Task#running, lastError
 Task.findOrCreate({
     code: taskName
   },
