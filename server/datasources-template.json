@@ -29,7 +29,7 @@
     "hosts": [
       {
         "protocol": "http",
-        "host": "52.90.177.87",
+        "host": ES_HOST_ADDR,
         "port": ES_HOST_PORT
       }
     ],
