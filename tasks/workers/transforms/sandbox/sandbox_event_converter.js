@@ -7,6 +7,7 @@ const app = require('../../../../server/server'),
   es_source_scrape = 'hajj',
   es_source_index = 'instagram_remap',
   es_dest_index = 'sandbox',
+  es_dest_type = 'event',
   es_source_client = new es.Client({hosts : ['http://52.90.177.87:9200/'],requestTimeout: 600000}),
   es_dest_client = new es.Client({hosts : ['http://localhost:9200/']}),
   giver = new Giver(es_source_client, es_source_index, es_source_scrape );
@@ -16,8 +17,36 @@ module.exports = {
 };
 
 function run() {
+  var es_index_mapping = {"event": {
+    "properties": {
+      "post_date": {
+        "type": "date",
+          "format": "date_optional_time"
+      },
+      "indexed_date": {
+        "type": "date",
+          "format": "date_optional_time"
+      }
+    }
+  }};
+
   es_dest_client.indices.create({index:es_dest_index},function(err,response){
-    loadEventSourceData();
+    if(!err) {
+      es_dest_client.indices.putMapping({
+        index: es_dest_index,
+        type: es_dest_type,
+        body: es_index_mapping
+      }, function (err, response) {
+        if(err){
+          console.log('error adding mapping: ' + JSON.stringify(err));
+          return;
+        }
+        loadEventSourceData();
+      });
+    }
+    else {
+      loadEventSourceData();
+    }
   });
 }
 
