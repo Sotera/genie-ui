@@ -7,6 +7,8 @@ var app = require('../server/server'),
   taskName = 'cluster events',
   worker = require('./workers/clusterer');
 
+// HACK
+Task.deleteAll();
 
 // TODO: add Task#running, lastError
 Task.findOrCreate({

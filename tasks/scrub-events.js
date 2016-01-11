@@ -7,6 +7,8 @@ var app = require('../server/server'),
   taskName = 'scrub events',
   worker = require('./workers/scrubber');
 
+// HACK
+Task.deleteAll();
 
 // TODO: add Task#running, lastError
 Task.findOrCreate({
