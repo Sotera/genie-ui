@@ -17,8 +17,12 @@ module.exports = class {
     return this.model;
   }
 
-  destroyAll(cb) {
-    this.model.destroyAll(cb);
+  destroyById(id, cb) {
+    this.model.destroyById(id, cb);
+  }
+
+  destroyAll(query, cb) {
+    this.model.destroyAll(query, cb);
   }
 
   count(query, options, cb) {

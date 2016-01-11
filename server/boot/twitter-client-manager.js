@@ -51,6 +51,17 @@ module.exports = function (app, cb) {
     });
   });
 
+
+  app.post('/stopTwitterScrape', function (req, res) {
+    if (!twitterClient) {
+      restResponse(new Error(twitterClientErrorMsg), res);
+      return;
+    }
+    twitterClient.stopTwitterScraper(req.body, function(err){
+      res.status(200).end((err || '').toString());
+    });
+  });
+
   app.post('/startTwitterScrape', function (req, res) {
     if (!twitterClient) {
       restResponse(new Error(twitterClientErrorMsg), res);

@@ -7,6 +7,8 @@ try {
   var loopback = require('loopback');
   var clustering = require('density-clustering');
   var LoopbackModelHelper = require('../util/loopback-model-helper');
+  var Random = require('random-js');
+  var random = new Random(Random.engines.mt19937().seed(0xc01dbeef));
   var apiCheck = require('api-check')({
     output: {
       prefix: 'compute_modules:clustered-event-source-helper',
@@ -17,10 +19,8 @@ try {
 
   var twitterKeyFilename = require('path').join(__dirname, '../../.twitter-keys.json');
   var twitterKeys = JSON.parse(require('fs').readFileSync(twitterKeyFilename, 'utf8'));
-  var inUseTwitterClients = [];
-  var freeTwitterClients = twitterKeys.map(function (twitterKey) {
-    return new Twitter(twitterKey);
-  });
+  var twitterKeyIdx = 0;
+  var inUseTwitterStreams = {};
 
   var geoTweetHelper = new LoopbackModelHelper('GeoTweet');
   var geoTwitterScrape = new LoopbackModelHelper('GeoTwitterScrape');
@@ -80,9 +80,9 @@ try {
                   indexedDate: new Date()
                 };
                 //Set GeoTweet instance to scored so we don't look at it again
-/*                geoTweet.updateAttribute('scored', true, function (err, o) {
-                  var e = err;
-                });*/
+                /*                geoTweet.updateAttribute('scored', true, function (err, o) {
+                 var e = err;
+                 });*/
                 scoreRecords.push(scoreGeoTweet);
               } catch (err) {
                 log(err);
@@ -237,6 +237,22 @@ try {
       }
     }
 
+    stopTwitterScraper(options, cb) {
+      try {
+        options = options || {};
+        cb = cb || function (err, aa) {
+            if (err) {
+              log(err);
+            }
+          };
+        var twitterStream = inUseTwitterStreams[options.scraperId.id];
+        twitterStream.destroy();
+        cb(null, null);
+      } catch (err) {
+        log(err);
+      }
+    }
+
     captureTweetsByLocation(options, cb) {
       apiCheck.throw([apiCheck.shape({
         onlyWithHashtags: apiCheck.bool
@@ -246,48 +262,51 @@ try {
         , boundingBoxLngWest: apiCheck.number
         , boundingBoxLngEast: apiCheck.number
       }), apiCheck.func], arguments);
-      if (freeTwitterClients.length) {
-        var self = this;
-        var locations = options.boundingBoxLngWest.toFixed(2);
-        locations += ',' + options.boundingBoxLatSouth.toFixed(2);
-        locations += ',' + options.boundingBoxLngEast.toFixed(2);
-        locations += ',' + options.boundingBoxLatNorth.toFixed(2);
-        var twitterClientStreamOptions = {
-          stall_warnings: true,
+      var self = this;
+      var locations = options.boundingBoxLngWest.toFixed(2);
+      locations += ',' + options.boundingBoxLatSouth.toFixed(2);
+      locations += ',' + options.boundingBoxLngEast.toFixed(2);
+      locations += ',' + options.boundingBoxLatNorth.toFixed(2);
+      var twitterClientStreamOptions = {
+        stall_warnings: true,
+        locations
+      };
+      var twitterClient = new Twitter(twitterKeys[++twitterKeyIdx % twitterKeys.length]);
+      var scraperId = random.uuid4().toString().toLowerCase();
+      twitterClient.stream('statuses/filter', twitterClientStreamOptions, function (stream) {
+        inUseTwitterStreams[scraperId] = stream;
+        stream.scraperId = scraperId;
+        //Add record to GeoTwitterScrape to keep track of this scraper
+        geoTwitterScrape.create({
+          scraperId,
+          timeStarted: new Date(),
           locations
-        };
-        var twitterClient = null;
-        inUseTwitterClients.push(twitterClient = freeTwitterClients.pop());
-        twitterClient.stream('statuses/filter', twitterClientStreamOptions, function (stream) {
-          stream.twitterClient = twitterClient;
-          //Add record to GeoTwitterScrape to keep track of this scraper
-          geoTwitterScrape.create({timeStarted: new Date(), locations}, function (err, geoTwitterScraper) {
-            //MonkeyPatch stream.destroy to emit 'end' event
-            var oldDestroy = stream.destroy;
-            stream.destroy = function () {
-              oldDestroy();
-              stream.emit('end');
-            }
-            //Sign up for stream events we care about
-            stream.on('data', function (tweet) {
-              var newTweetsExamined = (geoTwitterScraper.tweetsExamined || 0) + 1;
-              geoTwitterScraper.updateAttribute('tweetsExamined', newTweetsExamined, function (err, o) {
-                self.writeTweetToGeoTweetCollection(tweet, options);
+        }, function (err, geoTwitterScraper) {
+          //Sign up for stream events we care about
+          stream.on('data', function (tweet) {
+            var newTweetsExamined = (geoTwitterScraper.tweetsExamined || 0) + 1;
+            geoTwitterScraper.updateAttribute('tweetsExamined', newTweetsExamined, function (err, o) {
+              self.writeTweetToGeoTweetCollection(tweet, options);
+            });
+          });
+          stream.on('end', function () {
+            var scraperId = this.scraperId;
+            geoTwitterScrape.findOne({where: {scraperId}}, function (err, geoTwitterScraper) {
+              if(err){
+                log(err);
+                return;
+              }
+              geoTwitterScrape.destroyById(geoTwitterScraper.id, function(err){
+                var e = err;
               });
             });
-            stream.on('end', function () {
-              var idxToRemove = inUseTwitterClients.indexOf(self.twitterClient);
-              freeTwitterClients = freeTwitterClients.concat(inUseTwitterClients.splice(idxToRemove, 1));
-            });
-            stream.on('error', function (err) {
-              log(err);
-            });
-            cb(null, stream);
           });
+          stream.on('error', function (err) {
+            log(err);
+          });
+          cb(null, stream);
         });
-      } else {
-        throw new Error('All TwitterClients in use!');
-      }
+      });
     }
 
     diagonalDistanceOfBoundingBoxInMeters(coords) {

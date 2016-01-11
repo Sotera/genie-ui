@@ -10,13 +10,20 @@
       thead
         tr
           th.col-sm-1.col-md-1.col-lg-1 Time Started
+          th.col-sm-1.col-md-1.col-lg-1 Scrape Duration (min)
           th.col-sm-1.col-md-1.col-lg-1 Location Box
           th.col-sm-1.col-md-1.col-lg-1 Tweets Examined
+          th.col-sm-1.col-md-1.col-lg-1
       tbody
         tr(ng-repeat='scraper in displayedScrapers')
           td {{scraper.timeStarted}}
+          td {{scraper.scrapeDuration}}
           td {{scraper.locations}}
           td {{scraper.tweetsExamined}}
+          td.td-center
+            .btn-toolbar
+              button.btn.btn-sm.btn-danger(ng-click='cancelScrape({id:scraper.scraperId})')
+                i.fa.fa-trash-o
   .overlay(ng-if='loading')
   .loading-img(ng-if='loading')
 
