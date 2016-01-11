@@ -4,8 +4,8 @@
 var app = require('../server/server'),
   Task = app.models.Task,
   log = require('../server/util/debug').log('task'),
-  taskName = 'cluster events',
-  worker = require('./workers/clusterer');
+  taskName = 'scrub events',
+  worker = require('./workers/scrubber');
 
 
 // TODO: add Task#running, lastError
@@ -15,7 +15,7 @@ Task.findOrCreate({
   {
     code: taskName,
     lastRun: '2015-11-01',
-    transform: 'basic'
+    transform: 'sandbox/scrubber'
   },
   runTask);
 

@@ -8,7 +8,8 @@ const loopback = require('loopback'),
   app = require('../../../server/server'),
   ZoomLevel = app.models.ZoomLevel,
   HashtagEventsSource = app.models.HashtagEventsSource,
-  log = require('debug')('transforms:' + filename),
+  SandboxEventsSource = app.models.SandboxEventsSource,
+  log = require('../../../server/util/debug').log('transforms'),
   settings = require('../../../server/util/get-settings'),
   collections = require('../../../server/util/collections'),
   time = require('../../../server/util/time'),
@@ -35,33 +36,49 @@ function getEventSources(settings) {
     rangeQuery = {},
     mins;
 
-  // range: ex. 1 to n days
+  let esRangeQuery = {
+    native: {
+      from: 0,
+      "_source": {
+        "exclude": [ "extra.*" ]
+      },
+      query: {
+        range: {
+          post_date: rangeQuery
+        }
+      }
+    }
+  };
+
+  // range: 1 to n days
   for (let i of collections.range(1, numDays)) {
     mins = time.daysToMinutes(i);
     rangeQuery = {
       gte: endDate + '||-' + mins + 'm',
       lt:  endDate + '||-' + time.daysToMinutes(i-1) + 'm'
     };
-    HashtagEventsSource.find({
-      native: {
-        from: 0,
-        // size: 999,
-        query: {
-          range: {
-            post_date: rangeQuery
-          }
-        }
-      }
-    }, processEventSources({
+
+    // HashtagEventsSource.find(esRangeQuery,
+    //   processEventSources({
+    //     minutesAgo: mins,
+    //     maxZoom: settings['map:maxZoom'],
+    //     minZoom: settings['map:minZoom'],
+    //     eventSource: 'hashtag'
+    //   })
+    // );
+
+    SandboxEventsSource.find(esRangeQuery,
+      processEventSources({
         minutesAgo: mins,
         maxZoom: settings['map:maxZoom'],
-        minZoom: settings['map:minZoom']
+        minZoom: settings['map:minZoom'],
+        eventSource: 'sandbox'
       })
-    )
+    );
   }
 }
 
-// args: minZoom, maxZoom, minutesAgo
+// args: minZoom, maxZoom, minutesAgo, eventSource
 function processEventSources(args) {
   return (err, eventSources) => {
     if (err) {
@@ -70,14 +87,31 @@ function processEventSources(args) {
     }
 
     var events = eventSources.map(source => {
-      // sources have irregular [lng,lat] order
-      return {
-        lat: source.location.coordinates[1],
-        lng: source.location.coordinates[0],
-        weight: source.num_users,
-        eventId: source.id,
-        tag: source.tag
-      };
+      if (args.eventSource === 'hashtag') {
+        // source has irregular [lng,lat] order
+        return {
+          lat: source.location.coordinates[1],
+          lng: source.location.coordinates[0],
+          weight: source.num_users,
+          eventId: source.id,
+          tag: source.tag, // legacy
+          extra: { tag: source.tag },
+          eventSource: args.eventSource
+        };
+      } else if (args.eventSource === 'sandbox') {
+        return {
+          lat: source.location[0],
+          lng: source.location[1],
+          weight: source.num_images,
+          eventId: source.id,
+          extra: {
+            numImages: source.num_images
+          },
+          eventSource: args.eventSource
+        };
+      } else {
+        throw new Error('Unknown event source');
+      }
     });
 
     if (events.length) {

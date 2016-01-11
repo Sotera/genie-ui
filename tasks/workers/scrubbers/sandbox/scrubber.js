@@ -8,8 +8,15 @@ const app = require('../../../../server/server'),
   es_source_index = 'instagram_remap',
   es_dest_index = 'sandbox',
   es_dest_type = 'event',
-  es_source_client = new es.Client({hosts : ['http://52.90.177.87:9200/'],requestTimeout: 600000}),
-  es_dest_client = new es.Client({hosts : ['http://localhost:9200/']}),
+  es_source_client = new es.Client({
+    host : '52.90.177.87:9200',
+    requestTimeout: 600000,
+    log: 'trace'
+  }),
+  es_dest_client = new es.Client({
+    host : 'localhost:9200',
+    log: 'trace'
+  }),
   giver = new Giver(es_source_client, es_source_index, es_source_scrape );
 
 module.exports = {
@@ -30,23 +37,26 @@ function run() {
     }
   }};
 
-  es_dest_client.indices.create({index:es_dest_index},function(err,response){
-    if(!err) {
-      es_dest_client.indices.putMapping({
-        index: es_dest_index,
-        type: es_dest_type,
-        body: es_index_mapping
-      }, function (err, response) {
-        if(err){
-          console.log('error adding mapping: ' + JSON.stringify(err));
-          return;
-        }
+  // TODO: rm delete() in prod
+  es_dest_client.indices.delete({index:es_dest_index}, function(err,res){
+    es_dest_client.indices.create({index:es_dest_index}, function(err,res){
+      if(!err) {
+        es_dest_client.indices.putMapping({
+          index: es_dest_index,
+          type: es_dest_type,
+          body: es_index_mapping
+        }, function(err, res) {
+          if(err){
+            console.log('error adding mapping: ' + JSON.stringify(err));
+            return;
+          }
+          loadEventSourceData();
+        });
+      }
+      else {
         loadEventSourceData();
-      });
-    }
-    else {
-      loadEventSourceData();
-    }
+      }
+    });
   });
 }
 
@@ -83,7 +93,7 @@ function convertEvent(sourceEvent, data){
     'type': 'event',
     'id': destEvent.id,
     'body': destEvent
-  }, function (error, response) {
+  }, function (error, res) {
     console.log(JSON.stringify(error));
   });
 }

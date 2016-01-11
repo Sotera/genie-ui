@@ -5,6 +5,6 @@ module.exports = {
 };
 
 function run(options) {
-  var transform = require('./clusterizers/' + options.transform);
+  var transform = require('./scrubbers/' + options.transform);
   transform.run();
 }
