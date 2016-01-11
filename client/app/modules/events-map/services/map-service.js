@@ -35,7 +35,8 @@ angular.module('genie.eventsMap')
             location: new google.maps.LatLng(event.lat, event.lng),
             weight: event.weight,
             eventId: event.eventId,
-            tag: event.tag
+            tag: event.tag,
+            eventSource: event.eventSource
           };
         })
     }
@@ -64,23 +65,4 @@ angular.module('genie.eventsMap')
 //   }
 // }
 
-// function addMarkers(events, map) {
-//   var marker;
-//   events.forEach(function addMarker(event) {
-//     marker = new google.maps.Marker({
-//       position: event.location,
-//       map: map,
-//       opacity: 0.0 // invisible
-//     });
 
-//     marker.addListener('click', function() {
-//       // getTweets(event.eventId, success);
-//       function success(results) {
-//         console.log(results.data.hits.hits[0]._source.caption)
-//         //TODO: show all messages to user
-//         CoreService.toastInfo('Tweet',
-//           results.data.hits.hits[0]._source.caption)
-//       }
-//     });
-//   });
-// }

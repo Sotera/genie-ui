@@ -13,8 +13,37 @@ angular.module('genie.eventsMap')
     );
 
     function reheat() {
+      var events = scope.zoomLevelObj.events;
       heatmapLayer.setMap(scope.map);
-      heatmapLayer.setData(scope.zoomLevelObj.events);
+      heatmapLayer.setData(events);
+      addMarkers(events, scope.map);
+    }
+
+    function addMarkers(events, map) {
+      var marker, image;
+      events.forEach(function addMarker(event) {
+        image = event.eventSource ?
+          'images/' + event.eventSource + '.gif' :
+          null; // null = default marker icon
+        marker = new google.maps.Marker({
+          position: event.location,
+          map: map,
+          icon: image,
+          opacity: 0.4
+        });
+
+        marker.addListener('click', function() {
+          console.log('TODO')
+          // console.log(event.eventSource)
+          // getTweets(event.eventId, success);
+          // function success(results) {
+          //   console.log(results.data.hits.hits[0]._source.caption)
+          //   //TODO: show all messages to user
+          //   CoreService.toastInfo('Tweet',
+          //     results.data.hits.hits[0]._source.caption)
+          // }
+        });
+      });
     }
   }
 
