@@ -1,22 +1,56 @@
 'use strict';
-var app = angular.module('genie.geoTwitter');
-app.controller('GeoTwitterCtrl', function ($scope, $stateParams, $state, $http, CoreService, GeoTwitterScrape) {
-  refreshGetTwitterScraperInfo($scope, GeoTwitterScrape);
-  setInterval(function () {
+angular.module('genie.geoTwitter')
+  .controller('GeoTwitterCtrl', function ($scope, $stateParams, $state, $http, CoreService, GeoTwitterScrape, uiGmapGoogleMapApi) {
+    uiGmapGoogleMapApi.configure({});
+    //Poll to update tweet scrapers
     refreshGetTwitterScraperInfo($scope, GeoTwitterScrape);
-  }, 1000);
-  $scope.cancelScrape = function(scraperId){
-    $http.post('/stopTwitterScrape', { scraperId })
-      .then(
-        function(res) {
-          console.log(res)
-        },
-        function(res) {
-          console.log(res)
-        }
-      );
-  };
-});
+    setInterval(function () {
+      refreshGetTwitterScraperInfo($scope, GeoTwitterScrape);
+    }, 1000);
+    //Make ReST interaction more node-like
+    $scope.post = function (url, body, cb) {
+      cb = cb || function () {
+        };
+      $http.post(url, body)
+        .then(function success(res) {
+            cb(null, res);
+          },
+          function failure(err) {
+            cb(res)
+          }
+        );
+    }
+    //Supposin' they were to click the scaper play/pause button ...
+    $scope.toggleScraperActive = function (scraperId) {
+      scraperId = scraperId.id;
+      GeoTwitterScrape.findOne({filter: {where: {scraperId}}})
+        .$promise
+        .then(
+          function (geoTwitterScraperInfo) {
+            if (geoTwitterScraperInfo.scraperActive) {
+              $scope.post('/stopTwitterScrape', {scraperId}, function (err, res) {
+              });
+            } else {
+              $scope.post('/startTwitterScrape', {scraperId}, function (err, res) {
+              });
+            }
+            geoTwitterScraperInfo.scraperActive = !geoTwitterScraperInfo.scraperActive;
+            geoTwitterScraperInfo.$save();
+          }
+        );
+    };
+    $scope.destroyScrape = function (scraperId) {
+      $http.post('/stopTwitterScrape', {scraperId})
+        .then(
+          function (res) {
+            //GeoTwitterScrape.
+          },
+          function (res) {
+            console.log(res)
+          }
+        );
+    };
+  });
 
 function refreshGetTwitterScraperInfo(scope, geoTwitterScrape) {
   geoTwitterScrape.find(function (res) {

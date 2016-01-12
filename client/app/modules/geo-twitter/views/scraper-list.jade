@@ -1,29 +1,22 @@
-.box
-  .box-body.no-padding(style='min-height: 120px;')
-    //span User: {{currentUser.username}}
-    table.table.table-striped(st-table='displayedScrapers', st-safe-src='safeDisplayedScrapers')
-      thead
-        tr
-          th
-            button.btn.btn-sm.btn-default(ui-sref='^.scraper-list' ui-sref-opts="{reload: true, notify: true}",title='Refresh Scrapers')
-              i.fa.fa-refresh
-      thead
-        tr
-          th.col-sm-1.col-md-1.col-lg-1 Time Started
-          th.col-sm-1.col-md-1.col-lg-1 Scrape Duration (min)
-          th.col-sm-1.col-md-1.col-lg-1 Location Box
-          th.col-sm-1.col-md-1.col-lg-1 Tweets Examined
-          th.col-sm-1.col-md-1.col-lg-1
-      tbody
-        tr(ng-repeat='scraper in displayedScrapers')
-          td {{scraper.timeStarted}}
-          td {{scraper.scrapeDuration}}
-          td {{scraper.locations}}
-          td {{scraper.tweetsExamined}}
-          td.td-center
-            .btn-toolbar
-              button.btn.btn-sm.btn-danger(ng-click='cancelScrape({id:scraper.scraperId})')
-                i.fa.fa-trash-o
-  .overlay(ng-if='loading')
-  .loading-img(ng-if='loading')
-
+.col-xs-6
+  table.table(st-table='displayedScrapers', st-safe-src='safeDisplayedScrapers')
+    thead
+      tr(style='color: #ff8f8f')
+        th.text-center.col-xs-1 Time Started
+        th.text-center.col-xs-1 Minutes Active
+        th.text-center.col-xs-1 Location Box
+        th.text-center.col-xs-1 Tweets Examined
+        th.text-center.col-xs-1 *
+    tbody(style='background-color: #00ff00;')
+      tr(ng-repeat='scraper in displayedScrapers' style='color: #c0c0c0; background-color: #606060;')
+        td.text-center {{scraper.timeStarted}}
+        td.text-center {{scraper.scrapeDuration}}
+        td.text-center {{scraper.locations}}
+        td.text-center {{scraper.tweetsExamined}}
+        td.td-center
+          .btn-toolbar
+            button.btn.btn-sm.btn-primary(ng-click='toggleScraperActive({id:scraper.scraperId})')
+              i.fa.fa-play(ng-class="{'fa-play': scraper.scraperActive, 'fa-pause': scraper.scraperActive}")
+            button.btn.btn-sm.btn-danger(ng-click='destroyScrape({id:scraper.scraperId})')
+              i.fa.fa-trash-o
+.col-xs-6

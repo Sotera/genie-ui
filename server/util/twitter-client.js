@@ -26,7 +26,7 @@ try {
   var geoTwitterScrape = new LoopbackModelHelper('GeoTwitterScrape');
   var scoredGeoTweetHelper = new LoopbackModelHelper('ScoredGeoTweet');
 
-  geoTwitterScrape.destroyAll();
+  //geoTwitterScrape.destroyAll();
 
   module.exports = class {
     constructor() {
@@ -279,6 +279,7 @@ try {
         //Add record to GeoTwitterScrape to keep track of this scraper
         geoTwitterScrape.create({
           scraperId,
+          scraperActive: true,
           timeStarted: new Date(),
           locations
         }, function (err, geoTwitterScraper) {
@@ -296,9 +297,9 @@ try {
                 log(err);
                 return;
               }
-              geoTwitterScrape.destroyById(geoTwitterScraper.id, function(err){
+/*              geoTwitterScrape.destroyById(geoTwitterScraper.id, function(err){
                 var e = err;
-              });
+              });*/
             });
           });
           stream.on('error', function (err) {

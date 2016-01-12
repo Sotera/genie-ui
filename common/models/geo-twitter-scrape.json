@@ -11,6 +11,11 @@
       "type": "string",
       "required": true
     },
+    "scraperActive": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
     "locations": {
       "type": "string",
       "required": true

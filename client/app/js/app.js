@@ -47,7 +47,8 @@ angular.module('loopbackApp', [
     'genie.pinMap',
     'com.module.stats',
     'com.module.settings',
-    'com.module.users'
+    'com.module.users',
+    'uiGmapgoogle-maps'
   ])
   .run(function ($rootScope, $cookies, gettextCatalog) {
     $rootScope.locales = {
