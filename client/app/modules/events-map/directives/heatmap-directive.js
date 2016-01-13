@@ -1,9 +1,12 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('heatMap', [function () {
+.directive('heatMap', ['CoreService', function (CoreService) {
 
   function link(scope, elem, attrs) {
-    var heatmapLayer = new google.maps.visualization.HeatmapLayer();
+    var heatmapLayer = new google.maps.visualization.HeatmapLayer(
+      {
+        radius:24
+      });
 
     scope.$watchCollection(
       function(scope) {
@@ -28,12 +31,12 @@ angular.module('genie.eventsMap')
         marker = new google.maps.Marker({
           position: event.location,
           map: map,
-          icon: image,
-          opacity: 0.4
+          icon: null,
+          opacity: 0
         });
 
         marker.addListener('click', function() {
-          console.log('TODO')
+          CoreService.alert(event.tag, '# permits: ' + event.weight);
           // console.log(event.eventSource)
           // getTweets(event.eventId, success);
           // function success(results) {

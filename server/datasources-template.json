@@ -12,7 +12,7 @@
     "hosts": [
       {
         "protocol": "http",
-        "host": ES_HOST_ADDR,
+        "host": "52.91.192.62",
         "port": ES_HOST_PORT
       }
     ],
@@ -20,8 +20,8 @@
     "requestTimeout": 5000,
     "log": "trace",
     "defaultSize": 50,
-    "index": "hashtags",
-    "type": "event"
+    "index": "hackathon_clusts",
+    "type": "post"
   },
   "es-sandbox-events": {
     "name": "es-sandbox-events",
