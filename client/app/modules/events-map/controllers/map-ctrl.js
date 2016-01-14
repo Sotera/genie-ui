@@ -32,7 +32,7 @@ angular.module('genie.eventsMap')
   //jqcloud tag collection
   var tagHandlers = {
     click: function(e) {
-      var removeTag = e.target.innerText;
+      var removeTag = e.target.textContent;
       $scope.$apply(function(scope) {
         _.remove(scope.tags, function(tag) {
           return tag.text == removeTag;
