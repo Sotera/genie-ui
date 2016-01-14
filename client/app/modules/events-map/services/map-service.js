@@ -36,7 +36,8 @@ angular.module('genie.eventsMap')
             weight: event.weight,
             eventId: event.eventId,
             tag: event.tag,
-            eventSource: event.eventSource
+            eventSource: event.eventSource,
+            extra: event.extra
           };
         })
     }

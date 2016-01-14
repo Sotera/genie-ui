@@ -36,7 +36,21 @@ angular.module('genie.eventsMap')
         });
 
         marker.addListener('click', function() {
-          CoreService.alert(event.tag, '# permits: ' + event.weight);
+          console.log(event)
+          var template = (
+            "<p># permits: <%= weight %></p>" +
+            "<p>min value: <%= extra.min_val %></p>" +
+            "<p>max value: <%= extra.max_val %></p>" +
+            "<a target='_blank' href='/util/permit-data/<%= eventId %>'>" +
+            "Download permit data" +
+            "</a>"
+          );
+          var compiled = _.template(template);
+          CoreService.swal({
+            html: true,
+            title: event.tag,
+            text: compiled(event)
+          });
           // console.log(event.eventSource)
           // getTweets(event.eventId, success);
           // function success(results) {

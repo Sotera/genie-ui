@@ -73,7 +73,8 @@ function processEventSources(args) {
           weight: source.num_posts,
           eventId: source.id,
           tag: source.tag, // legacy
-          extra: { tag: source.tag },
+          extra: { tag: source.tag, max_val: source.max_val,
+            min_val: source.min_val },
           eventSource: args.eventSource
         };
       }
