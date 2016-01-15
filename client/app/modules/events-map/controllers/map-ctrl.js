@@ -4,7 +4,7 @@ angular.module('genie.eventsMap')
   'tweetService',
   function($scope, mapService, ZoomLevel, tweetService) {
 
-  var PERIOD = 90; // days
+  var PERIOD = 1; // days
   var DAY = 1440; // mins
   // Set init values
   $scope.inputs = {zoomLevel: 18, minutesAgo: DAY * PERIOD};

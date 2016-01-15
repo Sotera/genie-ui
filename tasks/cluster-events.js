@@ -17,7 +17,7 @@ Task.findOrCreate({
   {
     code: taskName,
     lastRun: '2015-11-01',
-    transform: 'permit-data'
+    transform: 'basic'
   },
   runTask);
 

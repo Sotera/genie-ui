@@ -26,8 +26,7 @@ function createChart(settings) {
       return;
     }
 
-    // let endDate = moment(settings['zoomLevels:endDate'] || moment());
-    let endDate = moment();
+    let endDate = moment(settings['zoomLevels:endDate'] || moment());
 
     let rows = zoomLevels.map(zoomLevel => {
       // moments are mutable

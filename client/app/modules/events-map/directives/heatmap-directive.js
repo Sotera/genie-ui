@@ -31,26 +31,14 @@ angular.module('genie.eventsMap')
         marker = new google.maps.Marker({
           position: event.location,
           map: map,
-          icon: null,
-          opacity: 0
+          icon: image,
+          opacity: 0.3
         });
 
         marker.addListener('click', function() {
           console.log(event)
-          var template = (
-            "<p># permits: <%= weight %></p>" +
-            "<p>min value: <%= extra.min_val %></p>" +
-            "<p>max value: <%= extra.max_val %></p>" +
-            "<a target='_blank' href='/util/permit-data/<%= eventId %>'>" +
-            "Download permit data" +
-            "</a>"
-          );
-          var compiled = _.template(template);
-          CoreService.swal({
-            html: true,
-            title: event.tag,
-            text: compiled(event)
-          });
+
+          createNetGraph(event);
           // console.log(event.eventSource)
           // getTweets(event.eventId, success);
           // function success(results) {
@@ -62,6 +50,26 @@ angular.module('genie.eventsMap')
         });
       });
     }
+  }
+
+  function createNetGraph(event) {
+    var query = {
+      query: { match: { id: event.eventId } }
+    };
+
+    $.ajax({
+      url: 'http://localhost:9200/sandbox/event/_search',
+      type: 'POST',
+      crossDomain: true,
+      dataType: 'json',
+      data: JSON.stringify(query)
+    })
+    .done(
+      function(res) {
+        console.log(res)
+
+      }
+    );
   }
 
   return {

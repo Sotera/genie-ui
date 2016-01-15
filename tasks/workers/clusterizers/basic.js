@@ -36,19 +36,6 @@ function getEventSources(settings) {
     rangeQuery = {},
     mins;
 
-  let esRangeQuery = {
-    native: {
-      from: 0,
-      "_source": {
-        "exclude": [ "extra.*" ]
-      },
-      query: {
-        range: {
-          post_date: rangeQuery
-        }
-      }
-    }
-  };
 
   // range: 1 to n days
   for (let i of collections.range(1, numDays)) {
@@ -57,8 +44,22 @@ function getEventSources(settings) {
       gte: endDate + '||-' + mins + 'm',
       lt:  endDate + '||-' + time.daysToMinutes(i-1) + 'm'
     };
+    let nativeQuery = {
+      native: {
+        size: 9999,
+        from: 0,
+        "_source": {
+          "exclude": [ "extra.*" ]
+        },
+        query: {
+          range: {
+            post_date: rangeQuery
+          }
+        }
+      }
+    };
 
-    // HashtagEventsSource.find(esRangeQuery,
+    // HashtagEventsSource.find(nativeQuery,
     //   processEventSources({
     //     minutesAgo: mins,
     //     maxZoom: settings['map:maxZoom'],
@@ -67,7 +68,7 @@ function getEventSources(settings) {
     //   })
     // );
 
-    SandboxEventsSource.find(esRangeQuery,
+    SandboxEventsSource.find(nativeQuery,
       processEventSources({
         minutesAgo: mins,
         maxZoom: settings['map:maxZoom'],
