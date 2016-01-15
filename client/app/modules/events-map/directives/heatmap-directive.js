@@ -1,6 +1,7 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('heatMap', ['CoreService', 'ENV', function (CoreService, ENV) {
+.directive('heatMap', ['CoreService', 'ENV', '$http',
+  function (CoreService, ENV, $http) {
 
   function link(scope, elem, attrs) {
     var heatmapLayer = new google.maps.visualization.HeatmapLayer(
@@ -57,18 +58,13 @@ angular.module('genie.eventsMap')
       query: { match: { id: event.eventId } }
     };
 
-    $.ajax({
-      url: ENV.sandboxEventsUrl,
-      type: 'POST',
-      crossDomain: true,
-      dataType: 'json',
-      data: JSON.stringify(query)
-    })
-    .done(
+    $http.post(ENV.sandboxEventsUrl, JSON.stringify(query))
+    .then(
       function(res) {
+        var source = res.data.hits.hits[0]._source;
         // console.log(res.hits.hits[0]._source.extra.network_graph)
         render_graph(
-          format_graph(res.hits.hits[0]._source.extra.network_graph),
+          format_graph(source.extra.network_graph),
           {
             "onHover" : function(node) {
               console.log('node:: ', node.id);
