@@ -7,7 +7,7 @@
   apiUrl:'/api/',
   siteUrl:'',
   wsUrl: 'http://localhost:3001/',
-  tweetsUrl: 'http://localhost:9200/tweets/post/_search'
+  sandboxEventsUrl: 'http://localhost:9200/sandbox/event/_search'
 })
 
 ;

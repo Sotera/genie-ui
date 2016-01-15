@@ -1,6 +1,6 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('heatMap', ['CoreService', function (CoreService) {
+.directive('heatMap', ['CoreService', 'ENV', function (CoreService, ENV) {
 
   function link(scope, elem, attrs) {
     var heatmapLayer = new google.maps.visualization.HeatmapLayer(
@@ -58,7 +58,7 @@ angular.module('genie.eventsMap')
     };
 
     $.ajax({
-      url: 'http://localhost:9200/sandbox/event/_search',
+      url: ENV.sandboxEventsUrl,
       type: 'POST',
       crossDomain: true,
       dataType: 'json',
@@ -66,8 +66,19 @@ angular.module('genie.eventsMap')
     })
     .done(
       function(res) {
-        console.log(res)
+        // console.log(res.hits.hits[0]._source.extra.network_graph)
+        render_graph(
+          format_graph(res.hits.hits[0]._source.extra.network_graph),
+          {
+            "onHover" : function(node) {
+              console.log('node:: ', node.id);
 
+              // socket.emit('url_from_id', node.id, function(d) {
+              //     m = draw_image(d);
+              // });
+            }
+          }
+        );
       }
     );
   }

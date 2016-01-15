@@ -9,8 +9,10 @@
     .col-md-6
       time-series( chart_name='time-series' )
     .col-md-6
-      jqcloud(words='tags' delay='10' steps='7' class='events-cloud'
-        font-size='{from:0.08, to:0.02}')
+      canvas#graph( style='height:100%; width:90%;' )
+      //
+        jqcloud(words='tags' delay='10' steps='7' class='events-cloud'
+          font-size='{from:0.08, to:0.02}')
     //
       .col-md-4
         jqcloud(words='liveTags' delay='10' steps='7' class='live-cloud'
