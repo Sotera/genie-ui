@@ -71,11 +71,11 @@ module.exports = function (app, cb) {
   }, {
     type: 'string',
     key: 'zoomLevels:startDate',
-    value: '2014-08-17'
+    value: '2016-01-14'
   }, {
     type: 'string',
     key: 'zoomLevels:endDate',
-    value: '2014-08-21'
+    value: '2016-01-16'
   }, {
     type: 'int',
     key: 'map:minZoom',

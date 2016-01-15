@@ -1,7 +1,7 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('heatMap', ['CoreService', 'ENV', '$http',
-  function (CoreService, ENV, $http) {
+.directive('heatMap', ['CoreService', 'ENV', '$http','SandboxEventsSource',
+  function (CoreService, ENV, $http, SandboxEventsSource) {
 
   function link(scope, elem, attrs) {
     var heatmapLayer = new google.maps.visualization.HeatmapLayer(
@@ -37,7 +37,7 @@ angular.module('genie.eventsMap')
         });
 
         marker.addListener('click', function() {
-          console.log(event)
+          console.log(event);
 
           createNetGraph(event);
           // console.log(event.eventSource)
@@ -54,29 +54,23 @@ angular.module('genie.eventsMap')
   }
 
   function createNetGraph(event) {
+
     var query = {
-      query: { match: { id: event.eventId } }
+      filter: {
+        where:{id:event.eventId}
+      }
     };
 
-    $http.post(ENV.sandboxEventsUrl, JSON.stringify(query))
-    .then(
-      function(res) {
-        var source = res.data.hits.hits[0]._source;
-        // console.log(res.hits.hits[0]._source.extra.network_graph)
-        render_graph(
-          format_graph(source.extra.network_graph),
-          {
-            "onHover" : function(node) {
-              console.log('node:: ', node.id);
-
-              // socket.emit('url_from_id', node.id, function(d) {
-              //     m = draw_image(d);
-              // });
-            }
+    SandboxEventsSource.find(query,function(eventSource){
+      render_graph(
+        format_graph(eventSource[0].extra.network_graph),
+        {
+          "onHover" : function(node) {
+            console.log('node:: ', node.id);
           }
-        );
-      }
-    );
+        }
+      );
+    });
   }
 
   return {
