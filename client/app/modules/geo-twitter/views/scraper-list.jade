@@ -1,22 +1,34 @@
-.col-xs-6
-  table.table(st-table='displayedScrapers', st-safe-src='safeDisplayedScrapers')
-    thead
-      tr(style='color: #ff8f8f')
-        th.text-center.col-xs-1 Time Started
-        th.text-center.col-xs-1 Minutes Active
-        th.text-center.col-xs-1 Location Box
-        th.text-center.col-xs-1 Tweets Examined
-        th.text-center.col-xs-1 *
-    tbody(style='background-color: #00ff00;')
-      tr(ng-repeat='scraper in displayedScrapers' style='color: #c0c0c0; background-color: #606060;')
-        td.text-center {{scraper.timeStarted}}
-        td.text-center {{scraper.scrapeDuration}}
-        td.text-center {{scraper.locations}}
-        td.text-center {{scraper.tweetsExamined}}
-        td.td-center
-          .btn-toolbar
-            button.btn.btn-sm.btn-primary(ng-click='toggleScraperActive({id:scraper.scraperId})')
-              i.fa.fa-play(ng-class="{'fa-play': scraper.scraperActive, 'fa-pause': scraper.scraperActive}")
-            button.btn.btn-sm.btn-danger(ng-click='destroyScrape({id:scraper.scraperId})')
-              i.fa.fa-trash-o
-.col-xs-6
+//div(gridster='gridsterOpts' style='background-color: #808080; height: 100%;')
+  ul
+    li(gridster-item='item' row='0' col='0' size-x='1' size-y='1')
+      ui-gmap-google-map(hook-map-events center='map.center' zoom='map.zoom')
+
+.container-fluid(style='display: table;background-color: #00ff00;')
+  .row-fluid
+    .col-md-6(style='background-color: #ff0000')
+      table.table(st-table='displayedScrapers', st-safe-src='safeDisplayedScrapers')
+        thead
+          tr(style='color: #ff8f8f')
+            th.text-center.col-xs-1 Time Started
+            th.text-center.col-xs-1 Minutes Active
+            th.text-center.col-xs-1 Location Box
+            th.text-center.col-xs-1 Tweets Examined
+            th.text-center.col-xs-1 *
+        tbody(style='background-color: #00ff00;')
+          tr(ng-repeat='scraper in displayedScrapers' style='color: #c0c0c0; background-color: #606060;')
+            td.text-center {{scraper.timeStarted}}
+            td.text-center {{scraper.scrapeDuration}}
+            td.text-center {{scraper.locations}}
+            td.text-center {{scraper.tweetsExamined}}
+            td.td-center
+              .btn-toolbar
+                button.btn.btn-sm.btn-primary(ng-click='toggleScraperActive({id:scraper.scraperId})')
+                  i.fa.fa-play(ng-class="{'fa-play': scraper.scraperActive, 'fa-pause': scraper.scraperActive}")
+                button.btn.btn-sm.btn-danger(ng-click='destroyScrape({id:scraper.scraperId})')
+                  i.fa.fa-trash-o
+    .col-md-6
+      ui-gmap-google-map(hook-map-events center='map.center' zoom='map.zoom')
+  //.row-fluid
+    .col-md-12
+      ui-gmap-google-map(hook-map-events center='map.center' zoom='map.zoom')
+

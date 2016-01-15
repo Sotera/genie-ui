@@ -3,23 +3,15 @@ var log = require('debug')('boot:twitter-client');
 var TwitterClient = require('../util/twitter-client');
 var twitterClient = null;
 const twitterClientErrorMsg = 'Cannot create TwitterClient (Twitter key JSON file missing?)';
-try {
-  twitterClient = new TwitterClient();
-} catch (err) {
-  log(twitterClientErrorMsg);
-}
+
 module.exports = function (app, cb) {
   app.get('/initializeGeoTweet', function (req, res) {
-    res.status(200).end('Initialized GeoTweet');
+    restResponse(null, res, 'Initialized GeoTweet');
   });
 
   app.get('/loadTestTweetFile', function (req, res) {
-    if (!twitterClient) {
-      restResponse(new Error(twitterClientErrorMsg), res);
-      return;
-    }
-    restResponse(null, res);
-    try {
+    checkTwitterClient(res, function (tc) {
+      restResponse(null, res);
       const folderName = '/home/jreeme/src/hashTagClustering/raw_tweet_data/real-json/';
       var fs = require('fs');
       var path = require('path');
@@ -37,64 +29,56 @@ module.exports = function (app, cb) {
           });
         });
       });
-    } catch (err) {
-      log(err);
-    }
-  });
-  app.post('/testTwitter2', function (req, res) {
-    if (!twitterClient) {
-      restResponse(new Error(twitterClientErrorMsg), res);
-      return;
-    }
-    twitterClient.scoreNextGeoTweet(function (err) {
-      restResponse(err, res);
     });
   });
 
-
-  app.post('/stopTwitterScrape', function (req, res) {
-    if (!twitterClient) {
-      restResponse(new Error(twitterClientErrorMsg), res);
-      return;
-    }
-    twitterClient.stopTwitterScraper(req.body, function(err){
-      res.status(200).end((err || '').toString());
+  //Beginnings of a mixin to expose class methods as rest endpoints
+/*  console.log(Object.getOwnPropertyNames(Math).filter(function (p) {
+    return typeof Math[p] === 'function';
+  }));*/
+  [
+    'clusterScoredRecords'
+    ,'stopTwitterScrape'
+    ,'startTwitterScrape'
+  ].forEach(function(twitterClientMethod){
+    app.post('/' + twitterClientMethod, function (req, res) {
+      callTwitterClientFn(req, res, twitterClientMethod);
     });
-  });
-
-  app.post('/startTwitterScrape', function (req, res) {
-    if (!twitterClient) {
-      restResponse(new Error(twitterClientErrorMsg), res);
-      return;
-    }
-
-    var boundingBoxLatSouth = req.body.coords[0];
-    var boundingBoxLatNorth = req.body.coords[2];
-    var boundingBoxLngWest = req.body.coords[1];
-    var boundingBoxLngEast = req.body.coords[3];
-    var options = {
-      onlyWithHashtags: true,
-      onlyWithCoordinates: true,
-      boundingBoxLatSouth,
-      boundingBoxLatNorth,
-      boundingBoxLngWest,
-      boundingBoxLngEast,
-      maxPlaceSizeMeters: 5000
-    };
-    try {
-      twitterClient.captureTweetsByLocation(options, function (err, twitterClient) {
-        restResponse(err, res);
-      });
-    } catch (err) {
-      res.status(200).end(err.toString());
-    }
   });
   cb();
 }
 
-function restResponse(err, res) {
+function callTwitterClientFn(req, res, fnName) {
+  checkTwitterClient(res, function (tc) {
+    var fn = tc[fnName];
+    fn.bind(tc)(req.body, function (err, result) {
+      restResponse(err, res, result);
+    });
+  });
+}
+
+function checkTwitterClient(res, cb) {
+  if (!twitterClient) {
+    try {
+      twitterClient = new TwitterClient();
+    } catch (err) {
+      log(twitterClientErrorMsg);
+      return;
+    }
+  }
+  try {
+    cb(twitterClient);
+  } catch (err) {
+    restResponse(err, res);
+  }
+}
+
+function restResponse(err, res, result) {
   if (err) {
     res.status(200).end(err.toString());
+  } else if (result) {
+    var msg = (result instanceof Object) ? JSON.stringify(result) : result.toString();
+    res.status(200).end(msg);
   } else {
     res.status(200).end('SUCCESS: ' + (new Date()).toISOString());
   }

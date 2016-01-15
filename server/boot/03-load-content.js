@@ -45,12 +45,12 @@ module.exports = function (app, cb) {
         , {lat: 25.75, lng: -80.2}
       ];
       var scoredGeoTweetHelper = new LoopbackModelHelper('ScoredGeoTweet');
-      var refDate = new Date('2016-01-05T20:06:00.000Z');
+      var refDate = new Date('2016-01-07T20:06:00.000Z');
       var startDate = moment(refDate);
       var endDate = moment(refDate);
-      startDate.subtract(20, 'minutes');
+      startDate.subtract(5, 'days');
       var geoTweets = [];
-      for (var i = 0; i < 1024; ++i) {
+      for (var i = 0; i < (8 * 1024); ++i) {
         //twitterId
         var twitterId = random.uuid4().toString();
         twitterId = i.toString();

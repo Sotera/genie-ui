@@ -1,8 +1,10 @@
 'use strict';
-angular.module('genie.geoTwitter', ['uiGmapgoogle-maps'])
+angular.module('genie.geoTwitter', ['uiGmapgoogle-maps','gridster'])
   .config(['uiGmapGoogleMapApiProvider', function (uiGmapGoogleMapApiProvider) {
     uiGmapGoogleMapApiProvider.configure({
-      v: '3.17'
+      key: 'AIzaSyAkYlCyB4YD2XSoTmSt0-PpVvb7JcQxpvc',
+      v: '3.17',
+      libraries: 'weather,drawing,geometry,visualization'
     });
   }])
   .run(function ($rootScope, gettextCatalog) {

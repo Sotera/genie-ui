@@ -1,8 +1,11 @@
 'use strict';
-/*angular.module('genie.geoTwitter')
-  .directive('google-map', ['$window', 'StylesService',
+angular.module('genie.geoTwitter')
+  .directive('hookMapEvents', ['$window', 'StylesService',
     function ($window, StylesService) {
       function link(scope, elem, attrs) {
+        elem = elem.find('.angular-google-map-container');
+        elem.css('height', '500px');
+        return;
         var mapOptions = {
           zoom: +attrs.zoom || 10,
           styles: StylesService.dark,
@@ -15,10 +18,6 @@
         };
 
         var map = new google.maps.Map(elem[0], mapOptions);
-
-        //TODO: what to use here?
-        var toronto = {lat: 43.7, lng: -79.4};
-        map.setCenter(toronto);
 
         map.addListener('zoom_changed', function () {
           var newZoom = map.getZoom();
@@ -51,6 +50,7 @@
 
       return {
         restrict: 'AE',
-        link
+        link: link
       };
-    }]);*/
+    }]);
+

@@ -34,7 +34,7 @@ angular.module('loopbackApp', [
     //'ui.grid',
     'smart-table',
     'ui.router',
-    //'ui.layout',
+    'ui.layout',
     'angular-toasty',
     'angular-jqcloud',
     'gettext',

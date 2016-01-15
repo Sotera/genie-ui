@@ -32,13 +32,167 @@ try {
     constructor() {
     }
 
-    scoreNextGeoTweet(cb) {
+    /*    findHashtagEvents(options, cb) {
+     }*/
+
+    clusterScoredRecords(options, cb) {
+      options = options || {};
+      apiCheck.throw([apiCheck.object, apiCheck.func], arguments);
+      async.waterfall(
+        [
+          function getScoredRecordCount(cb) {
+            scoredGeoTweetHelper.count(function (err, count) {
+              cb(err, count);
+            });
+          },
+          function getClusterTimeWindow(count, cb) {
+            try {
+              options.count = count;
+              options.blackList = options.blackList || [];
+              options.dbscanEpsilonMeters = options.dbscanEpsilonMeters || 500;
+              options.dbscanMinMembersInCluster = options.dbscanMinMembersInCluster || 5;
+              //See if caller provided us an end date
+              /*              options.startDate = '2016-01-04T20:06:00.000Z';
+               options.endDate = '2016-01-05T20:06:00.000Z';
+               options.clusteringDurationMinutes = 4 * 60;*/
+              options.minTweetsToCluster = options.minTweetsToCluster || 5;
+              options.minTweetsToCluster = (options.minTweetsToCluster < 3)
+                ? 3
+                : (options.minTweetsToCluster > 10)
+                ? 10
+                : options.minTweetsToCluster;
+              options._filterClusteringDurationMinutes = options.clusteringDurationMinutes || 8 * 60;
+              options._filterClusteringDurationMinutes = (options._filterClusteringDurationMinutes < 60)
+                ? 60
+                : (options._filterClusteringDurationMinutes > (8 * 60))
+                ? (8 * 60)
+                : options._filterClusteringDurationMinutes;
+
+              options._filterStartDate = (isNaN(Date.parse(options.startDate)))
+                ? null
+                : moment(Date.parse(options.startDate));
+
+              options._filterEndDate = (isNaN(Date.parse(options.endDate)))
+                ? null
+                : moment(Date.parse(options.endDate));
+            } catch (err) {
+              options._filterStartDate = options._filterEndDate = null;
+            }
+            //If we can't get enough info from user about clustering time window then get latest
+            //date from data and go back _filterClusteringDurationMinutes to create window
+            if (options._filterStartDate && options._filterEndDate) {
+              cb(null, options);
+            } else if (!options._filterStartDate && !options._filterEndDate) {
+              scoredGeoTweetHelper.find(
+                function (err, timeWindowedScoredGeoTweets) {
+                  var minDate = new Date();
+                  var maxDate = new Date('1900-01-01');
+                  timeWindowedScoredGeoTweets.forEach(function (tweet) {
+                    var postDate = new Date(tweet.postDate);
+                    minDate = (postDate < minDate) ? postDate : minDate;
+                    maxDate = (postDate > maxDate) ? postDate : maxDate;
+                  });
+                  options._filterEndDate = moment(maxDate);
+                  options._filterStartDate = moment(maxDate);
+                  options._filterStartDate.subtract(options._filterClusteringDurationMinutes, 'minutes');
+                  cb(null, options);
+                }
+              );
+            } else if (options._filterStartDate) {
+              options._filterEndDate = moment(options._filterStartDate);
+              options._filterEndDate.add(options._filterClusteringDurationMinutes, 'minutes');
+              cb(null, options);
+            } else if (options._filterEndDate) {
+              options._filterStartDate = moment(options._filterEndDate);
+              options._filterEndDate.subtract(options._filterClusteringDurationMinutes, 'minutes');
+              cb(null, options);
+            }
+          },
+          function (options, cb) {
+            scoredGeoTweetHelper.find({
+                where: {
+                  and: [
+                    {postDate: {gte: options._filterStartDate}},
+                    {postDate: {lte: options._filterEndDate}}
+                  ]
+                },
+                limit: options.count
+              },
+              function (err, timeWindowedScoredGeoTweets) {
+                cb(null, options, timeWindowedScoredGeoTweets);
+              });
+          },
+          function (options, timeWindowedScoredGeoTweets, cb) {
+            var geoTweetBuckets = {};
+            timeWindowedScoredGeoTweets.forEach(function (sr) {
+              var tagArray = sr.tags.split(',');
+              tagArray.forEach(function (tagText) {
+                if (options.blackList.indexOf(tagText) != -1) {
+                  return;
+                }
+                if (geoTweetBuckets[tagText]) {
+                  geoTweetBuckets[tagText].push(sr);
+                } else {
+                  geoTweetBuckets[tagText] = [sr];
+                }
+              });
+            });
+            cb(null, options, geoTweetBuckets);
+          },
+          function (options, geoTweetBuckets, cb) {
+            var loc0 = new loopback.GeoPoint({lat: 0, lng: 0});
+            var loc1 = new loopback.GeoPoint({lat: 0, lng: 0});
+            for (var geoTweetBucket in geoTweetBuckets) {
+              var geoTweetArray = geoTweetBuckets[geoTweetBucket];
+              var dataToCluster = geoTweetArray.map(function (geoTweet) {
+                return [geoTweet.lng, geoTweet.lat];
+              });
+              var dbscan = new clustering.DBSCAN();
+              geoTweetArray.clusters = dbscan.run(
+                dataToCluster,
+                options.dbscanEpsilonMeters,
+                options.dbscanMinMembersInCluster,
+                function (p, q) {
+                  if (p.length != 2 || q.length != 2) {
+                    return Number.MAX_VALUE;
+                  }
+                  //Quick look to exclude very far away
+                  /*                p = [-97,30.99];
+                   q = [-96.99,31];*/
+                  var quickDist = (((p[1] - q[1]) * (p[1] - q[1])) + ((p[0] - q[0]) * (p[0] - q[0])));
+                  if (quickDist > 0.001) {
+                    return Number.MAX_VALUE;
+                  }
+                  loc0.lat = p[1];
+                  loc0.lng = p[0];
+                  loc1.lat = q[1];
+                  loc1.lng = q[0];
+                  var distanceMeters = loopback.GeoPoint.distanceBetween(loc0, loc1, {type: 'meters'});
+                  return distanceMeters;
+                });
+            }
+            cb(null, options, geoTweetBuckets);
+          },
+          function(options, geoTweetBuckets, cb){
+            for (var geoTweetBucket in geoTweetBuckets) {
+              var geoTweetArray = geoTweetBuckets[geoTweetBucket];
+            }
+            cb();
+          }
+        ],
+        function (err, results) {
+          var e = err;
+        });
+    }
+
+    processNewTweets(options, cb) {
+      options = options || {};
       apiCheck.throw([apiCheck.func], arguments);
       async.waterfall(
         [
           //Doing it all in memory for now. Later we may add ES query result paging, etc.
           //(but probably not)
-          function (cb) {
+          function getGeoTweetCount(cb) {
             //Get number of GeoTweets so we can set an ES query limit. If we don't set one we'll
             //get 10 documents returned. Note that {where: {scored: false}} is ignored by the ES
             //Loopback data connector. 'count' will always return the total number of documents.
@@ -48,14 +202,14 @@ try {
               cb(err, count);
             });
           },
-          function (count, cb) {
+          function getGeoTweets(count, cb) {
             //Retrieve all the unscored GeoTweets in one query (no paging)
             //geoTweetHelper.find({where: {scored: false}, limit: count}, function (err, geoTweets) {
             geoTweetHelper.find({limit: count}, function (err, geoTweets) {
               cb(err, geoTweets)
             });
           },
-          function (geoTweets, cb) {
+          function convertGeoTweetsToScoreRecords(geoTweets, cb) {
             //Map the fields from the full tweet object we need to do clustering and put them in a
             //nice array
             var scoreRecords = [];
@@ -90,7 +244,7 @@ try {
             });
             cb(null, scoreRecords);
           },
-          function (scoreRecords, cb) {
+          function putScoreRecordsIntoDatabase(scoreRecords, cb) {
             //Take the nice array of ScoredGeoTweets and slam them in to ES. Check twitterId so we don't
             //have any repeats (pretty unlikely but pretty easy to check so, why not?)
             var queries = scoreRecords.map(function (sr) {
@@ -99,67 +253,6 @@ try {
             scoredGeoTweetHelper.findOrCreateMany(queries, scoreRecords, function (err, newScoredRecords) {
               cb(null);
             });
-          },
-          function (cb) {
-            scoredGeoTweetHelper.count(function (err, count) {
-              cb(err, count);
-            });
-          },
-          function (count, cb) {
-            var refDate = new Date('2016-01-05T20:06:00.000Z');
-            var filterStartDate = moment(refDate);
-            var filterEndDate = moment(refDate);
-            filterStartDate.subtract(2, 'minutes');
-            scoredGeoTweetHelper.find({
-                where: {
-                  and: [
-                    {postDate: {gt: filterStartDate}},
-                    {postDate: {lt: filterEndDate}}
-                  ]
-                },
-                limit: count
-              },
-              function (err, timeWindowedScoredGeoTweets) {
-                /*              var minDate = new Date();
-                 var maxDate = new Date('2000-01-01');
-                 timeWindowedScoredGeoTweets.forEach(function (tweet) {
-                 var postDate = new Date(tweet.postDate);
-                 minDate = (postDate < minDate) ? postDate : minDate;
-                 maxDate = (postDate > maxDate) ? postDate : maxDate;
-                 });
-                 var md = maxDate.toISOString();*/
-                cb(null, timeWindowedScoredGeoTweets);
-              });
-          },
-          function (timeWindowedScoredGeoTweets, cb) {
-            const minTweetsToCluster = 5;
-            var geoTweetBuckets = {};
-            var blacklist = ['job', 'jobs', 'hiring', 'careerarc'];
-            timeWindowedScoredGeoTweets.forEach(function (sr) {
-              var tagArray = sr.tags.split(',');
-              tagArray.forEach(function (tagText) {
-                if (blacklist.indexOf(tagText) != -1) {
-                  return;
-                }
-                if (geoTweetBuckets[tagText]) {
-                  geoTweetBuckets[tagText].push(sr);
-                } else {
-                  geoTweetBuckets[tagText] = [sr];
-                }
-              });
-            });
-            cb();
-          },
-          function (geoTweetBuckets, cb) {
-            for (var geoTweetBucket in geoTweetBuckets) {
-              var geoTweetArray = geoTweetBuckets[geoTweetBucket];
-              var dataToCluster = geoTweetArray.map(function (geoTweet) {
-                return [geoTweet.lng, geoTweet.lat];
-              });
-              var dbscan = new clustering.DBSCAN();
-              var clusters = dbscan.run(dataToCluster, 0.2, 3);
-            }
-            cb();
           }
         ],
         function (err, results) {
@@ -186,7 +279,7 @@ try {
           cb(null, null);
           return;
         }
-        if (options.onlyWithCoordinates) {
+        if (options.onlyWithLocation) {
           if (tweet.geo) {
             if (tweet.geo.type === 'Point') {
               if (tweet.geo.coordinates && tweet.geo.coordinates.length == 2) {
@@ -237,7 +330,7 @@ try {
       }
     }
 
-    stopTwitterScraper(options, cb) {
+    stopTwitterScrape(options, cb) {
       try {
         options = options || {};
         cb = cb || function (err, aa) {
@@ -253,61 +346,86 @@ try {
       }
     }
 
-    captureTweetsByLocation(options, cb) {
+    startTwitterScrape(options, cb) {
       apiCheck.throw([apiCheck.shape({
         onlyWithHashtags: apiCheck.bool
-        , onlyWithCoordinates: apiCheck.bool
-        , boundingBoxLatSouth: apiCheck.number
-        , boundingBoxLatNorth: apiCheck.number
-        , boundingBoxLngWest: apiCheck.number
-        , boundingBoxLngEast: apiCheck.number
+        , onlyWithLocation: apiCheck.bool
+        , boundingBox: apiCheck.shape({
+          latSouth: apiCheck.number
+          , latNorth: apiCheck.number
+          , lngWest: apiCheck.number
+          , lngEast: apiCheck.number
+        })
       }), apiCheck.func], arguments);
       var self = this;
-      var locations = options.boundingBoxLngWest.toFixed(2);
-      locations += ',' + options.boundingBoxLatSouth.toFixed(2);
-      locations += ',' + options.boundingBoxLngEast.toFixed(2);
-      locations += ',' + options.boundingBoxLatNorth.toFixed(2);
+      var locations = options.boundingBox.lngWest.toFixed(4);
+      locations += ',' + options.boundingBox.latSouth.toFixed(4);
+      locations += ',' + options.boundingBox.lngEast.toFixed(4);
+      locations += ',' + options.boundingBox.latNorth.toFixed(4);
       var twitterClientStreamOptions = {
         stall_warnings: true,
         locations
       };
       var twitterClient = new Twitter(twitterKeys[++twitterKeyIdx % twitterKeys.length]);
       var scraperId = random.uuid4().toString().toLowerCase();
-      twitterClient.stream('statuses/filter', twitterClientStreamOptions, function (stream) {
-        inUseTwitterStreams[scraperId] = stream;
-        stream.scraperId = scraperId;
-        //Add record to GeoTwitterScrape to keep track of this scraper
-        geoTwitterScrape.create({
-          scraperId,
-          scraperActive: true,
-          timeStarted: new Date(),
-          locations
-        }, function (err, geoTwitterScraper) {
-          //Sign up for stream events we care about
-          stream.on('data', function (tweet) {
-            var newTweetsExamined = (geoTwitterScraper.tweetsExamined || 0) + 1;
-            geoTwitterScraper.updateAttribute('tweetsExamined', newTweetsExamined, function (err, o) {
-              self.writeTweetToGeoTweetCollection(tweet, options);
+      var exceptionErr = null;
+      try {
+        twitterClient.stream('statuses/filter', twitterClientStreamOptions, function (stream) {
+          inUseTwitterStreams[scraperId] = stream;
+          stream.scraperId = scraperId;
+          //Add record to GeoTwitterScrape to keep track of this scraper
+          geoTwitterScrape.create({
+            scraperId,
+            scraperActive: true,
+            timeStarted: new Date(),
+            locations
+          }, function (err, geoTwitterScraper) {
+            //Sign up for stream events we care about
+            stream.on('data', function (tweet) {
+              var newTweetsExamined = (geoTwitterScraper.tweetsExamined || 0) + 1;
+              cb(null, {
+                status: 'OK',
+                scraperInfo: {
+                  scraperId: geoTwitterScraper.scraperId
+                  , scraperActive: geoTwitterScraper.scraperActive
+                  , timeStarted: geoTwitterScraper.timeStarted
+                  , locations: geoTwitterScraper.locations
+                }
+              });
+              //Reset 'cb' so our finally timeout handler below won't do anything untoward
+              cb = function () {
+              };
+              geoTwitterScraper.updateAttribute('tweetsExamined', newTweetsExamined, function (err, o) {
+                self.writeTweetToGeoTweetCollection(tweet, options);
+              });
+            });
+            stream.on('end', function () {
+              var scraperId = this.scraperId;
+              geoTwitterScrape.findOne({where: {scraperId}}, function (err, geoTwitterScraper) {
+                if (err) {
+                  log(err);
+                  return;
+                }
+                /*              geoTwitterScrape.destroyById(geoTwitterScraper.id, function(err){
+                 var e = err;
+                 });*/
+              });
+            });
+            stream.on('error', function (err) {
+              log(err);
             });
           });
-          stream.on('end', function () {
-            var scraperId = this.scraperId;
-            geoTwitterScrape.findOne({where: {scraperId}}, function (err, geoTwitterScraper) {
-              if(err){
-                log(err);
-                return;
-              }
-/*              geoTwitterScrape.destroyById(geoTwitterScraper.id, function(err){
-                var e = err;
-              });*/
-            });
-          });
-          stream.on('error', function (err) {
-            log(err);
-          });
-          cb(null, stream);
         });
-      });
+      } catch (err) {
+        exceptionErr = err;
+      } finally {
+        setTimeout(function () {
+          var msg = exceptionErr ? 'ERROR' : 'Looks OK but had no tweets before call timeout';
+          cb(exceptionErr, {status: msg});
+          cb = function () {
+          }
+        }, 10000);
+      }
     }
 
     diagonalDistanceOfBoundingBoxInMeters(coords) {
