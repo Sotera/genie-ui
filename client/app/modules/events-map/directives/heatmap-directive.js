@@ -6,7 +6,7 @@ angular.module('genie.eventsMap')
   function link(scope, elem, attrs) {
     var heatmapLayer = new google.maps.visualization.HeatmapLayer(
       {
-        radius:24
+        radius: attrs.radius || 24
       });
 
     scope.$watchCollection(
@@ -20,7 +20,10 @@ angular.module('genie.eventsMap')
       var events = scope.zoomLevelObj.events;
       heatmapLayer.setMap(scope.map);
       heatmapLayer.setData(events);
-      addMarkers(events, scope.map);
+      // optionally bypass map markers (default: on)
+      if (attrs.markers !== 'off') {
+        addMarkers(events, scope.map);
+      }
     }
 
     function addMarkers(events, map) {
