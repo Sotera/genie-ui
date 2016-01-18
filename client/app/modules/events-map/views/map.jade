@@ -1,17 +1,24 @@
 .container-fluid
   .row
     .col-md-12
-      twitter-stream( stream-controls )
-        #map( events-map heat-map zoom='9' class='events-map' )
-  .row( class='pad-top-md' )
-    .col-md-4
-      time-series( chart_name='time-series' )
-    .col-md-4
-      jqcloud(words='tags' delay='10' steps='7' class='events-cloud'
-        font-size='{from:0.08, to:0.02}')
-    .col-md-4
-      jqcloud(words='liveTags' delay='10' steps='7' class='live-cloud'
-        font-size='{from:0.08, to:0.02}')
-  .row( class='pad-top-md' )
-    .col-md-12
-      image-slider
+      //
+        twitter-stream( stream-controls )
+          #map( events-map heat-map zoom='11' class='events-map' )
+      #map( events-map heat-map zoom='14' class='events-map' )
+
+.map-overlay
+  .col-md-6
+    time-series( chart_name='time-series' )
+  .col-md-6
+    canvas#graph( style='height:180px; width:100%;' )
+      //
+        jqcloud(words='tags' delay='10' steps='7' class='events-cloud'
+          font-size='{from:0.08, to:0.02}')
+    //
+      .col-md-4
+        jqcloud(words='liveTags' delay='10' steps='7' class='live-cloud'
+          font-size='{from:0.08, to:0.02}')
+  //
+    .row( class='pad-top-md' )
+      .col-md-12
+        image-slider

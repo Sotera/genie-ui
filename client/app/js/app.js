@@ -43,6 +43,7 @@ angular.module('loopbackApp', [
     'genie.common',
     'genie.eventsMap',
     'genie.geoTwitter',
+    'genie.sandboxMap',
     'genie.scraper',
     'genie.pinMap',
     'com.module.stats',

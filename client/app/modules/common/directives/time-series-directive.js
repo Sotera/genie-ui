@@ -7,6 +7,8 @@ angular.module('genie.common')
     var chart = new google.visualization.AnnotationChart(elem[0]);
     var bgColor = StylesService.darkColor;
     var slowSelectionChange = _.debounce(selectionChange, 300);
+    var PERIOD = 90; // days
+    var DAY = 1440; // mins
 
     google.visualization.events.addListener(chart, 'select',
       slowSelectionChange);
@@ -18,7 +20,7 @@ angular.module('genie.common')
         // check for external handler and invoke it
         scope.timeChanged && scope.timeChanged(selectedVal);
         scope.$apply(function() {
-          scope.inputs.minutesAgo = (selection.row+1) * 1440;
+          scope.inputs.minutesAgo = (selection.row+1) * DAY * PERIOD;
         });
       }
     }

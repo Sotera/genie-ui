@@ -23,7 +23,7 @@ var clusteredEventSourceHelper = new LoopbackModelHelper('ClusteredEventSource')
 
 module.exports = class {
   constructor() {
-  }
+     }
 
   initialize(cb) {
     clusteredEventSourceHelper.deleteAll(cb);

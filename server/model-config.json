@@ -44,7 +44,7 @@
     "dataSource": "db",
     "public": true
   },
-  "ClusteredEventSource": {
+  "HashtagEventsSource": {
     "dataSource": "db",
     "public": true
   },

@@ -6,6 +6,10 @@ app.service('CoreService', ['ENV', 'SweetAlert', 'toasty', function(ENV,
 
   this.env = ENV;
 
+  this.swal = function(options) {
+    SweetAlert.swal(options);
+  };
+
   this.alert = function(title, text) {
     SweetAlert.swal(title, text);
   };

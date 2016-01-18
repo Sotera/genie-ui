@@ -9,7 +9,6 @@ angular.module('genie.eventsMap')
       styles: StylesService.dark,
       streetViewControl: false,
       mapTypeControl: false,
-      scrollwheel: false,
       zoomControlOptions: {
         position: google.maps.ControlPosition.TOP_LEFT
       },
@@ -33,9 +32,7 @@ angular.module('genie.eventsMap')
     var parent = $('#' + elem.parent()[0].id);
     var doResize = function doResize () {
       var parentMargins = parent.outerHeight(true) - parent.height();
-      var bottomHeight = 220;
-      var height = $window.innerHeight - elem[0].offsetTop - parentMargins -
-        bottomHeight;
+      var height = $window.innerHeight - elem[0].offsetTop - parentMargins;
       elem.css('height', height + 'px');
 
       google.maps.event.trigger(map, 'resize');
