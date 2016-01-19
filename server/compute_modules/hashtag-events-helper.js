@@ -1,5 +1,5 @@
 'use strict';
-//var log = require('debug')('compute_modules:clustered-event-source-helper');
+//var log = require('debug')('compute_modules:hashtag-events-helper');
 var moment = require('moment');
 var LoopbackModelHelper = require('../util/loopback-model-helper');
 var async = require('async');

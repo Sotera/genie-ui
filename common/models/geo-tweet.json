@@ -5,16 +5,17 @@
   "options": {},
   "properties": {
     "scored": {
-      "type": "boolean",
-      "required": true
+      "type": "boolean"
     },
     "fullTweet": {
       "type": "string",
       "required": true
     },
-    "location": {
-      "type": "geopoint",
-      "required": true
+    "lat": {
+      "type": "number"
+    },
+    "lng": {
+      "type": "number"
     }
   },
   "validations": [],

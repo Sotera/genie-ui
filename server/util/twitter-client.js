@@ -7,6 +7,7 @@ try {
   var loopback = require('loopback');
   var clustering = require('density-clustering');
   var LoopbackModelHelper = require('../util/loopback-model-helper');
+  var ScoreRecord = require('../compute_modules/geo-tweet-score-record');
   var Random = require('random-js');
   var random = new Random(Random.engines.mt19937().seed(0xc01dbeef));
   var apiCheck = require('api-check')({
@@ -54,19 +55,19 @@ try {
               //See if caller provided us an end date
               /*              options.startDate = '2016-01-04T20:06:00.000Z';
                options.endDate = '2016-01-05T20:06:00.000Z';
-               options.clusteringDurationMinutes = 4 * 60;*/
+               options.clusteringWindowMinutes = 4 * 60;*/
               options.minTweetsToCluster = options.minTweetsToCluster || 5;
               options.minTweetsToCluster = (options.minTweetsToCluster < 3)
                 ? 3
                 : (options.minTweetsToCluster > 10)
                 ? 10
                 : options.minTweetsToCluster;
-              options._filterClusteringDurationMinutes = options.clusteringDurationMinutes || 8 * 60;
-              options._filterClusteringDurationMinutes = (options._filterClusteringDurationMinutes < 60)
+              options._filterClusteringWindowMinutes = options.clusteringWindowMinutes || 8 * 60;
+              options._filterClusteringWindowMinutes = (options._filterClusteringWindowMinutes < 60)
                 ? 60
-                : (options._filterClusteringDurationMinutes > (8 * 60))
+                : (options._filterClusteringWindowMinutes > (8 * 60))
                 ? (8 * 60)
-                : options._filterClusteringDurationMinutes;
+                : options._filterClusteringWindowMinutes;
 
               options._filterStartDate = (isNaN(Date.parse(options.startDate)))
                 ? null
@@ -79,7 +80,7 @@ try {
               options._filterStartDate = options._filterEndDate = null;
             }
             //If we can't get enough info from user about clustering time window then get latest
-            //date from data and go back _filterClusteringDurationMinutes to create window
+            //date from data and go back _filterClusteringWindowMinutes to create window
             if (options._filterStartDate && options._filterEndDate) {
               cb(null, options);
             } else if (!options._filterStartDate && !options._filterEndDate) {
@@ -94,17 +95,17 @@ try {
                   });
                   options._filterEndDate = moment(maxDate);
                   options._filterStartDate = moment(maxDate);
-                  options._filterStartDate.subtract(options._filterClusteringDurationMinutes, 'minutes');
+                  options._filterStartDate.subtract(options._filterClusteringWindowMinutes, 'minutes');
                   cb(null, options);
                 }
               );
             } else if (options._filterStartDate) {
               options._filterEndDate = moment(options._filterStartDate);
-              options._filterEndDate.add(options._filterClusteringDurationMinutes, 'minutes');
+              options._filterEndDate.add(options._filterClusteringWindowMinutes, 'minutes');
               cb(null, options);
             } else if (options._filterEndDate) {
               options._filterStartDate = moment(options._filterEndDate);
-              options._filterEndDate.subtract(options._filterClusteringDurationMinutes, 'minutes');
+              options._filterEndDate.subtract(options._filterClusteringWindowMinutes, 'minutes');
               cb(null, options);
             }
           },
@@ -176,6 +177,7 @@ try {
           function(options, geoTweetBuckets, cb){
             for (var geoTweetBucket in geoTweetBuckets) {
               var geoTweetArray = geoTweetBuckets[geoTweetBucket];
+              geoTweetArray = geoTweetBuckets[geoTweetBucket];
             }
             cb();
           }
@@ -187,7 +189,7 @@ try {
 
     processNewTweets(options, cb) {
       options = options || {};
-      apiCheck.throw([apiCheck.func], arguments);
+      apiCheck.throw([apiCheck.object, apiCheck.func], arguments);
       async.waterfall(
         [
           //Doing it all in memory for now. Later we may add ES query result paging, etc.
@@ -214,30 +216,18 @@ try {
             //nice array
             var scoreRecords = [];
             geoTweets.forEach(function (geoTweet) {
-              var scoreGeoTweet = {};
               try {
                 if (!geoTweet) {
                   throw new Error('<null> GeoTweet!');
                 }
                 var fullTweet = JSON.parse(geoTweet.fullTweet);
                 //Now shall we score the tweet
-                scoreGeoTweet = {
-                  user: fullTweet.user.screen_name,
-                  caption: fullTweet.text,
-                  twitterId: fullTweet.id.toString(),
-                  lat: fullTweet.genieLoc.lat,
-                  lng: fullTweet.genieLoc.lng,
-                  tags: fullTweet.entities.hashtags.map(function (hashtag) {
-                    return hashtag.text;
-                  }),
-                  postDate: new Date(fullTweet.created_at),
-                  indexedDate: new Date()
-                };
                 //Set GeoTweet instance to scored so we don't look at it again
                 /*                geoTweet.updateAttribute('scored', true, function (err, o) {
                  var e = err;
                  });*/
-                scoreRecords.push(scoreGeoTweet);
+                var scoreRecord = new ScoreRecord(fullTweet);
+                scoreRecords.push(scoreRecord);
               } catch (err) {
                 log(err);
               }
@@ -291,7 +281,7 @@ try {
             tweet.genieLoc = {lng: tweet.coordinates[0], lat: tweet.coordinates[1]};
           }
           //Let's check the 'place' property
-          if (!tweet.genieLoc && tweet.place && tweet.place.bounding_box && tweet.place.bounding_box.coordinates) {
+/*          if (!tweet.genieLoc && tweet.place && tweet.place.bounding_box && tweet.place.bounding_box.coordinates) {
             var coords = tweet.place.bounding_box.coordinates;
             if (coords instanceof Array) {
               if (coords.length == 1 && coords[0] instanceof Array) {
@@ -301,7 +291,7 @@ try {
                 }
               }
             }
-          }
+          }*/
           if (!tweet.genieLoc) {
             cb(null, null);
             return;
@@ -321,7 +311,8 @@ try {
         /*            var connector = geoTweetHelper.getModel().getDataSource().connector;
          var cc = connector.getClientConfig();*/
         geoTweetHelper.create({
-          location: tweet.genieLoc,
+          lat: tweet.genieLoc.lat,
+          lng: tweet.genieLoc.lng,
           scored: false,
           fullTweet: JSON.stringify(tweet)
         }, cb);

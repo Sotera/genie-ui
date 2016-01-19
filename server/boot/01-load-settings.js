@@ -90,6 +90,8 @@ module.exports = function (app, cb) {
   var queries = newSettings.map(function (newSetting) {
     return {where: {key: newSetting.key}};
   })
-  settingHelper.findOrCreateMany(queries, newSettings, cb);
+  settingHelper.findOrCreateMany(queries, newSettings, function(err,newSettings){
+    cb();
+  });
 };
 

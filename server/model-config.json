@@ -72,8 +72,8 @@
     "dataSource": "db",
     "public": true
   },
-  "InstagramSource": {
-    "dataSource": "es-instagram",
+  "SandboxEventsSource": {
+    "dataSource": "db",
     "public": true
   },
   "GeoTwitterScrape": {

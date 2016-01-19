@@ -62,6 +62,9 @@ module.exports = function (app, cb) {
         var theta = random.real(0, Math.PI * 2);
         var lat = randomishPointsOnEarth[idx]['lat'] + (r * Math.cos(theta));
         var lng = randomishPointsOnEarth[idx]['lng'] + (r * Math.sin(theta));
+        //usernames
+        var usernames = ['Fidelity', 'Fifi', 'Fifine', 'Filia', 'Filide', 'Filippa', 'Fina', 'Fiona',
+          'Fionna', 'Fionnula', 'Fiorenze', 'Fleur', 'Fleurette', 'Flo', 'Flor', 'Flora'];
         //tags
         const twitterTags = ['indicter', 'abacisci', 'anastrophe', 'pentatomic', 'hyaluronidase', 'canalatura',
           'schizopod', 'undervicar', 'aeciospore', 'iodization', 'newmanism', 'inhibition', 'favelvellae', 'sackbut'];
@@ -76,7 +79,7 @@ module.exports = function (app, cb) {
         var tags = tagArray.join(',');
         geoTweets.push(
           {
-            user: 'dummy',
+            user: usernames[random.integer(0, usernames.length - 1)],
             caption: 'dummy',
             cluster: 'dummy',
             twitterId,
@@ -97,7 +100,7 @@ module.exports = function (app, cb) {
             },
             geoTweet,
             function (err, results) {
-              if(err){
+              if (err) {
                 log(err);
               }
               cb();

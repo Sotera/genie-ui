@@ -19,8 +19,11 @@
     "post_date": {
       "type": "string"
     },
-    "location": {
-      "type": "object"
+    "lat": {
+      "type": "number"
+    },
+    "lng": {
+      "type": "number"
     }
   },
   "validations": [],
