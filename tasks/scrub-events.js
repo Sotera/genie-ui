@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 
-var app = require('../server/server'),
-  Task = app.models.Task,
+var app = require('../server/server');
+var  Task = app.models.Task,
   log = require('../server/util/debug').log('task'),
   taskName = 'scrub events',
   worker = require('./workers/scrubber');

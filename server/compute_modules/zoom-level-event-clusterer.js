@@ -1,10 +1,16 @@
 'use strict';
-//var log = require('debug')('compute_modules:hashtag-events-helper');
-var moment = require('moment');
+var log = require('debug')('compute_modules:zoom-level-helper');
+var ClustererKMeans = require('../compute_modules/clusterer-kmeans');
 var LoopbackModelHelper = require('../util/loopback-model-helper');
-var async = require('async');
 var Random = require('random-js');
-var random = new Random(Random.engines.mt19937().autoSeed());
+
+const clustersPerZoomLevel = [
+  1800, 1700, 1600, 1500, 1400, 1300, 1200, 1100, 1000, 900, 800, 700, 600, 500, 400, 300, 200, 100
+].reverse();
+
+const clustererKMeans = new ClustererKMeans();
+const random = new Random(Random.engines.mt19937().autoSeed());
+
 const randomishTags = [
   'disney',
   'waltdisneyworld',
@@ -19,18 +25,10 @@ const randomishPointsOnEarth = [
   , {lat: 39.75, lng: -104.9}//Denver
   , {lat: 25.75, lng: -80.2}//Miami
 ];
-var clusteredEventSourceHelper = new LoopbackModelHelper('ClusteredEventSource');
 
 module.exports = class {
-  constructor() {
-     }
-
-  initialize(cb) {
-    clusteredEventSourceHelper.deleteAll(cb);
-  }
-
-  randomDate(start, end) {
-    return new Date(start.getTime() + random.real(0, 1, false) * (end.getTime() - start.getTime()));
+  constructor(app) {
+    this.zoomLevelHelper = new LoopbackModelHelper('ZoomLevel');
   }
 
   getEventsForClustererInput(options, cb) {
@@ -76,23 +74,107 @@ module.exports = class {
     });
   }
 
+  clusterEvents(options, cb){
+    var zoomLevel = options.zoomLevel || 8;
+    var endDate = options.endDate || new Date();
+    var intervalDurationMinutes = options.intervalDurationMinutes || (24 * 60);
+    var intervalsAgo = options.intervalsAgo || 1;
+    var msg = 'Clustering @ zoomLevel: ' + zoomLevel;
+    msg += ', endDate: ' + endDate;
+    msg += ', intervalDurationMinutes: ' + intervalDurationMinutes;
+    msg += ', intervalsAgo: ' + intervalsAgo;
+    msg += ' [' + clustersPerZoomLevel[zoomLevel - 1] + '] clusters.';
+    res.status(200).end(msg);
+    clusteredEventSourceHelper.getEventsForClustererInput({
+      endDate,
+      intervalDurationMinutes,
+      intervalsAgo
+    }, function (err, clustererInput) {
+      if (err) {
+        log(err);
+        return;
+      }
+      var vectorToCluster = clustererInput.vectorToCluster;
+      var minutesAgo = clustererInput.minutesAgo;
+      var clusterCount = vectorToCluster.length < clustersPerZoomLevel[zoomLevel]
+        ? vectorToCluster.length
+        : clustersPerZoomLevel[zoomLevel];
+      clustererKMeans.geoCluster(vectorToCluster, clusterCount, function (err, clusters) {
+        if (err) {
+          log(err);
+          return;
+        }
+        zoomLevelHelper.updateZoomLevels({
+          clusterType: 'k-means', clusters, zoomLevel, minutesAgo
+        }, function (err) {
+          if (err) {
+            log(err);
+          }
+        });
+      })
+    });
+  }
+
+  updateZoomLevels(options, cb) {
+    var clusters = options.clusters;
+    var zoomLevel = options.zoomLevel;
+    var minutesAgo = options.minutesAgo;
+    var clusterType = options.clusterType;
+    var events = [];
+    var latSum = 0;
+    var lngSum = 0;
+    var len = clusters.length;
+    for (var i = 0; i < len; ++i) {
+      var lat = clusters[i].centroid[0];
+      var lng = clusters[i].centroid[1];
+      events.push({lat, lng});
+      latSum += lat;
+      lngSum += lng;
+    }
+    var centerPoint = {lat: latSum / len, lng: lngSum / len};
+    var newClusteredEvent =
+    {
+      zoomLevel,
+      minutesAgo,
+      events,
+      centerPoint,
+      clusterType
+    };
+    this.zoomLevelHelper.find({
+      where: {
+        and: [
+          {zoomLevel: newClusteredEvent.zoomLevel},
+          {minutesAgo: newClusteredEvent.minutesAgo}
+        ]
+      }
+    }, function (err, zoomLevels) {
+      if (zoomLevels.length) {
+        if (zoomLevels.length > 1) {
+          var msg = 'Too many ZoomLevels for zoomLevel: ' + newClusteredEvent.zoomLevel;
+          msg += ' and minutesAgo: ' + newClusteredEvent.minutesAgo;
+          log(msg);
+        }
+        zoomLevels[0].updateAttributes(newClusteredEvent, function (err) {
+          if(err){
+            log(err);
+          }
+        });
+      } else {
+        this.zoomLevelHelper.create(newClusteredEvent, function (err) {
+          if(err){
+            log(err);
+          }
+        });
+      }
+    });
+  }
+
+  randomDate(start, end) {
+    return new Date(start.getTime() + random.real(0, 1, false) * (end.getTime() - start.getTime()));
+  }
+
   addClusteredEventSources(options, cb) {
     options = options || {};
-    /*    apiCheck.warn([apiCheck.shape({
-     clusterCountMin: apiCheck.number
-     , clusterCountMax: apiCheck.number
-     , tags: apiCheck.arrayOf(apiCheck.number)
-     , numUsers: apiCheck.arrayOf(apiCheck.number)
-     , numPosts: apiCheck.arrayOf(apiCheck.number)
-     , locCenters: apiCheck.arrayOf(
-     apiCheck.shape(
-     {
-     lat: apiCheck.number,
-     lng: apiCheck.number
-     }))
-     , distFromCenterMin: apiCheck.number
-     , distFromCenterMax: apiCheck.number
-     }).optional, apiCheck.func], arguments);*/
     if ((arguments.length === 0) ||
       (arguments.length === 1 && typeof arguments[0] !== 'function') ||
       (arguments.length >= 2 && typeof arguments[1] !== 'function')) {
@@ -140,7 +222,6 @@ module.exports = class {
     }
     clusteredEventSourceHelper.createMany(newClusteredEventSources, cb);
   }
-
   convertToDate(obj) {
     if (obj instanceof Date) {
       return obj;
@@ -150,6 +231,25 @@ module.exports = class {
     } catch (err) {
       return null;
     }
+  }
+  initialize(cb) {
+    this.zoomLevelHelper.deleteAll(function (err) {
+      if (err) {
+        cb(err);
+        return;
+      }
+      var clusters = [];
+      for (var i = 1; i <= 18; ++i) {
+        clusters.push({
+          zoomLevel: i,
+          minutesAgo: 0,
+          clusterType: 'Initialized',
+          events: [{lat: 0, lng: 0}],
+          centerPoint: {lat: 0, lng: 0}
+        });
+      }
+      this.zoomLevelHelper.createMany(clusters, cb);
+    });
   }
 }
 
