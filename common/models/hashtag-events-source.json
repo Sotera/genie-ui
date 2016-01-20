@@ -1,0 +1,30 @@
+{
+  "name": "HashtagEventsSource",
+  "properties": {
+    "uuid": {
+      "type": "string"
+    },
+    "num_users": {
+      "type": "number"
+    },
+    "num_posts": {
+      "type": "number"
+    },
+    "tag": {
+      "type": "string"
+    },
+    "indexed_date": {
+      "type": "date"
+    },
+    "post_date": {
+      "type": "string"
+    },
+    "location": {
+      "type": "object"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

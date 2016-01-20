@@ -4,9 +4,9 @@
 let app = require('../server/server'),
   request = require('request'),
   StatsChip = app.models.StatsChip,
-  ClusteredEventSource = app.models.ClusteredEventSource,
+  HashtagEventsSource = app.models.HashtagEventsSource,
   log = require('debug')('task:events-stats'),
-  ds = ClusteredEventSource.getDataSource();
+  ds = HashtagEventsSource.getDataSource();
 
 ds.on('connected', function() {
   const statsAggObj = {

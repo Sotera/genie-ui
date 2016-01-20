@@ -1,0 +1,10 @@
+{
+  "name": "SandboxEventsSource",
+  "properties": {
+
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

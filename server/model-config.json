@@ -44,8 +44,8 @@
     "dataSource": "db",
     "public": true
   },
-  "ClusteredEventSource": {
-    "dataSource": "es-events",
+  "HashtagEventsSource": {
+    "dataSource": "es-hashtag-events",
     "public": true
   },
   "Task": {
@@ -64,8 +64,8 @@
     "dataSource": "db",
     "public": true
   },
-  "InstagramSource": {
-    "dataSource": "es-instagram",
+  "SandboxEventsSource": {
+    "dataSource": "es-sandbox-events",
     "public": true
   }
 }

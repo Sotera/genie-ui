@@ -7,7 +7,7 @@
   },
   {
     "name": "elasticsearch",
-    "Image": "elasticsearch:2.1",
+    "Image": "lukewendling\/elasticsearch:1",
     "DockerFilePath": "",
     "Hostname": "elasticsearch",
     "ExposedPorts": {

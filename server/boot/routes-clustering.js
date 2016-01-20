@@ -4,7 +4,7 @@ var kmeans = require('node-kmeans');
 var async = require('async');
 var updateObj = require('../util/update-obj');
 var createObj = require('../util/create-obj');
-var ClusteredEventSourceHelper = require('../compute_modules/clustered-event-source-helper');
+var ClusteredEventSourceHelper = require('../compute_modules/hashtag-events-helper');
 var ZoomLevelHelper = require('../compute_modules/zoom-level-helper');
 var ClustererKMeans = require('../compute_modules/clusterer-kmeans');
 var Random = require('random-js');
@@ -17,7 +17,7 @@ module.exports = function (app) {
   var zoomLevelHelper = new ZoomLevelHelper(app);
   var clustererKMeans = new ClustererKMeans();
   var ZoomLevel = app.models.ZoomLevel;
-  var ClusteredEventSource = app.models.ClusteredEventSource;
+  var ClusteredEventSource = app.models.HashtagEventsSource;
   app.get('/initializeClusteredEventSource', function (req, res) {
     initialize(clusteredEventSourceHelper, res, 'ClusteredEventSource');
   });

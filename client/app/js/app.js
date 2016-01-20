@@ -42,6 +42,7 @@ angular.module('loopbackApp', [
     'com.module.about',
     'genie.common',
     'genie.eventsMap',
+    'genie.sandboxMap',
     'genie.scraper',
     'genie.pinMap',
     'com.module.stats',

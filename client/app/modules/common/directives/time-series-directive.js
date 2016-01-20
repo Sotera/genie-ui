@@ -1,12 +1,15 @@
 'use strict';
 angular.module('genie.common')
 .directive('timeSeries', ['$window', 'ChartService', 'StylesService',
-  function ($window, ChartService, StylesService) {
+  'CoreService',
+  function ($window, ChartService, StylesService, CoreService) {
 
   function link(scope, elem, attrs) {
     var chart = new google.visualization.AnnotationChart(elem[0]);
     var bgColor = StylesService.darkColor;
     var slowSelectionChange = _.debounce(selectionChange, 300);
+    var PERIOD = CoreService.env.period; // days
+    var DAY = CoreService.env.day; // mins
 
     google.visualization.events.addListener(chart, 'select',
       slowSelectionChange);
@@ -18,7 +21,7 @@ angular.module('genie.common')
         // check for external handler and invoke it
         scope.timeChanged && scope.timeChanged(selectedVal);
         scope.$apply(function() {
-          scope.inputs.minutesAgo = (selection.row+1) * 1440;
+          scope.inputs.minutesAgo = (selection.row+1) * DAY * PERIOD;
         });
       }
     }
@@ -52,11 +55,17 @@ angular.module('genie.common')
 
     ChartService.getData(attrs.chartName)
       .then(function(chartData) {
-        chartData.columns.forEach(function(col) {
-          data.addColumn(col);
-        });
-        data.addRows(chartData.rows);
-        chart.draw(data, options);
+        var rows = chartData.rows;
+        if (rows.length) {
+          chartData.columns.forEach(function(col) {
+            data.addColumn(col);
+          });
+          data.addRows(rows);
+          chart.draw(data, options);
+        } else {
+          CoreService.alertInfo('Missing Data',
+            'No time-series data: check system settings for start, end dates');
+        }
       });
   }
 

@@ -4,7 +4,7 @@ module.exports = {
   run: run
 };
 
-function run (options) {
-  var transform = require('./transforms/' + options.transform);
+function run(options) {
+  var transform = require('./clusterizers/' + options.transform);
   transform.run();
 }

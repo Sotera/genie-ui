@@ -3,9 +3,12 @@
 
 var app = require('../server/server'),
   Task = app.models.Task,
-  log = require('debug')('task:cluster-events'),
-  taskName = 'clustered events',
+  log = require('../server/util/debug').log('task'),
+  taskName = 'cluster events',
   worker = require('./workers/clusterer');
+
+// HACK
+Task.deleteAll();
 
 // TODO: add Task#running, lastError
 Task.findOrCreate({
