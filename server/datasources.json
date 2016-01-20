@@ -73,5 +73,22 @@
     "defaultSize": 50,
     "index": "instagram",
     "type": "austin"
+  },
+  "es-sandbox-event": {
+    "name": "es-sandbox-event",
+    "connector": "es",
+    "hosts": [
+      {
+        "protocol": "http",
+        "host": "localhost",
+        "port": 9200
+      }
+    ],
+    "apiVersion": "2.0",
+    "requestTimeout": 5000,
+    "log": "error",
+    "defaultSize": 50,
+    "index": "sandbox",
+    "type": "event"
   }
 }

@@ -98,13 +98,28 @@ function createFunctionArray(objects, getFunctionCb) {
 }
 
 function execFunctionArray(functionArray, cb) {
-  async.parallel(functionArray, function (err, newObjects) {
+  const maxSimultaneousParallelOperations = 10;
+  var seriesFunctionArray = [];
+  while (functionArray.length) {
+    var parallelFunctionArray = functionArray.splice(0, maxSimultaneousParallelOperations);
+    seriesFunctionArray.push(async.apply(execFunctionArrayInParallel, parallelFunctionArray));
+  }
+  async.series(seriesFunctionArray, function (err, results) {
+    //Since these results will be the results of parallel execution they will really be
+    //an array of result arrays. So flatten them.
+    var retVal = [].concat.apply([], results);
+    cb(err, retVal);
+  });
+}
+
+function execFunctionArrayInParallel(functionArray, cb) {
+  async.parallel(functionArray, function (err, results) {
     if (err) {
       log(err);
       cb(err, null);
       return;
     }
-    cb(null, newObjects);
+    cb(null, results);
   });
 }
 

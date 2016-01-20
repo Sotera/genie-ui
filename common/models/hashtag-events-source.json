@@ -1,7 +1,7 @@
 {
   "name": "HashtagEventsSource",
   "properties": {
-    "uuid": {
+    "eventId": {
       "type": "string"
     },
     "num_users": {
@@ -17,7 +17,7 @@
       "type": "date"
     },
     "post_date": {
-      "type": "string"
+      "type": "date"
     },
     "lat": {
       "type": "number"

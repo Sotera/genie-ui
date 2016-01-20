@@ -80,12 +80,16 @@ function summarizeEvents(data){
 function convertEvent(sourceEvent, data){
   console.log('converting ' + sourceEvent.id);
   var destEvent = {
-    id: sourceEvent.id,
-    post_date: moment(sourceEvent.created_time).format('YYYY-MM-DD'),
-    location: [sourceEvent.location.lat.min, sourceEvent.location.lon.min],
+    eventId: sourceEvent.id,
+    //id: sourceEvent.id,
+    post_date: moment(sourceEvent.created_time.min * 1000).toISOString(),
+    //location: [sourceEvent.location.lat.min, sourceEvent.location.lon.min],
+    lat: sourceEvent.location.lat.min,
+    lng: sourceEvent.location.lon.min,
     event_source: esDestIndex,
     num_images: sourceEvent.count,
-    extra: {network_graph: data.detail}
+    extra: {network_graph: 'no graph'}
+    //extra: {network_graph: data.detail}
   };
 
   esDestClient.index({

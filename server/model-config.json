@@ -73,7 +73,7 @@
     "public": true
   },
   "SandboxEventsSource": {
-    "dataSource": "db",
+    "dataSource": "es-sandbox-event",
     "public": true
   },
   "GeoTwitterScrape": {

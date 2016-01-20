@@ -1,7 +1,30 @@
 {
   "name": "SandboxEventsSource",
   "properties": {
-
+    "eventId": {
+      "type": "string"
+    },
+    "post_date": {
+      "type": "date"
+    },
+    "indexed_date": {
+      "type": "date"
+    },
+    "lat": {
+      "type": "number"
+    },
+    "lng": {
+      "type": "number"
+    },
+    "event_source": {
+      "type": "string"
+    },
+    "num_images": {
+      "type": "number"
+    },
+    "extra": {
+      "type": "object"
+    }
   },
   "validations": [],
   "relations": {},

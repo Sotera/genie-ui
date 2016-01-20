@@ -1,8 +1,10 @@
 'use strict';
-var log = require('debug')('compute_modules:zoom-level-helper');
+var log = require('debug')('compute_modules:zoom-level-event-clusterer');
 var ClustererKMeans = require('../compute_modules/clusterer-kmeans');
 var LoopbackModelHelper = require('../util/loopback-model-helper');
 var Random = require('random-js');
+var moment = require('moment');
+var async = require('async');
 
 const clustersPerZoomLevel = [
   1800, 1700, 1600, 1500, 1400, 1300, 1200, 1100, 1000, 900, 800, 700, 600, 500, 400, 300, 200, 100
@@ -11,14 +13,9 @@ const clustersPerZoomLevel = [
 const clustererKMeans = new ClustererKMeans();
 const random = new Random(Random.engines.mt19937().autoSeed());
 
-const randomishTags = [
-  'disney',
-  'waltdisneyworld',
-  'wdw',
-  'northbrook',
-  'me',
-  'miamibeach'
-];
+const randomishTwitterTags = ['indicter', 'abacisci', 'anastrophe', 'pentatomic', 'hyaluronidase', 'canalatura',
+  'schizopod', 'undervicar', 'aeciospore', 'iodization', 'newmanism', 'inhibition', 'favelvellae', 'sackbut'];
+
 const randomishPointsOnEarth = [
   {lat: 30.25, lng: -97.5}//Austin
   , {lat: 41.8, lng: -87.67}//Chicago
@@ -29,52 +26,60 @@ const randomishPointsOnEarth = [
 module.exports = class {
   constructor(app) {
     this.zoomLevelHelper = new LoopbackModelHelper('ZoomLevel');
+    this.sandboxEventsSourceHelper = new LoopbackModelHelper('SandboxEventsSource');
+    this.hashtagEventsSourceHelper = new LoopbackModelHelper('HashtagEventsSource');
   }
 
   getEventsForClustererInput(options, cb) {
-    var endDate = new Date();//Today
-    var intervalDurationMinutes = (24 * 60);
-    var intervalsAgo = 1;
-    if (arguments.length === 0) {
-      throw new Error('Syntax: getEventsForClustererInput([options], callback)');
-    }
-    else if (arguments.length === 1) {
-      if (typeof arguments[0] !== 'function') {
-        throw new Error('Syntax: getEventsForClustererInput([options], callback)');
-      }
-      cb = arguments[0];
-    } else if (arguments.length >= 2) {
-      if (typeof arguments[1] !== 'function') {
-        throw new Error('Syntax: getEventsForClustererInput([options], callback)');
-      }
-      endDate = options.endDate || endDate;
-      intervalDurationMinutes = options.intervalDurationMinutes || intervalDurationMinutes;
-      intervalsAgo = options.intervalsAgo || intervalsAgo;
-    }
+    var endDate = this.convertToDate(options.endDate) || new Date();
+    var intervalDurationMinutes = options.intervalDurationMinutes || (24 * 60);
+    var intervalsAgo = options.intervalsAgo || 1;
 
     var minutesAgo = intervalsAgo * intervalDurationMinutes;
     var filterStartDate = moment(endDate);
     filterStartDate.subtract(minutesAgo, 'minutes');
     var filterEndDate = moment(filterStartDate).add(intervalDurationMinutes, 'minutes');
 
-    clusteredEventSourceHelper.find({
-      where: {
-        post_date: {between: [filterStartDate, filterEndDate]}
-      }
-    }, function (err, ces) {
-      if (err) {
-        cb(err, null);
-        return;
-      }
-      var vectorToCluster = [];
-      for (var i = 0; i < ces.length; ++i) {
-        vectorToCluster[i] = {lat: ces[i].location.coordinates[1], lng: ces[i].location.coordinates[0]};
-      }
-      cb(err, {minutesAgo, vectorToCluster});
-    });
+    var self = this;
+    async.waterfall(
+      [
+        function getSandboxEventsCount(cb) {
+          self.hashtagEventsSourceHelper.count(function (err, count) {
+            cb(err, count);
+          });
+        },
+        function findSandboxEventsTimeWindow(count, cb) {
+          var dateWindowQuery = {
+            where: {
+              and: [
+                {post_date: {gte: filterStartDate}},
+                {post_date: {lte: filterEndDate}}
+              ]
+            },
+            limit: count
+          };
+/*          dateWindowQuery = {
+            limit: 20
+          };*/
+          self.hashtagEventsSourceHelper.find(dateWindowQuery, function (err, ces) {
+            if (err) {
+              cb(err, null);
+              return;
+            }
+            var vectorToCluster = [];
+            for (var i = 0; i < ces.length; ++i) {
+              log(ces[i].post_date);
+              vectorToCluster[i] = {lat: ces[i].lat, lng: ces[i].lng};
+            }
+            cb(err, {minutesAgo, vectorToCluster});
+          });
+        }],
+      function (err, results) {
+        cb(err, results);
+      });
   }
 
-  clusterEvents(options, cb){
+  clusterEvents(options, cb) {
     var zoomLevel = options.zoomLevel || 8;
     var endDate = options.endDate || new Date();
     var intervalDurationMinutes = options.intervalDurationMinutes || (24 * 60);
@@ -155,13 +160,13 @@ module.exports = class {
           log(msg);
         }
         zoomLevels[0].updateAttributes(newClusteredEvent, function (err) {
-          if(err){
+          if (err) {
             log(err);
           }
         });
       } else {
         this.zoomLevelHelper.create(newClusteredEvent, function (err) {
-          if(err){
+          if (err) {
             log(err);
           }
         });
@@ -173,19 +178,15 @@ module.exports = class {
     return new Date(start.getTime() + random.real(0, 1, false) * (end.getTime() - start.getTime()));
   }
 
-  addClusteredEventSources(options, cb) {
+  createFakeEvents(options, cb) {
     options = options || {};
-    if ((arguments.length === 0) ||
-      (arguments.length === 1 && typeof arguments[0] !== 'function') ||
-      (arguments.length >= 2 && typeof arguments[1] !== 'function')) {
-      throw new Error('Syntax: addClusteredEventSources([options], callback)');
-    }
     //Setup some defaults for options
     var now = new Date();
     var sixMonthsAgo = new Date(new Date(now).setMonth(now.getMonth() - 6));
+    options.eventId = options.eventId || random.uuid4().toString();
     options.clusterCountMin = options.clusterCountMin || 30;
     options.clusterCountMax = options.clusterCountMax || 75;
-    options.tags = options.tags || randomishTags;
+    options.tags = options.tags || randomishTwitterTags;
     options.maxNumUsers = options.maxNumUsers || 35;
     options.minNumUsers = options.minNumUsers || 5;
     options.maxNumPosts = options.maxNumPosts || 35;
@@ -199,57 +200,42 @@ module.exports = class {
     options.minIndexDate = this.convertToDate(options.minIndexDate) || sixMonthsAgo;
 
     var clusterCount = random.integer(options.clusterCountMin, options.clusterCountMax);
-    var newClusteredEventSources = [];
+    var newHashtagEvents = [];
     for (var i = 0; i <= clusterCount; i++) {
       var idx = random.integer(0, options.locCenters.length - 1);
       var r = random.real(options.distFromCenterMin, options.distFromCenterMax);
       var theta = random.real(0, Math.PI * 2);
       var lat = options.locCenters[idx]['lat'] + (r * Math.cos(theta));
       var lng = options.locCenters[idx]['lng'] + (r * Math.sin(theta));
-      newClusteredEventSources.push(
+      newHashtagEvents.push(
         {
+          eventId: options.eventId,
           num_users: random.integer(options.minNumUsers, options.maxNumUsers),
           num_posts: random.integer(options.minNumPosts, options.maxNumPosts),
           indexed_date: this.randomDate(options.minIndexDate, options.maxIndexDate),
           post_date: this.randomDate(options.minPostDate, options.maxPostDate),
           tag: options.tags[random.integer(0, options.tags.length - 1)],
-          location: {
-            type: 'point',
-            coordinates: [lng, lat]
-          }
+          lat,
+          lng
         }
       );
     }
-    clusteredEventSourceHelper.createMany(newClusteredEventSources, cb);
+    this.hashtagEventsSourceHelper.createMany(newHashtagEvents, function (err, result) {
+      var msg = err ? 'ERROR' : 'Created ' + result.length + ' fake "hashtag" events.';
+      cb(err, msg);
+    });
   }
+
   convertToDate(obj) {
     if (obj instanceof Date) {
       return obj;
     }
     try {
-      return new Date(obj);
+      var tryDate = Date.parse(obj);
+      return isNaN(tryDate) ? null : new Date(tryDate);
     } catch (err) {
       return null;
     }
-  }
-  initialize(cb) {
-    this.zoomLevelHelper.deleteAll(function (err) {
-      if (err) {
-        cb(err);
-        return;
-      }
-      var clusters = [];
-      for (var i = 1; i <= 18; ++i) {
-        clusters.push({
-          zoomLevel: i,
-          minutesAgo: 0,
-          clusterType: 'Initialized',
-          events: [{lat: 0, lng: 0}],
-          centerPoint: {lat: 0, lng: 0}
-        });
-      }
-      this.zoomLevelHelper.createMany(clusters, cb);
-    });
   }
 }
 
