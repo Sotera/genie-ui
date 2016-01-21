@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Run dev instance setup steps.
 
-./script/create-mock-sources.sh
 ./tasks/cluster-events.js &
 sleep 4
 ./tasks/events-stats.js &

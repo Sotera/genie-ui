@@ -21,5 +21,6 @@ lb-ng server/server.js client/app/js/lb-services.js
 ## Dev boostrap
 
 ```
+./script/import-mock-sources.js
 ./script/setup
 ```

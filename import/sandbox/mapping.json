@@ -1,3 +1,0 @@
-[
-"{\"sandbox\":{\"mappings\":{\"event\":{\"properties\":{\"event_source\":{\"type\":\"string\"},\"extra\":{\"properties\":{\"network_graph\":{\"properties\":{\"links\":{\"properties\":{\"sim\":{\"type\":\"double\"},\"source\":{\"type\":\"string\"},\"target\":{\"type\":\"string\"}}},\"nodes\":{\"properties\":{\"id\":{\"type\":\"string\"},\"lat\":{\"type\":\"double\"},\"lon\":{\"type\":\"double\"},\"time\":{\"type\":\"long\"}}}}}}},\"id\":{\"type\":\"long\"},\"indexed_date\":{\"type\":\"date\",\"format\":\"date_optional_time\"},\"location\":{\"type\":\"double\"},\"num_images\":{\"type\":\"long\"},\"post_date\":{\"type\":\"date\",\"format\":\"date_optional_time\"}}}}}}"
-]
