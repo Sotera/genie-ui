@@ -1,11 +1,9 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('imageGrid', ['ImageManagerService',
-  function(ImageManagerService) {
+.directive('imageGrid', ['ImageManagerService', '$window',
+  function(ImageManagerService, $window) {
 
   function link(scope, elem, attrs) {
-    var elem = elem[0];
-
     scope.$watchCollection(
       function() {
         return ImageManagerService.getImages();
@@ -22,27 +20,28 @@ angular.module('genie.eventsMap')
     );
 
     // hide on dblclick
-    $(elem).dblclick(function() {
+    elem.dblclick(function() {
       $(this).addClass('hide');
     });
   }
 
   function showImages(args) {
     var images = args.images,
-      el = $(args.elem);
+      el = args.elem;
 
     el.empty(); // clean slate
 
     if (images.length) {
-      var frag = document.createDocumentFragment(), // reduces page reflows
+      var frag = $window.document.createDocumentFragment(), // reduces page reflows
         img;
       el.removeClass('hide');
       images.forEach(function(image) {
-        img = document.createElement('img');
+        img = $window.document.createElement('img');
         img.className = 'grid-image muted';
         img.id = image.nodeId;
         img.src = image.url;
-        img.addEventListener('click', function() { window.open(image.url); });
+        img.addEventListener('click',
+          function() { $window.open(image.url); });
         frag.appendChild(img);
       });
       el.append(frag);
