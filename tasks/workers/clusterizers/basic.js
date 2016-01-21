@@ -95,9 +95,9 @@ function processEventSources(args) {
           lng: source.location.coordinates[0],
           weight: source.num_users,
           eventId: source.id,
+          eventSource: args.eventSource,
           tag: source.tag, // legacy
-          extra: { tag: source.tag },
-          eventSource: args.eventSource
+          extra: { tag: source.tag }
         };
       } else if (args.eventSource === 'sandbox') {
         return {
@@ -105,10 +105,10 @@ function processEventSources(args) {
           lng: source.location[1],
           weight: source.num_images,
           eventId: source.id,
+          eventSource: args.eventSource,
           extra: {
             numImages: source.num_images
-          },
-          eventSource: args.eventSource
+          }
         };
       } else {
         throw new Error('Unknown event source');
@@ -136,6 +136,8 @@ function processEventSources(args) {
             // calculate new center, whether new or existing,
             // and add to events.
             var concatEvents = zoomLevel.events.concat(events);
+            // TODO: figure out if new or existing record to bypass uniq check
+            concatEvents = _.uniq(concatEvents, 'eventId'); // rm dupes
             zoomLevel.updateAttributes({
               centerPoint: getCenter(concatEvents),
               events: concatEvents
