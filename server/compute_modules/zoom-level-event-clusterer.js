@@ -6,10 +6,6 @@ var Random = require('random-js');
 var moment = require('moment');
 var async = require('async');
 
-const clustersPerZoomLevel = [
-  1800, 1700, 1600, 1500, 1400, 1300, 1200, 1100, 1000, 900, 800, 700, 600, 500, 400, 300, 200, 100
-].reverse();
-
 const clustererKMeans = new ClustererKMeans();
 const random = new Random(Random.engines.mt19937().autoSeed());
 
@@ -26,11 +22,56 @@ const randomishPointsOnEarth = [
 module.exports = class {
   constructor(app) {
     this.zoomLevelHelper = new LoopbackModelHelper('ZoomLevel');
-    this.sandboxEventsSourceHelper = new LoopbackModelHelper('SandboxEventsSource');
-    this.hashtagEventsSourceHelper = new LoopbackModelHelper('HashtagEventsSource');
   }
 
   getEventsForClustererInput(options, cb) {
+    var self = this;
+    //Have to have a modelName
+    if (!options.modelNames) {
+      cb(new Error('modelNames required'));
+      return;
+    }
+    if (!(options.modelNames instanceof Array)) {
+      if (typeof options.modelNames !== 'string') {
+        cb(new Error('modelNames must be a "String" or array of "String'));
+        return;
+      }
+      options.modelNames = [options.modelNames];
+    }
+    var parallelFunctionArray = [];
+
+    options.modelNames.forEach(function (modelName) {
+      options.modelName = modelName;
+      parallelFunctionArray.push(async.apply(self._getEventsForClustererInput.bind(self), options));
+    });
+
+    async.parallel(parallelFunctionArray, function (err, results) {
+      if (err) {
+        cb(err);
+        return;
+      }
+      //Since these results will be the results of parallel execution they will really be
+      //an array of result arrays. So flatten them.
+      if (!(results instanceof Array) || results.length === 0 || !results[0].minutesAgo) {
+        cb(new Error('ERROR: bad response from clusterer'));
+        return;
+      }
+      var minutesAgo = results[0].minutesAgo;
+      var vectorToCluster = [];
+      results.forEach(function (result) {
+        result.vectorToCluster.forEach(function (v) {
+          vectorToCluster.push(v);
+        });
+      });
+      cb(err, {
+        endDate: options.endDate,
+        minutesAgo,
+        vectorToCluster
+      });
+    });
+  }
+
+  _getEventsForClustererInput(options, cb) {
     var endDate = this.convertToDate(options.endDate) || new Date();
     var intervalDurationMinutes = options.intervalDurationMinutes || (24 * 60);
     var intervalsAgo = options.intervalsAgo || 1;
@@ -39,12 +80,16 @@ module.exports = class {
     var filterStartDate = moment(endDate);
     filterStartDate.subtract(minutesAgo, 'minutes');
     var filterEndDate = moment(filterStartDate).add(intervalDurationMinutes, 'minutes');
+    var modelHelper = new LoopbackModelHelper(options.modelName);
+    if (!modelHelper.isValid()) {
+      cb(new Error('Model not found: "' + options.modelName + '"'));
+      return;
+    }
 
-    var self = this;
     async.waterfall(
       [
         function getSandboxEventsCount(cb) {
-          self.hashtagEventsSourceHelper.count(function (err, count) {
+          modelHelper.count(function (err, count) {
             cb(err, count);
           });
         },
@@ -58,10 +103,10 @@ module.exports = class {
             },
             limit: count
           };
-/*          dateWindowQuery = {
-            limit: 20
-          };*/
-          self.hashtagEventsSourceHelper.find(dateWindowQuery, function (err, ces) {
+          /*          dateWindowQuery = {
+           limit: 20
+           };*/
+          modelHelper.find(dateWindowQuery, function (err, ces) {
             if (err) {
               cb(err, null);
               return;
@@ -69,7 +114,11 @@ module.exports = class {
             var vectorToCluster = [];
             for (var i = 0; i < ces.length; ++i) {
               log(ces[i].post_date);
-              vectorToCluster[i] = {lat: ces[i].lat, lng: ces[i].lng};
+              vectorToCluster[i] = {
+                lat: ces[i].lat,
+                lng: ces[i].lng,
+                eventId: ces[i].eventId
+              };
             }
             cb(err, {minutesAgo, vectorToCluster});
           });
@@ -80,44 +129,42 @@ module.exports = class {
   }
 
   clusterEvents(options, cb) {
-    var zoomLevel = options.zoomLevel || 8;
-    var endDate = options.endDate || new Date();
-    var intervalDurationMinutes = options.intervalDurationMinutes || (24 * 60);
-    var intervalsAgo = options.intervalsAgo || 1;
-    var msg = 'Clustering @ zoomLevel: ' + zoomLevel;
-    msg += ', endDate: ' + endDate;
-    msg += ', intervalDurationMinutes: ' + intervalDurationMinutes;
-    msg += ', intervalsAgo: ' + intervalsAgo;
-    msg += ' [' + clustersPerZoomLevel[zoomLevel - 1] + '] clusters.';
-    res.status(200).end(msg);
-    clusteredEventSourceHelper.getEventsForClustererInput({
-      endDate,
-      intervalDurationMinutes,
-      intervalsAgo
-    }, function (err, clustererInput) {
+    options.zoomLevel = options.zoomLevel || 8;
+    options.clusterCount = options.clusterCount || 20;
+    /*    var msg = 'Clustering @ zoomLevel: ' + zoomLevel;
+     msg += ', endDate: ' + endDate;
+     msg += ', intervalDurationMinutes: ' + intervalDurationMinutes;
+     msg += ', intervalsAgo: ' + intervalsAgo;
+     msg += ' [' + clustersPerZoomLevel[zoomLevel - 1] + '] clusters.';*/
+    options.clusterCount = options.vectorToCluster.length < options.clusterCount
+      ? options.vectorToCluster.length
+      : options.clusterCount;
+    clustererKMeans.geoCluster(options.vectorToCluster, options.clusterCount, function (err, kmeanClusters) {
       if (err) {
-        log(err);
+        cb(err);
         return;
       }
-      var vectorToCluster = clustererInput.vectorToCluster;
-      var minutesAgo = clustererInput.minutesAgo;
-      var clusterCount = vectorToCluster.length < clustersPerZoomLevel[zoomLevel]
-        ? vectorToCluster.length
-        : clustersPerZoomLevel[zoomLevel];
-      clustererKMeans.geoCluster(vectorToCluster, clusterCount, function (err, clusters) {
-        if (err) {
-          log(err);
-          return;
-        }
-        zoomLevelHelper.updateZoomLevels({
-          clusterType: 'k-means', clusters, zoomLevel, minutesAgo
-        }, function (err) {
-          if (err) {
-            log(err);
-          }
+      var clusters = [];
+      kmeanClusters.forEach(function(kmeanCluster){
+        var eventIds = [];
+        kmeanCluster.clusterInd.forEach(function(idx){
+          eventIds.push(options.vectorToCluster[idx].eventId);
         });
-      })
-    });
+        clusters.push({centroid: kmeanCluster.centroid, eventIds});
+      });
+      cb(err, {
+        endDate: options.endDate,
+        minutesAgo: options.minutesAgo,
+        clusters
+      });
+      /*      zoomLevelHelper.updateZoomLevels({
+       clusterType: 'k-means', clusters, zoomLevel, minutesAgo
+       }, function (err) {
+       if (err) {
+       log(err);
+       }
+       });*/
+    })
   }
 
   updateZoomLevels(options, cb) {
@@ -174,16 +221,11 @@ module.exports = class {
     });
   }
 
-  randomDate(start, end) {
-    return new Date(start.getTime() + random.real(0, 1, false) * (end.getTime() - start.getTime()));
-  }
-
   createFakeEvents(options, cb) {
     options = options || {};
     //Setup some defaults for options
     var now = new Date();
     var sixMonthsAgo = new Date(new Date(now).setMonth(now.getMonth() - 6));
-    options.eventId = options.eventId || random.uuid4().toString();
     options.clusterCountMin = options.clusterCountMin || 30;
     options.clusterCountMax = options.clusterCountMax || 75;
     options.tags = options.tags || randomishTwitterTags;
@@ -209,7 +251,7 @@ module.exports = class {
       var lng = options.locCenters[idx]['lng'] + (r * Math.sin(theta));
       newHashtagEvents.push(
         {
-          eventId: options.eventId,
+          eventId: random.uuid4().toString(),
           num_users: random.integer(options.minNumUsers, options.maxNumUsers),
           num_posts: random.integer(options.minNumPosts, options.maxNumPosts),
           indexed_date: this.randomDate(options.minIndexDate, options.maxIndexDate),
@@ -220,10 +262,19 @@ module.exports = class {
         }
       );
     }
-    this.hashtagEventsSourceHelper.createMany(newHashtagEvents, function (err, result) {
-      var msg = err ? 'ERROR' : 'Created ' + result.length + ' fake "hashtag" events.';
+    var modelHelper = new LoopbackModelHelper(options.modelName);
+    if (!modelHelper.isValid()) {
+      cb(new Error('Model not found: "' + options.modelName + '"'));
+      return;
+    }
+    modelHelper.createMany(newHashtagEvents, function (err, result) {
+      var msg = err ? 'ERROR' : 'Created ' + result.length + ' fake "' + options.modelName + '" events.';
       cb(err, msg);
     });
+  }
+
+  randomDate(start, end) {
+    return new Date(start.getTime() + random.real(0, 1, false) * (end.getTime() - start.getTime()));
   }
 
   convertToDate(obj) {

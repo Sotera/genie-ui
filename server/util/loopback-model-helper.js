@@ -13,6 +13,10 @@ module.exports = class {
     }
   }
 
+  isValid(){
+    return !!this.model;
+  }
+
   getModel() {
     return this.model;
   }
