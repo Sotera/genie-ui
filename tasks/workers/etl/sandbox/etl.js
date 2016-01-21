@@ -1,8 +1,6 @@
 'use strict';
 
-const app = require('../../../../server/server'),
-  moment = require('moment'),
-  Giver = require('./giver'),
+const moment = require('moment'),
   es = require('elasticsearch'),
   esSourceType = 'hajj',
   esSourceIndex = 'instagram_remap',
@@ -18,28 +16,16 @@ const app = require('../../../../server/server'),
     requestTimeout: 600000,
     log: 'error'
   }),
-  giver = new Giver(esSourceClient, esSourceIndex, esSourceType);
+  Giver = require('./giver'),
+  giver = new Giver(esSourceClient, esSourceIndex, esSourceType),
+  dataMapping = require('../../../../server/util/data-mapping'),
+  eventMapping = dataMapping.getEventTypeMapping();
 
 module.exports = {
   run: run
 };
 
 function run() {
-  var eventMapping = {
-    "event": {
-      "properties": {
-        "post_date": {
-          "type": "date",
-          "format": "date_optional_time"
-        },
-        "indexed_date": {
-          "type": "date",
-          "format": "date_optional_time"
-        }
-      }
-    }
-  };
-
   // TODO: rm delete() in prod
   esDestClient.indices.delete({index:esDestIndex}, function(err,res){
     esDestClient.indices.create({index:esDestIndex}, function(err,res){
@@ -88,9 +74,11 @@ function getUrlFromNodeId(node){
 }
 
 function convertEvent(sourceEvent, data){
+  var created = moment(sourceEvent.created_time).format('YYYY-MM-DD');
   var destEvent = {
     id: sourceEvent.id,
-    post_date: moment(sourceEvent.created_time).format('YYYY-MM-DD'),
+    post_date: created,
+    indexed_date: created, // TODO: get from sandbox
     location: [sourceEvent.location.lat.min, sourceEvent.location.lon.min],
     event_source: esDestIndex,
     num_images: sourceEvent.count,
@@ -100,13 +88,13 @@ function convertEvent(sourceEvent, data){
   };
 
   console.log("getting node image urls");
-  Promise.all(data.detail.nodes.map(getUrlFromNodeId)).then(function(values){
+  Promise.all(data.detail.nodes.map(getUrlFromNodeId)).then(function(nodes){
 
-    destEvent.extra['node_to_url'] = values;
+    destEvent.extra.node_to_url = nodes;
 
     esDestClient.index({
       index: esDestIndex,
-      type: 'event',
+      type: esDestType,
       id: destEvent.id,
       body: destEvent
     }, function (err, res) {

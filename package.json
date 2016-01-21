@@ -58,6 +58,7 @@
     "loopback-explorer": "2.0.2"
   },
   "devDependencies": {
+    "jsonfile": "^2.2.3",
     "nodemon": "~1.8.1"
   }
 }

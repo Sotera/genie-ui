@@ -8,21 +8,8 @@ var client = new elasticsearch.Client({
   requestTimeout: 300000
 });
 var type = 'event';
-
-var eventMapping = {
-  event: {
-    properties: {
-      indexed_date: {
-        type: "date",
-        format: "date_optional_time"
-      },
-      post_date: {
-        type: "date",
-        format: "date_optional_time"
-      }
-    }
-  }
-};
+var dataMapping = require('../server/util/data-mapping');
+var eventMapping = dataMapping.getEventTypeMapping();
 
 var sources = [
   {indexName: 'sandbox', path: '../import/sandbox/sources.json'},
