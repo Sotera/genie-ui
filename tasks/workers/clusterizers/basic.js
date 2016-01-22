@@ -130,7 +130,7 @@ function processEventSources(args) {
         },
         {
           zoomLevel: i,
-          events: events,
+          events: [], // added in next step
           clusterType: clusterType,
           minutesAgo: args.minutesAgo,
           centerPoint: getCenter(events)
@@ -138,11 +138,8 @@ function processEventSources(args) {
           if (err) {
             throw err;
           } else {
-            // calculate new center, whether new or existing,
-            // and add to events.
+            // calculate new center and add to existing events.
             var concatEvents = zoomLevel.events.concat(events);
-            // TODO: figure out if new or existing record to bypass uniq check
-            concatEvents = _.uniq(concatEvents, 'eventId'); // rm dupes
             zoomLevel.updateAttributes({
               centerPoint: getCenter(concatEvents),
               events: concatEvents

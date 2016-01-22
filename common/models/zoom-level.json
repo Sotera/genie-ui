@@ -33,7 +33,7 @@
       "type": [
         "object"
       ],
-      "required": true
+      "default": []
     },
     "centerPoint": {
       "type": "geopoint",
