@@ -1,9 +1,7 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('heatMap', ['CoreService', 'ENV', '$http','SandboxEventsSource',
-  'ImageManagerService', 'sourceIconFilter',
-  function(CoreService, ENV, $http, SandboxEventsSource, ImageManagerService,
-    sourceIconFilter) {
+.directive('heatMap', ['sourceIconFilter',
+  function(sourceIconFilter) {
 
   function link(scope, elem, attrs, netGraphCtrl) {
     var gmarkers = []; // needed to remove markers on input change
