@@ -82,9 +82,7 @@ function convertEvent(sourceEvent, data){
     location: [sourceEvent.location.lat.min, sourceEvent.location.lon.min],
     event_source: esDestIndex,
     num_images: sourceEvent.count,
-    extra: {
-      network_graph: data.detail
-    }
+    network_graph: data.detail
   };
 
   console.log("getting node image urls");
