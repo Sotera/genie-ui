@@ -18,7 +18,7 @@ angular.module('genie.eventsMap')
     return findZoomLevel(options)
     .then(function(zoomLevels) {
       var zoomLevel = zoomLevels[0];
-      if (zoomLevels.length) {
+      if (zoomLevel) {
         zoomLevel.events = parseEvents(zoomLevel.events);
         return zoomLevel;
       } else {
@@ -48,22 +48,3 @@ angular.module('genie.eventsMap')
   };
 
 }]);
-
-// function getTweets(eventId, onSuccess) {
-//   // TODO: replace with loopback resource
-//   $http.post(ENV.tweetsUrl, {
-//     "query": {
-//       "in" : {
-//         "cluster" : [ eventId ],
-//         "minimum_should_match" : 1
-//       }
-//     }
-//   })
-//   .then(onSuccess, onError);
-
-//   function onError(err) {
-//     console.log(err);
-//   }
-// }
-
-

@@ -1,0 +1,6 @@
+[
+{"post_date": "2015-06-01T14:00:00", "uuid": "1", "num_posts": 200, "num_users": 100, "tag": "funfunfun", "indexed_date": "2015-10-01", "location": {"coordinates": [-97.71, 30.31]}},
+{"post_date": "2015-06-02T14:00:00", "uuid": "2", "num_posts": 300, "num_users": 150, "tag": "austintx", "indexed_date": "2015-10-01", "location": {"coordinates": [-97.72, 30.32]}},
+{"post_date": "2015-06-03T14:00:00", "uuid": "3", "num_posts": 500, "num_users": 250, "tag": "acl", "indexed_date": "2015-10-01", "location": {"coordinates": [-97.73, 30.33]}},
+{"post_date": "2015-06-04T14:00:00", "uuid": "4", "num_posts": 100, "num_users": 50, "tag": "zilkerrelay", "indexed_date": "2015-10-01", "location": {"coordinates": [-97.74, 30.34]}}
+]

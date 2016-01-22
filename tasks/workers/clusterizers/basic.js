@@ -9,7 +9,7 @@ const loopback = require('loopback'),
   ZoomLevel = app.models.ZoomLevel,
   HashtagEventsSource = app.models.HashtagEventsSource,
   SandboxEventsSource = app.models.SandboxEventsSource,
-  log = require('../../../server/util/debug').log('transforms'),
+  log = require('../../../server/util/debug').log('clusterizers'),
   settings = require('../../../server/util/get-settings'),
   collections = require('../../../server/util/collections'),
   time = require('../../../server/util/time'),
@@ -59,14 +59,14 @@ function getEventSources(settings) {
       }
     };
 
-    // HashtagEventsSource.find(nativeQuery,
-    //   processEventSources({
-    //     minutesAgo: mins,
-    //     maxZoom: settings['map:maxZoom'],
-    //     minZoom: settings['map:minZoom'],
-    //     eventSource: 'hashtag'
-    //   })
-    // );
+    HashtagEventsSource.find(nativeQuery,
+      processEventSources({
+        minutesAgo: mins,
+        maxZoom: settings['map:maxZoom'],
+        minZoom: settings['map:minZoom'],
+        eventSource: 'hashtag'
+      })
+    );
 
     SandboxEventsSource.find(nativeQuery,
       processEventSources({
@@ -116,17 +116,31 @@ function processEventSources(args) {
     });
 
     if (events.length) {
-    //TODO: add childId, start, end
-    //TODO: apply clustering algorithm to successive zoomlevel
       for (let i of collections.range(args.maxZoom, args.minZoom)) {
-        ZoomLevel.create({
-          centerPoint: getCenter(events),
+        ZoomLevel.findOrCreate({
+          where: {
+            minutesAgo: args.minutesAgo,
+            zoomLevel: i
+          }
+        },
+        {
           zoomLevel: i,
           events: events,
           clusterType: clusterType,
-          minutesAgo: args.minutesAgo
-        }, (err, event) => {
-          if (err) log(err);
+          minutesAgo: args.minutesAgo,
+          centerPoint: getCenter(events)
+        }, (err, zoomLevel) => {
+          if (err) {
+            throw err;
+          } else {
+            // calculate new center, whether new or existing,
+            // and add to events.
+            var concatEvents = zoomLevel.events.concat(events);
+            zoomLevel.updateAttributes({
+              centerPoint: getCenter(concatEvents),
+              events: concatEvents
+            });
+          }
         });
       }
     }

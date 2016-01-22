@@ -45,7 +45,7 @@
     "public": true
   },
   "HashtagEventsSource": {
-    "dataSource": "db",
+    "dataSource": "es-hashtag-events",
     "public": true
   },
   "Task": {
@@ -64,20 +64,8 @@
     "dataSource": "db",
     "public": true
   },
-  "GeoTweet": {
-    "dataSource": "db",
-    "public": true
-  },
-  "ScoredGeoTweet": {
-    "dataSource": "db",
-    "public": true
-  },
   "SandboxEventsSource": {
-    "dataSource": "es-sandbox-event",
-    "public": true
-  },
-  "GeoTwitterScrape": {
-    "dataSource": "db",
+    "dataSource": "es-sandbox-events",
     "public": true
   }
 }

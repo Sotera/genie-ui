@@ -15,6 +15,9 @@ angular.module('genie.eventsMap')
     };
 
     var map = new google.maps.Map(elem[0], mapOptions);
+    map.empty = true; // flag for other directives to know that map is empty
+    map.setCenter({lat: 30.25, lng: -97.75}); // default: Austin
+    scope.inputs.zoomLevel = mapOptions.zoom;
 
     map.addListener('zoom_changed', function() {
       var newZoom = map.getZoom();

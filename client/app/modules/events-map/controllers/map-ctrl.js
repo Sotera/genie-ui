@@ -1,11 +1,11 @@
 'use strict';
 angular.module('genie.eventsMap')
 .controller('EventsMapCtrl', ['$scope', 'mapService', 'ZoomLevel',
-  'tweetService',
-  function($scope, mapService, ZoomLevel, tweetService) {
+  'tweetService', 'ENV',
+  function($scope, mapService, ZoomLevel, tweetService, ENV) {
 
-  var PERIOD = 1; // days
-  var DAY = 1440; // mins
+  var PERIOD = ENV.period; // days
+  var DAY = ENV.day; // mins
   // Set init values
   $scope.inputs = {zoomLevel: 18, minutesAgo: DAY * PERIOD};
   $scope.map = {};
@@ -26,7 +26,10 @@ angular.module('genie.eventsMap')
 
   function getZoomLevel() {
     mapService.getZoomLevel($scope.inputs)
-    .then(updateMap);
+    .then(function(zoomLevel) {
+      updateMap(zoomLevel);
+      updateTagCloud(zoomLevel);
+    });
   }
 
   //jqcloud tag collection
@@ -46,10 +49,14 @@ angular.module('genie.eventsMap')
   };
 
   function updateMap(zoomLevelObj) {
-    if (!$scope.map.getCenter()) { // center not set
+    if ($scope.map.empty) { // manual flag: true when no data has been set (init load)
       $scope.map.setCenter(zoomLevelObj.centerPoint);
+      $scope.map.empty = false;
     }
     $scope.zoomLevelObj = zoomLevelObj;
+  }
+
+  function updateTagCloud(zoomLevelObj) {
     //jqcloud tag collection
     var tags = _.map(zoomLevelObj.events, function(event) {
       return {

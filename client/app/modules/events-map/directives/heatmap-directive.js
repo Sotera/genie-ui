@@ -1,9 +1,11 @@
 'use strict';
 angular.module('genie.eventsMap')
 .directive('heatMap', ['CoreService', 'ENV', '$http','SandboxEventsSource',
-  function (CoreService, ENV, $http, SandboxEventsSource) {
+  'ImageManagerService',
+  function(CoreService, ENV, $http, SandboxEventsSource, ImageManagerService) {
 
   function link(scope, elem, attrs) {
+    var gmarkers = []; // needed to remove markers on input change
     var heatmapLayer = new google.maps.visualization.HeatmapLayer(
       {
         radius: attrs.radius || 24
@@ -22,58 +24,67 @@ angular.module('genie.eventsMap')
       heatmapLayer.setData(events);
       // optionally bypass map markers (default: on)
       if (attrs.markers !== 'off') {
+        removeMarkers();
         addMarkers(events, scope.map);
       }
     }
 
+    function removeMarkers() {
+      for(var i=0; i<gmarkers.length; i++) {
+        gmarkers[i].setMap(null);
+      }
+    }
+
     function addMarkers(events, map) {
-      var marker, image;
       events.forEach(function addMarker(event) {
-        image = event.eventSource ?
+        var image = event.eventSource ?
           'images/' + event.eventSource + '.gif' :
           null; // null = default marker icon
-        marker = new google.maps.Marker({
+        var marker = new google.maps.Marker({
           position: event.location,
           map: map,
           icon: image,
           opacity: 0.3
         });
 
+        gmarkers.push(marker);
         marker.addListener('click', function() {
-          console.log(event);
-
-          createNetGraph(event);
-          // console.log(event.eventSource)
-          // getTweets(event.eventId, success);
-          // function success(results) {
-          //   console.log(results.data.hits.hits[0]._source.caption)
-          //   //TODO: show all messages to user
-          //   CoreService.toastInfo('Tweet',
-          //     results.data.hits.hits[0]._source.caption)
-          // }
+          var source = event.eventSource;
+          if (source === 'sandbox') {
+            createNetGraph(event);
+          } else if (event.source === 'hashtag') {
+            // TODO
+          }
         });
       });
     }
   }
 
   function createNetGraph(event) {
-
     var query = {
       filter: {
-        where:{id:event.eventId}
+        where: { id: event.eventId }
       }
     };
 
-    SandboxEventsSource.find(query,function(eventSource){
-      render_graph(
-        format_graph(eventSource[0].extra.network_graph),
-        {
-          "onHover" : function(node) {
-            console.log('node:: ', node.id);
-          }
+    SandboxEventsSource.find(query,
+      function(eventSources) {
+        var source = eventSources[0];
+        if (source) {
+          render_graph(
+            format_graph(source.extra.network_graph),
+            {
+              onHover: function(node) {
+                console.log('node:: ', node.id);
+                $('#' + node.id).removeClass('muted');
+              }
+            }
+          );
+
+          ImageManagerService.setImages(source.extra.node_to_url);
         }
-      );
-    });
+      }
+    );
   }
 
   return {

@@ -6,7 +6,9 @@
   name:'production',
   apiUrl:'/api/',
   siteUrl:'',
-  wsUrl: 'http://localhost:3001/'
+  wsUrl: 'http://localhost:3001/',
+  day: 1440, // mins
+  period: 1  // days
 })
 
 ;

@@ -4,11 +4,14 @@
   "strict": "throw",
   "idInjection": true,
   "indexes": {
-    "zoomLevelIndex": {
-      "zoomLevel": 1
-    },
-    "minutesAgoIndex": {
-      "minutesAgo": 1
+    "zoom-unique": {
+      "keys": {
+        "zoomLevel": 1,
+        "minutesAgo": 1
+      },
+      "options": {
+        "unique": true
+      }
     }
   },
   "options": {
