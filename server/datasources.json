@@ -6,42 +6,8 @@
     "name": "db",
     "connector": "mongodb"
   },
-  "es-scored-geo-tweets": {
-    "name": "es-scored-geo-tweets",
-    "connector": "es",
-    "hosts": [
-      {
-        "protocol": "http",
-        "host": "localhost",
-        "port": 9200
-      }
-    ],
-    "apiVersion": "2.0",
-    "requestTimeout": 5000,
-    "log": "error",
-    "defaultSize": 50,
-    "index": "genie",
-    "type": "post"
-  },
-  "es-geo-tweets": {
-    "name": "es-geo-tweets",
-    "connector": "es",
-    "hosts": [
-      {
-        "protocol": "http",
-        "host": "localhost",
-        "port": 9200
-      }
-    ],
-    "apiVersion": "2.0",
-    "requestTimeout": 5000,
-    "log": "error",
-    "defaultSize": 50,
-    "index": "genie",
-    "type": "post"
-  },
-  "es-events": {
-    "name": "es-events",
+  "es-hashtag-events": {
+    "name": "es-hashtag-events",
     "connector": "es",
     "hosts": [
       {
@@ -54,11 +20,11 @@
     "requestTimeout": 5000,
     "log": "trace",
     "defaultSize": 50,
-    "index": "genie",
-    "type": "post"
+    "index": "hashtags",
+    "type": "event"
   },
-  "es-instagram": {
-    "name": "es-instagram",
+  "es-sandbox-events": {
+    "name": "es-sandbox-events",
     "connector": "es",
     "hosts": [
       {
@@ -70,23 +36,6 @@
     "apiVersion": "2.0",
     "requestTimeout": 5000,
     "log": "trace",
-    "defaultSize": 50,
-    "index": "instagram",
-    "type": "austin"
-  },
-  "es-sandbox-event": {
-    "name": "es-sandbox-event",
-    "connector": "es",
-    "hosts": [
-      {
-        "protocol": "http",
-        "host": "localhost",
-        "port": 9200
-      }
-    ],
-    "apiVersion": "2.0",
-    "requestTimeout": 5000,
-    "log": "error",
     "defaultSize": 50,
     "index": "sandbox",
     "type": "event"

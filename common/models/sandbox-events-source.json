@@ -4,6 +4,9 @@
   "properties": {
     "num_images": {
       "type": "number"
+    },
+    "network_graph":{
+      "type": "object"
     }
   },
   "validations": [],
@@ -11,4 +14,3 @@
   "acls": [],
   "methods": {}
 }
-

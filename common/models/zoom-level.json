@@ -2,12 +2,11 @@
   "name": "ZoomLevel",
   "base": "PersistedModel",
   "strict": "throw",
-  "idInjection": true,
   "indexes": {
-    "zoom-unique": {
+    "zoom_unique": {
       "keys": {
-        "zoomLevel": 1,
-        "minutesAgo": 1
+        "zoom_level": 1,
+        "minutes_ago": 1
       },
       "options": {
         "unique": true
@@ -21,28 +20,32 @@
     "Timestamp": {}
   },
   "properties": {
-    "zoomLevel": {
+    "zoom_level": {
       "type": "number",
       "required": true
     },
-    "minutesAgo": {
+    "minutes_ago": {
       "type": "number",
       "required": true
     },
-    "events": {
+    "clusters": {
       "type": [
         "object"
       ],
       "required": true
     },
-    "centerPoint": {
-      "type": "geopoint",
+    "center_lng": {
+      "type": "number",
       "required": true
     },
-    "childId": {
+    "center_lat": {
+      "type": "number",
+      "required": true
+    },
+    "child_id": {
       "type": "string"
     },
-    "clusterType": {
+    "cluster_type": {
       "type": "string",
       "required": true
     }

@@ -88,12 +88,12 @@ module.exports = class {
 
     async.waterfall(
       [
-        function getSandboxEventsCount(cb) {
+        function getEventsCount(cb) {
           modelHelper.count(function (err, count) {
             cb(err, count);
           });
         },
-        function findSandboxEventsTimeWindow(count, cb) {
+        function findEventsTimeWindow(count, cb) {
           var dateWindowQuery = {
             where: {
               and: [
@@ -117,7 +117,8 @@ module.exports = class {
               vectorToCluster[i] = {
                 lat: ces[i].lat,
                 lng: ces[i].lng,
-                eventId: ces[i].eventId
+                event_id: ces[i].event_id,
+                event_source: ces[i].event_source
               };
             }
             cb(err, {minutesAgo, vectorToCluster});
@@ -145,12 +146,19 @@ module.exports = class {
         return;
       }
       var clusters = [];
-      kmeanClusters.forEach(function(kmeanCluster){
-        var eventIds = [];
-        kmeanCluster.clusterInd.forEach(function(idx){
-          eventIds.push(options.vectorToCluster[idx].eventId);
+      kmeanClusters.forEach(function (kmeanCluster) {
+        var events = [];
+        kmeanCluster.clusterInd.forEach(function (idx) {
+          events.push({
+            event_id: options.vectorToCluster[idx].event_id,
+            event_source: options.vectorToCluster[idx].event_source
+          });
         });
-        clusters.push({centroid: kmeanCluster.centroid, eventIds});
+        clusters.push({
+          centroid: kmeanCluster.centroid,
+          weight: events.length,
+          events
+        });
       });
       cb(err, {
         endDate: options.endDate,
@@ -173,7 +181,8 @@ module.exports = class {
     var zoomLevel = options.zoomLevel;
     var minutesAgo = options.minutesAgo;
     var clusterType = options.clusterType;
-    cb(new Error('Under Development'));return;
+    cb(new Error('Under Development'));
+    return;
     var events = [];
     var latSum = 0;
     var lngSum = 0;
@@ -253,12 +262,13 @@ module.exports = class {
       var lng = options.locCenters[idx]['lng'] + (r * Math.sin(theta));
       newHashtagEvents.push(
         {
-          eventId: random.uuid4().toString(),
+          event_id: random.uuid4().toString(),
+          event_source: 'hashtag',
           num_users: random.integer(options.minNumUsers, options.maxNumUsers),
           num_posts: random.integer(options.minNumPosts, options.maxNumPosts),
           indexed_date: this.randomDate(options.minIndexDate, options.maxIndexDate),
           post_date: this.randomDate(options.minPostDate, options.maxPostDate),
-          tag: options.tags[random.integer(0, options.tags.length - 1)],
+          hashtag: options.tags[random.integer(0, options.tags.length - 1)],
           lat,
           lng
         }

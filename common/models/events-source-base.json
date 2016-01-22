@@ -1,13 +1,14 @@
 {
   "name": "EventsSourceBase",
   "base": "PersistedModel",
+  "strict": "throw",
   "idInjection": true,
   "options": {
     "validateUpsert": true
   },
   "properties": {
     "event_id": {
-      "type": "number",
+      "type": "string",
       "required": true
     },
     "event_source": {
@@ -32,9 +33,6 @@
     "lng": {
       "type": "number",
       "required": true
-    },
-    "extra": {
-      "type": "object"
     }
   },
   "validations": [],
