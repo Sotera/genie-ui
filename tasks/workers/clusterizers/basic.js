@@ -21,9 +21,14 @@ module.exports = {
 };
 
 function run() {
-  ZoomLevel.deleteAll();
-  settings(['map:minZoom', 'map:maxZoom', 'zoomLevels:startDate',
-    'zoomLevels:endDate'], getEventSources);
+  ZoomLevel.deleteAll({}, err => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    settings(['map:minZoom', 'map:maxZoom', 'zoomLevels:startDate',
+      'zoomLevels:endDate'], getEventSources);
+  });
 }
 
 function getEventSources(settings) {
