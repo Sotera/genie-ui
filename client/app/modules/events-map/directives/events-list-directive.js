@@ -10,11 +10,11 @@ angular.module('genie.eventsMap')
       function(scope) {
         return scope.zoomLevelObj;
       },
-      update
+      getEvents
     );
 
-    function update() {
-      scope.events = scope.zoomLevelObj.events;
+    function getEvents() {
+      scope.events = _.sortBy(scope.zoomLevelObj.events, 'weight').reverse();
     }
 
     scope.showEvent = function(event) {
