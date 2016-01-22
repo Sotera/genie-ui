@@ -2,6 +2,7 @@
 
 const loopback = require('loopback'),
   _ = require('lodash'),
+  async = require('async'),
   path = require('path'),
   filename = path.basename(__filename, '.js'),
   clusterType = filename,
@@ -86,31 +87,35 @@ function getEventSources(settings) {
 
 // args: minZoom, maxZoom, minutesAgo, eventSource
 function processEventSources(args) {
+  let minutesAgo = args.minutesAgo,
+    eventSource = args.eventSource,
+    maxZoom = args.maxZoom,
+    minZoom = args.minZoom;
+
   return (err, eventSources) => {
     if (err) {
-      log(err);
-      return;
+      throw err;
     }
 
     var events = eventSources.map(source => {
-      if (args.eventSource === 'hashtag') {
+      if (eventSource === 'hashtag') {
         // source has irregular [lng,lat] order
         return {
           lat: source.location.coordinates[1],
           lng: source.location.coordinates[0],
           weight: source.num_users,
           eventId: source.id,
-          eventSource: args.eventSource,
+          eventSource: eventSource,
           tag: source.tag, // legacy
           extra: { tag: source.tag }
         };
-      } else if (args.eventSource === 'sandbox') {
+      } else if (eventSource === 'sandbox') {
         return {
           lat: source.location[0],
           lng: source.location[1],
           weight: source.num_images,
           eventId: source.id,
-          eventSource: args.eventSource,
+          eventSource: eventSource,
           extra: {
             numImages: source.num_images
           }
@@ -121,32 +126,41 @@ function processEventSources(args) {
     });
 
     if (events.length) {
-      for (let i of collections.range(args.maxZoom, args.minZoom)) {
-        ZoomLevel.findOrCreate({
-          where: {
-            minutesAgo: args.minutesAgo,
-            zoomLevel: i
-          }
-        },
-        {
-          zoomLevel: i,
-          events: [], // added in next step
-          clusterType: clusterType,
-          minutesAgo: args.minutesAgo,
-          centerPoint: getCenter(events)
-        }, (err, zoomLevel) => {
-          if (err) {
-            throw err;
-          } else {
-            // calculate new center and add to existing events.
-            var concatEvents = zoomLevel.events.concat(events);
-            zoomLevel.updateAttributes({
-              centerPoint: getCenter(concatEvents),
-              events: concatEvents
-            });
-          }
-        });
+      let asyncOps = []; // run in series
+
+      for (let i of collections.range(maxZoom, minZoom)) {
+        let findOrCreateZoomLevel = (callback) => {
+          ZoomLevel.findOrCreate({
+            where: {
+              minutesAgo: minutesAgo,
+              zoomLevel: i
+            }
+          },
+          {
+            zoomLevel: i,
+            events: [], // added in next step
+            clusterType: clusterType,
+            minutesAgo: minutesAgo,
+            centerPoint: getCenter(events)
+          }, (err, zoomLevel) => {
+            if (err) {
+              callback(err);
+            } else {
+              // calculate new center and add to existing events.
+              var concatEvents = zoomLevel.events.concat(events);
+              zoomLevel.updateAttributes({
+                centerPoint: getCenter(concatEvents),
+                events: concatEvents
+              }, () => {
+                callback(null)
+              });
+            }
+          });
+        };
+        asyncOps.push(findOrCreateZoomLevel);
       }
+
+      async.series(asyncOps);
     }
 
   };

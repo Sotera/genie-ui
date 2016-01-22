@@ -1,11 +1,11 @@
 'use strict';
 angular.module('genie.eventsMap')
 .controller('EventsMapCtrl', ['$scope', 'mapService', 'ZoomLevel',
-  'tweetService', 'ENV',
-  function($scope, mapService, ZoomLevel, tweetService, ENV) {
+  'tweetService', 'CoreService',
+  function($scope, mapService, ZoomLevel, tweetService, CoreService) {
 
-  var PERIOD = ENV.period; // days
-  var DAY = ENV.day; // mins
+  var PERIOD = CoreService.env.period; // days
+  var DAY = CoreService.env.day; // mins
   // Set init values
   $scope.inputs = {zoomLevel: 18, minutesAgo: DAY * PERIOD};
   $scope.map = {};
@@ -49,8 +49,13 @@ angular.module('genie.eventsMap')
   };
 
   function updateMap(zoomLevelObj) {
-    if ($scope.map.empty) { // manual flag: true when no data has been set (init load)
-      $scope.map.setCenter(zoomLevelObj.centerPoint);
+    if (!zoomLevelObj.events.length) {
+      CoreService.toastInfo('No Events Found', 'hint: change the date to search for events');
+    }
+    // manual flag: true when no data has been set (init load)
+    if ($scope.map.empty) {
+      var center = zoomLevelObj.centerPoint || {lat: 30.25, lng: -97.75}; // Austin, if no events
+      $scope.map.setCenter(center);
       $scope.map.empty = false;
     }
     $scope.zoomLevelObj = zoomLevelObj;
