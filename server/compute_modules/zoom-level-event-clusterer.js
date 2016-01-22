@@ -154,6 +154,7 @@ module.exports = class {
       });
       cb(err, {
         endDate: options.endDate,
+        zoomLevel: options.zoomLevel,
         minutesAgo: options.minutesAgo,
         clusters
       });
@@ -167,11 +168,12 @@ module.exports = class {
     })
   }
 
-  updateZoomLevels(options, cb) {
+  updateZoomLevel(options, cb) {
     var clusters = options.clusters;
     var zoomLevel = options.zoomLevel;
     var minutesAgo = options.minutesAgo;
     var clusterType = options.clusterType;
+    cb(new Error('Under Development'));return;
     var events = [];
     var latSum = 0;
     var lngSum = 0;
