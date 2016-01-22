@@ -1,10 +1,14 @@
 {
   "name": "SandboxEventsSource",
+  "base": "EventsSourceBase",
   "properties": {
-
+    "num_images": {
+      "type": "number"
+    }
   },
   "validations": [],
   "relations": {},
   "acls": [],
   "methods": {}
 }
+

@@ -1,0 +1,44 @@
+{
+  "name": "EventsSourceBase",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "event_id": {
+      "type": "number",
+      "required": true
+    },
+    "event_source": {
+      "type": "string",
+      "required": true
+    },
+    "num_users": {
+      "type": "number"
+    },
+    "indexed_date": {
+      "type": "date",
+      "required": true
+    },
+    "post_date": {
+      "type": "date",
+      "required": true
+    },
+    "lat": {
+      "type": "number",
+      "required": true
+    },
+    "lng": {
+      "type": "number",
+      "required": true
+    },
+    "extra": {
+      "type": "object"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
