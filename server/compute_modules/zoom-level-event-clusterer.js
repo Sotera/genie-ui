@@ -7,7 +7,6 @@ var moment = require('moment');
 var async = require('async');
 
 const clustererKMeans = new ClustererKMeans();
-const random = new Random(Random.engines.mt19937().autoSeed());
 
 const randomishTwitterTags = ['indicter', 'abacisci', 'anastrophe', 'pentatomic', 'hyaluronidase', 'canalatura',
   'schizopod', 'undervicar', 'aeciospore', 'iodization', 'newmanism', 'inhibition', 'favelvellae', 'sackbut'];
@@ -22,6 +21,57 @@ const randomishPointsOnEarth = [
 module.exports = class {
   constructor(app) {
     this.zoomLevelHelper = new LoopbackModelHelper('ZoomLevel');
+  }
+
+  generateDevelopmentData(options, cb) {
+    options.randomGeneratorSeed = options.randomGeneratorSeed || 0xbaadf00d;
+    options.modelName = options.modelName || 'HashtagEventsSource';
+    options.totalIntervals = options.totalIntervals || 5;
+    options.intervalDurationMinutes = options.intervalDurationMinutes || 2;
+    options.zoomLevelClusterCounts = options.zoomLevelClusterCounts || [200, 300, 400, 500];
+    var self = this;
+    self.createFakeEvents(options, function (err, results) {
+      var functionArray = [];
+      for (var i = 0; i < options.totalIntervals; ++i) {
+        var getEventsOptions = {
+          modelNames: options.modelNames,
+          endDate: options.endDate,
+          intervalDurationMinutes: options.intervalDurationMinutes,
+          intervalsAgo: (i + 1)
+        };
+        functionArray.push(async.apply(self.getEventsForClustererInput.bind(self), getEventsOptions));
+      }
+      async.parallel(functionArray, function (err, results) {
+        functionArray = [];
+        for (var i = 0; i < options.zoomLevelClusterCounts.length; ++i) {
+          results.forEach(function (result) {
+            var clusterEventsOptions = {
+              zoomLevel: (i + 1),
+              endDate: options.endDate,
+              clusterCount: options.zoomLevelClusterCounts[i],
+              minutesAgo: result.minutesAgo,
+              vectorToCluster: result.vectorToCluster
+            };
+            functionArray.push(async.apply(self.clusterEvents.bind(self), clusterEventsOptions));
+          });
+        }
+        async.series(functionArray, function(err, results){
+          functionArray = [];
+          results.forEach(function(result){
+            var updateZoomLevelOptions = {
+              clusters: result.clusters,
+              endDate: result.endDate,
+              minutesAgo: result.minutesAgo,
+              zoomLevel: result.zoomLevel
+            };
+            functionArray.push(async.apply(self.updateZoomLevel.bind(self), updateZoomLevelOptions));
+          });
+          async.parallel(functionArray, function(err, result){
+            cb(err, 'Fake ZoomLevels Written!');
+          });
+        });
+      });
+    });
   }
 
   getEventsForClustererInput(options, cb) {
@@ -115,8 +165,10 @@ module.exports = class {
             for (var i = 0; i < ces.length; ++i) {
               log(ces[i].post_date);
               vectorToCluster[i] = {
+                post_date: ces[i].post_date,
                 lat: ces[i].lat,
                 lng: ces[i].lng,
+                hashtag: ces[i].hashtag,
                 event_id: ces[i].event_id,
                 event_source: ces[i].event_source
               };
@@ -202,7 +254,7 @@ module.exports = class {
           cb(err);
           return;
         }
-        if(created){
+        if (created) {
           //No need to update
           cb(err, 'ZoomLevel created');
           return;
@@ -223,8 +275,8 @@ module.exports = class {
     //Setup some defaults for options
     var now = new Date();
     var sixMonthsAgo = new Date(new Date(now).setMonth(now.getMonth() - 6));
-    options.clusterCountMin = options.clusterCountMin || 30;
-    options.clusterCountMax = options.clusterCountMax || 75;
+    options.eventCountMin = options.eventCountMin || 30;
+    options.eventCountMax = options.eventCountMax || 75;
     options.tags = options.tags || randomishTwitterTags;
     options.maxNumUsers = options.maxNumUsers || 35;
     options.minNumUsers = options.minNumUsers || 5;
@@ -238,7 +290,12 @@ module.exports = class {
     options.maxIndexDate = this.convertToDate(options.maxIndexDate) || now;
     options.minIndexDate = this.convertToDate(options.minIndexDate) || sixMonthsAgo;
 
-    var clusterCount = random.integer(options.clusterCountMin, options.clusterCountMax);
+    var random =
+      options.randomGeneratorSeed
+        ? new Random(Random.engines.mt19937().seed(options.randomGeneratorSeed))
+        : new Random(Random.engines.mt19937().autoSeed());
+
+    var clusterCount = random.integer(options.eventCountMin, options.eventCountMax);
     var newHashtagEvents = [];
     for (var i = 0; i <= clusterCount; i++) {
       var idx = random.integer(0, options.locCenters.length - 1);
@@ -265,8 +322,17 @@ module.exports = class {
       cb(new Error('Model not found: "' + options.modelName + '"'));
       return;
     }
-    modelHelper.createMany(newHashtagEvents, function (err, result) {
-      var msg = err ? 'ERROR' : 'Created ' + result.length + ' fake "' + options.modelName + '" events.';
+    var queries = newHashtagEvents.map(function (newHashtagEvent) {
+      return {where: {event_id: newHashtagEvent.event_id}};
+    })
+    modelHelper.findOrCreateMany(queries, newHashtagEvents, function (err, results) {
+      var createdCount = 0;
+      results.forEach(function (result) {
+        if (result[1]) {
+          ++createdCount;
+        }
+      });
+      var msg = err ? 'ERROR' : 'Created ' + createdCount + ' fake "' + options.modelName + '" events.';
       cb(err, msg);
     });
   }
@@ -281,13 +347,14 @@ module.exports = class {
     var latSum = 0;
     var lngSum = 0;
     for (var i = 0; i < len; ++i) {
-      latSum = locs[i].lat;
-      lngSum = locs[i].lng;
+      latSum += locs[i].lat;
+      lngSum += locs[i].lng;
     }
     return {lat: latSum / len, lng: lngSum / len};
   }
 
   randomDate(start, end) {
+    var random = new Random(Random.engines.mt19937().autoSeed());
     return new Date(start.getTime() + random.real(0, 1, false) * (end.getTime() - start.getTime()));
   }
 
