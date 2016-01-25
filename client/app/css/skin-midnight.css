@@ -16,6 +16,11 @@ body.skin-midnight{
   color: #fff;
 }
 
+.skin-midnight table tr:hover {
+  background-color: #333;
+  color: #f00;
+}
+
 .skin-midnight .small-box.bg-gray {
   background-color: transparent !important;
   border: 2px solid #eaeaec !important;

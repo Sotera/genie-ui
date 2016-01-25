@@ -32,7 +32,7 @@
       "type": [
         "object"
       ],
-      "required": true
+      "default": []
     },
     "center_lng": {
       "type": "number",
