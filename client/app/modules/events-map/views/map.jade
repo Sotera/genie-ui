@@ -1,13 +1,15 @@
-image-grid.map-overlay.truncate.hide( style='top:45px;left:0' )
+image-grid.map-overlay.truncate.hide( style='top:45px;left:0' map-overlay action='hide' )
 
 .container-fluid
   .row
-    .col-md-12
+    .col-md-10
       //
         twitter-stream( stream-controls )
-      #map( events-map heat-map zoom='5' class='events-map' )
+      #map( events-map heat-map network-graph zoom='5' class='events-map' )
+    .col-md-2
+      events-list( network-graph )
 
-.map-overlay( style='bottom:0;left:0' )
+.map-overlay( style='bottom:0;left:0' map-overlay action='shrink' )
   .col-md-4
     time-series( chart_name='time-series' )
   .col-md-4

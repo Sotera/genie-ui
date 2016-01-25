@@ -18,11 +18,6 @@ angular.module('genie.eventsMap')
         }
       }
     );
-
-    // hide on dblclick
-    elem.dblclick(function() {
-      $(this).addClass('hide');
-    });
   }
 
   function showImages(args) {

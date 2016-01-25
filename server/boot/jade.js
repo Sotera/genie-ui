@@ -43,6 +43,9 @@ module.exports = function (app) {
   app.get('/modules/events-map/views/chipmap', function (req, res) {
     res.render('events-map/views/chipmap', {title: 'MiniMap'});
   });
+  app.get('/modules/events-map/views/events-list', function (req, res) {
+    res.render('events-map/views/events-list', {title: 'Events List'});
+  });
 
   /* Sandbox Map */
   app.get('/modules/sandbox-map/views/main', function (req, res) {
