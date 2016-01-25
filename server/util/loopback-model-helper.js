@@ -13,7 +13,7 @@ module.exports = class {
     }
   }
 
-  isValid(){
+  isValid() {
     return !!this.model;
   }
 
@@ -149,15 +149,7 @@ function findOrCreateObj(model, query, objToCreate, cb) {
   cb = cb || function () {
     };
   try {
-    model.findOrCreate(
-      query,
-      objToCreate, // create
-      function (err, createdObj, created) {
-        if (err) {
-          log(err);
-        }
-        cb(err, createdObj);
-      });
+    model.findOrCreate(query, objToCreate, cb);
   } catch (err) {
     log(err);
     cb(err);

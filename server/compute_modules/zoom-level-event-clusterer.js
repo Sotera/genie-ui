@@ -150,12 +150,15 @@ module.exports = class {
         var events = [];
         kmeanCluster.clusterInd.forEach(function (idx) {
           events.push({
+            lat: options.vectorToCluster[idx].lat,
+            lng: options.vectorToCluster[idx].lng,
             event_id: options.vectorToCluster[idx].event_id,
             event_source: options.vectorToCluster[idx].event_source
           });
         });
         clusters.push({
-          centroid: kmeanCluster.centroid,
+          lat: kmeanCluster.centroid[0],
+          lng: kmeanCluster.centroid[1],
           weight: events.length,
           events
         });
@@ -166,13 +169,6 @@ module.exports = class {
         minutesAgo: options.minutesAgo,
         clusters
       });
-      /*      zoomLevelHelper.updateZoomLevels({
-       clusterType: 'k-means', clusters, zoomLevel, minutesAgo
-       }, function (err) {
-       if (err) {
-       log(err);
-       }
-       });*/
     })
   }
 
@@ -180,56 +176,46 @@ module.exports = class {
     var clusters = options.clusters;
     var zoomLevel = options.zoomLevel;
     var minutesAgo = options.minutesAgo;
-    var clusterType = options.clusterType;
-    cb(new Error('Under Development'));
-    return;
-    var events = [];
-    var latSum = 0;
-    var lngSum = 0;
-    var len = clusters.length;
-    for (var i = 0; i < len; ++i) {
-      var lat = clusters[i].centroid[0];
-      var lng = clusters[i].centroid[1];
-      events.push({lat, lng});
-      latSum += lat;
-      lngSum += lng;
-    }
-    var centerPoint = {lat: latSum / len, lng: lngSum / len};
-    var newClusteredEvent =
+    var centerPoint = this.getGeoCenter(clusters);
+    /*    cb(null, 'hello');
+     return;*/
+    var newZoomLevel =
     {
-      zoomLevel,
-      minutesAgo,
-      events,
-      centerPoint,
-      clusterType
+      zoom_level: zoomLevel,
+      minutes_ago: minutesAgo,
+      clusters,
+      center_lat: centerPoint.lat,
+      center_lng: centerPoint.lng
     };
-    this.zoomLevelHelper.find({
-      where: {
-        and: [
-          {zoomLevel: newClusteredEvent.zoomLevel},
-          {minutesAgo: newClusteredEvent.minutesAgo}
-        ]
-      }
-    }, function (err, zoomLevels) {
-      if (zoomLevels.length) {
-        if (zoomLevels.length > 1) {
-          var msg = 'Too many ZoomLevels for zoomLevel: ' + newClusteredEvent.zoomLevel;
-          msg += ' and minutesAgo: ' + newClusteredEvent.minutesAgo;
-          log(msg);
+    this.zoomLevelHelper.findOrCreate({
+        where: {
+          and: [
+            {zoom_level: newZoomLevel.zoom_level},
+            {minutes_ago: newZoomLevel.minutes_ago}
+          ]
         }
-        zoomLevels[0].updateAttributes(newClusteredEvent, function (err) {
+      },
+      newZoomLevel,
+      function (err, zoomLevel, created) {
+        if (err) {
+          log(err);
+          cb(err);
+          return;
+        }
+        if(created){
+          //No need to update
+          cb(err, 'ZoomLevel created');
+          return;
+        }
+        zoomLevel.updateAttributes(newZoomLevel, function (err) {
           if (err) {
             log(err);
+            cb(err);
+            return;
           }
+          cb(err, 'ZoomLevel updated');
         });
-      } else {
-        this.zoomLevelHelper.create(newClusteredEvent, function (err) {
-          if (err) {
-            log(err);
-          }
-        });
-      }
-    });
+      });
   }
 
   createFakeEvents(options, cb) {
@@ -283,6 +269,22 @@ module.exports = class {
       var msg = err ? 'ERROR' : 'Created ' + result.length + ' fake "' + options.modelName + '" events.';
       cb(err, msg);
     });
+  }
+
+  getGeoCenter(locs) {
+    //Assume locs is an array of objects that have 'lat' & 'lng' properties
+    if ((!(locs instanceof Array))
+      || (!(locs.length && locs[0].lat && locs[0].lng))) {
+      throw new Error('getGeoCenter() bad param')
+    }
+    var len = locs.length;
+    var latSum = 0;
+    var lngSum = 0;
+    for (var i = 0; i < len; ++i) {
+      latSum = locs[i].lat;
+      lngSum = locs[i].lng;
+    }
+    return {lat: latSum / len, lng: lngSum / len};
   }
 
   randomDate(start, end) {

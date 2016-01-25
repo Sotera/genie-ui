@@ -41,13 +41,6 @@
     "center_lat": {
       "type": "number",
       "required": true
-    },
-    "child_id": {
-      "type": "string"
-    },
-    "cluster_type": {
-      "type": "string",
-      "required": true
     }
   },
   "validations": [],
