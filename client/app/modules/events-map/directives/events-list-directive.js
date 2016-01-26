@@ -38,7 +38,7 @@ angular.module('genie.eventsMap')
         map: scope.map,
         icon: iconPath,
         animation: google.maps.Animation.DROP,
-        position: {lat: event.location.lat(), lng: event.location.lng()}
+        position: {lat: event.lat, lng: event.lng}
       });
 
       $timeout(function() {
