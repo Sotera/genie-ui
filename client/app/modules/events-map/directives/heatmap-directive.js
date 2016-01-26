@@ -18,13 +18,13 @@ angular.module('genie.eventsMap')
     );
 
     function reheat() {
-      var events = scope.zoomLevelObj.events;
+      var clusters = scope.zoomLevelObj.clusters;
       heatmapLayer.setMap(scope.map);
-      heatmapLayer.setData(events);
+      heatmapLayer.setData(clusters);
       // optionally bypass map markers (default: on)
       if (attrs.markers !== 'off') {
         removeMarkers();
-        addMarkers(events, scope.map);
+        addMarkers(clusters, scope.map);
       }
     }
 
@@ -34,11 +34,11 @@ angular.module('genie.eventsMap')
       }
     }
 
-    function addMarkers(events, map) {
-      events.forEach(function addMarker(event) {
-        var iconPath = sourceIconFilter(event.eventSource);
+    function addMarkers(clusters, map) {
+      clusters.forEach(function addMarker(cluster) {
+        var iconPath = sourceIconFilter(cluster.event_source);
         var marker = new google.maps.Marker({
-          position: event.location,
+          position: cluster.location,
           map: map,
           icon: iconPath,
           opacity: 0.3
@@ -47,10 +47,10 @@ angular.module('genie.eventsMap')
         gmarkers.push(marker);
 
         marker.addListener('click', function() {
-          var source = event.eventSource;
+          var source = cluster.event_source;
           if (source === 'sandbox') {
             netGraphCtrl.createNetGraph(event);
-          } else if (event.eventSource === 'hashtag') {
+          } else if (event.event_source === 'hashtag') {
             console.info('TODO');
           }
         });

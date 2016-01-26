@@ -14,7 +14,12 @@ angular.module('genie.eventsMap')
     );
 
     function getEvents() {
-      scope.events = _.sortBy(scope.zoomLevelObj.events, 'weight').reverse();
+      // collect events from clusters
+      var clusters = _.sortBy(scope.zoomLevelObj.clusters, 'weight').reverse();
+      var allEvents = clusters.map(function(cluster) {
+        return cluster.events;
+      });
+      scope.events = _.flatten(allEvents);
     }
 
     scope.showEvent = function(event) {
@@ -28,7 +33,7 @@ angular.module('genie.eventsMap')
     }
 
     function animateMarker(event) {
-      var iconPath = sourceIconFilter(event.eventSource);
+      var iconPath = sourceIconFilter(event.event_source);
       var marker = new google.maps.Marker({
         map: scope.map,
         icon: iconPath,

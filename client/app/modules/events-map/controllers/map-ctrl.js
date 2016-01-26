@@ -7,10 +7,10 @@ angular.module('genie.eventsMap')
   var PERIOD = CoreService.env.period; // days
   var DAY = CoreService.env.day; // mins
   // Set init values
-  $scope.inputs = {zoomLevel: 18, minutesAgo: DAY * PERIOD};
+  $scope.inputs = {zoom_level: 18, minutes_ago: DAY * PERIOD};
   $scope.map = {};
   var zoomLevelObj = new ZoomLevel();
-  zoomLevelObj.events = [];
+  zoomLevelObj.clusters = [];
   $scope.zoomLevelObj = zoomLevelObj;
 
   // Watch user inputs and fetch zoomlevel object
@@ -41,15 +41,15 @@ angular.module('genie.eventsMap')
           return tag.text == removeTag;
         });
         scope.zoomLevelObj.force = Date.now(); // hack: force change, for watchers
-        _.remove(scope.zoomLevelObj.events, function(event) {
-          return event.tag == removeTag;
+        _.remove(scope.zoomLevelObj.clusters, function(cluster) {
+          return cluster.tag == removeTag;
         });
       });
     }
   };
 
   function updateMap(zoomLevelObj) {
-    if (!zoomLevelObj.events.length) {
+    if (!zoomLevelObj.clusters.length) {
       CoreService.toastInfo('No Events Found', 'hint: change the date to search for events');
     }
     // manual flag: true when no data has been set (init load)
@@ -63,10 +63,10 @@ angular.module('genie.eventsMap')
 
   function updateTagCloud(zoomLevelObj) {
     //jqcloud tag collection
-    var tags = _.map(zoomLevelObj.events, function(event) {
+    var tags = _.map(zoomLevelObj.clusters, function(cluster) {
       return {
-        text: event.tag,
-        weight: event.weight,
+        text: cluster.tag,
+        weight: cluster.weight,
         handlers: tagHandlers
       };
     });

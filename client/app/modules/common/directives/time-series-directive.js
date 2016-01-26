@@ -21,7 +21,7 @@ angular.module('genie.common')
         // check for external handler and invoke it
         scope.timeChanged && scope.timeChanged(selectedVal);
         scope.$apply(function() {
-          scope.inputs.minutesAgo = (selection.row+1) * DAY * PERIOD;
+          scope.inputs.minutes_ago = (selection.row+1) * DAY * PERIOD;
         });
       }
     }

@@ -6,8 +6,8 @@ angular.module('genie.eventsMap')
     return ZoomLevel.find({
       filter: {
         where: {
-          zoomLevel: options.zoomLevel,
-          minutesAgo: options.minutesAgo
+          zoom_level: options.zoom_level,
+          minutes_ago: options.minutes_ago
         }
       }
     })
@@ -19,25 +19,22 @@ angular.module('genie.eventsMap')
     .then(function(zoomLevels) {
       var zoomLevel = zoomLevels[0];
       if (zoomLevel) {
-        zoomLevel.events = parseEvents(zoomLevel.events);
+        zoomLevel.clusters = mapifyClusters(zoomLevel.clusters);
         return zoomLevel;
       } else {
         zoomLevel = new ZoomLevel();
-        zoomLevel.events = []
+        zoomLevel.clusters = []
         return zoomLevel; // no record found for zoom or time
       }
     });
 
-    function parseEvents(events) {
-      return _.map(events,
-        function(event) {
+    function mapifyClusters(clusters) {
+      return _.map(clusters,
+        function(cluster) {
           return {
-            location: new google.maps.LatLng(event.lat, event.lng),
-            weight: event.weight,
-            eventId: event.eventId,
-            tag: event.tag,
-            eventSource: event.eventSource,
-            extra: event.extra
+            location: new google.maps.LatLng(cluster.lat, cluster.lng),
+            weight: cluster.weight,
+            events: cluster.events
           };
         })
     }
