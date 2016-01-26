@@ -1,17 +1,19 @@
 'use strict';
 var log = require('debug')('boot:twitter-client');
 var TwitterClient = require('../util/twitter-client');
+var RestResponseHelper = require('../util/rest-response-helper');
 var twitterClient = null;
 const twitterClientErrorMsg = 'Cannot create TwitterClient (Twitter key JSON file missing?)';
+const restResponseHelper = new RestResponseHelper();
 
 module.exports = function (app, cb) {
   app.get('/initializeGeoTweet', function (req, res) {
-    restResponse(null, res, 'Initialized GeoTweet');
+    restResponseHelper.respond(null, res, 'Initialized GeoTweet');
   });
 
   app.get('/loadTestTweetFile', function (req, res) {
     checkTwitterClient(res, function (tc) {
-      restResponse(null, res);
+      restResponseHelper.respond(null, res);
       const folderName = '/home/jreeme/src/hashTagClustering/raw_tweet_data/real-json/';
       var fs = require('fs');
       var path = require('path');
@@ -56,7 +58,7 @@ function callTwitterClientFn(req, res, fnName) {
   checkTwitterClient(res, function (tc) {
     var fn = tc[fnName];
     fn.bind(tc)(req.body, function (err, result) {
-      restResponse(err, res, result);
+      restResponseHelper.respond(err, res, result);
     });
   });
 }
@@ -73,17 +75,6 @@ function checkTwitterClient(res, cb) {
   try {
     cb(twitterClient);
   } catch (err) {
-    restResponse(err, res);
-  }
-}
-
-function restResponse(err, res, result) {
-  if (err) {
-    res.status(200).end(err.toString());
-  } else if (result) {
-    var msg = (result instanceof Object) ? JSON.stringify(result) : result.toString();
-    res.status(200).end(msg);
-  } else {
-    res.status(200).end('SUCCESS: ' + (new Date()).toISOString());
+    restResponseHelper.respond(err, res);
   }
 }

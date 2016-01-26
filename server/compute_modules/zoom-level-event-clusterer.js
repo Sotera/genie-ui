@@ -25,10 +25,16 @@ module.exports = class {
 
   generateDevelopmentData(options, cb) {
     options.randomGeneratorSeed = options.randomGeneratorSeed || 0xbaadf00d;
-    options.modelName = options.modelName || 'HashtagEventsSource';
-    options.totalIntervals = options.totalIntervals || 5;
+    options.minPostDate = options.minPostDate || '2015-08-19T09:20:00.000Z';
+    options.maxPostDate = options.maxPostDate || '2015-08-19T09:45:00.000Z';
+    options.eventCountMin = options.eventCountMin || 1200;
+    options.eventCountMax = options.eventCountMax || 1500;
+    options.modelNames = options.modelNames || ['HashtagEventsSource'];
+    options.eventSources = options.eventSources || ['hashtag'];
+    options.endDate = options.endDate || '2015-08-19T09:40:00.000Z';
     options.intervalDurationMinutes = options.intervalDurationMinutes || 2;
-    options.zoomLevelClusterCounts = options.zoomLevelClusterCounts || [200, 300, 400, 500];
+    options.totalIntervals = options.totalIntervals || 5;
+    options.zoomLevelClusterCounts = options.zoomLevelClusterCounts || [4, 8, 12, 16];
     var self = this;
     self.createFakeEvents(options, function (err, results) {
       var functionArray = [];
@@ -55,9 +61,9 @@ module.exports = class {
             functionArray.push(async.apply(self.clusterEvents.bind(self), clusterEventsOptions));
           });
         }
-        async.series(functionArray, function(err, results){
+        async.series(functionArray, function (err, results) {
           functionArray = [];
-          results.forEach(function(result){
+          results.forEach(function (result) {
             var updateZoomLevelOptions = {
               clusters: result.clusters,
               endDate: result.endDate,
@@ -66,12 +72,22 @@ module.exports = class {
             };
             functionArray.push(async.apply(self.updateZoomLevel.bind(self), updateZoomLevelOptions));
           });
-          async.parallel(functionArray, function(err, result){
-            cb(err, 'Fake ZoomLevels Written!');
+          async.parallel(functionArray, function (err, result) {
+            var operationResult = {
+              inputs: {
+                randomGeneratorSeed: options.randomGeneratorSeed,
+                modelNames: options.modelNames
+              }
+            };
+            cb(err, options);
           });
         });
       });
     });
+  }
+
+  ensureStringArray(s) {
+    return (s instanceof Array) ? s : (typeof s !== 'string') ? [''] : [s];
   }
 
   getEventsForClustererInput(options, cb) {
@@ -81,18 +97,18 @@ module.exports = class {
       cb(new Error('modelNames required'));
       return;
     }
-    if (!(options.modelNames instanceof Array)) {
-      if (typeof options.modelNames !== 'string') {
-        cb(new Error('modelNames must be a "String" or array of "String'));
-        return;
-      }
-      options.modelNames = [options.modelNames];
-    }
+    options.modelNames = self.ensureStringArray(options.modelNames);
+    options.eventSources = self.ensureStringArray(options.eventSources);
+
     var parallelFunctionArray = [];
 
     options.modelNames.forEach(function (modelName) {
-      options.modelName = modelName;
-      parallelFunctionArray.push(async.apply(self._getEventsForClustererInput.bind(self), options));
+      parallelFunctionArray.push(async.apply(self._getEventsForClustererInput.bind(self), {
+        endDate: options.endDate,
+        intervalDurationMinutes: options.intervalDurationMinutes,
+        intervalsAgo: options.intervalsAgo,
+        modelName
+      }));
     });
 
     async.parallel(parallelFunctionArray, function (err, results) {
@@ -125,14 +141,15 @@ module.exports = class {
     var endDate = this.convertToDate(options.endDate) || new Date();
     var intervalDurationMinutes = options.intervalDurationMinutes || (24 * 60);
     var intervalsAgo = options.intervalsAgo || 1;
+    var modelName = options.modelName;
 
     var minutesAgo = intervalsAgo * intervalDurationMinutes;
     var filterStartDate = moment(endDate);
     filterStartDate.subtract(minutesAgo, 'minutes');
     var filterEndDate = moment(filterStartDate).add(intervalDurationMinutes, 'minutes');
-    var modelHelper = new LoopbackModelHelper(options.modelName);
+    var modelHelper = new LoopbackModelHelper(modelName);
     if (!modelHelper.isValid()) {
-      cb(new Error('Model not found: "' + options.modelName + '"'));
+      cb(new Error('Model not found: "' + modelName + '"'));
       return;
     }
 
@@ -168,10 +185,12 @@ module.exports = class {
                 post_date: ces[i].post_date,
                 lat: ces[i].lat,
                 lng: ces[i].lng,
-                hashtag: ces[i].hashtag,
                 event_id: ces[i].event_id,
                 event_source: ces[i].event_source
               };
+              if (ces[i].hashtag) {
+                vectorToCluster[i].hashtag = ces[i].hashtag;
+              }
             }
             cb(err, {minutesAgo, vectorToCluster});
           });
@@ -271,10 +290,13 @@ module.exports = class {
   }
 
   createFakeEvents(options, cb) {
+    var self = this;
     options = options || {};
     //Setup some defaults for options
     var now = new Date();
     var sixMonthsAgo = new Date(new Date(now).setMonth(now.getMonth() - 6));
+    options.modelNames = options.modelNames || ['HashtagEventsSource'];
+    options.eventSources = options.eventSources || ['hashtag'];
     options.eventCountMin = options.eventCountMin || 30;
     options.eventCountMax = options.eventCountMax || 75;
     options.tags = options.tags || randomishTwitterTags;
@@ -285,10 +307,10 @@ module.exports = class {
     options.locCenters = options.locCenters || randomishPointsOnEarth;
     options.distFromCenterMin = options.distFromCenterMin || 0.05;
     options.distFromCenterMax = options.distFromCenterMax || 0.5;
-    options.maxPostDate = this.convertToDate(options.maxPostDate) || now;
-    options.minPostDate = this.convertToDate(options.minPostDate) || sixMonthsAgo;
-    options.maxIndexDate = this.convertToDate(options.maxIndexDate) || now;
-    options.minIndexDate = this.convertToDate(options.minIndexDate) || sixMonthsAgo;
+    options.maxPostDate = self.convertToDate(options.maxPostDate) || now;
+    options.minPostDate = self.convertToDate(options.minPostDate) || sixMonthsAgo;
+    options.maxIndexDate = self.convertToDate(options.maxIndexDate) || now;
+    options.minIndexDate = self.convertToDate(options.minIndexDate) || sixMonthsAgo;
 
     var random =
       options.randomGeneratorSeed
@@ -296,44 +318,71 @@ module.exports = class {
         : new Random(Random.engines.mt19937().autoSeed());
 
     var clusterCount = random.integer(options.eventCountMin, options.eventCountMax);
-    var newHashtagEvents = [];
+    var newEvents = [];
     for (var i = 0; i <= clusterCount; i++) {
       var idx = random.integer(0, options.locCenters.length - 1);
       var r = random.real(options.distFromCenterMin, options.distFromCenterMax);
       var theta = random.real(0, Math.PI * 2);
       var lat = options.locCenters[idx]['lat'] + (r * Math.cos(theta));
       var lng = options.locCenters[idx]['lng'] + (r * Math.sin(theta));
-      newHashtagEvents.push(
+      newEvents.push(
         {
           event_id: random.uuid4().toString(),
-          event_source: 'hashtag',
           num_users: random.integer(options.minNumUsers, options.maxNumUsers),
-          num_posts: random.integer(options.minNumPosts, options.maxNumPosts),
-          indexed_date: this.randomDate(options.minIndexDate, options.maxIndexDate),
-          post_date: this.randomDate(options.minPostDate, options.maxPostDate),
-          hashtag: options.tags[random.integer(0, options.tags.length - 1)],
+          indexed_date: self.randomDate(options.minIndexDate, options.maxIndexDate),
+          post_date: self.randomDate(options.minPostDate, options.maxPostDate),
           lat,
           lng
         }
       );
     }
-    var modelHelper = new LoopbackModelHelper(options.modelName);
+    var newEventsByModelName = {};
+    for (var i = 0; i < newEvents.length; ++i) {
+      //var modelNameIdx = i % options.modelNames.length;
+      var modelNameIdx = random.integer(0, options.modelNames.length - 1);
+      var modelName = options.modelNames[modelNameIdx];
+      var eventSource = options.eventSources[modelNameIdx];
+      if (!newEventsByModelName[modelName]) {
+        newEventsByModelName[modelName] = [];
+      }
+      if (modelName === 'HashtagEventsSource') {
+        newEvents[i].hashtag = options.tags[random.integer(0, options.tags.length - 1)];
+        newEvents[i].num_posts = random.integer(options.minNumPosts, options.maxNumPosts);
+      }
+      newEvents[i].event_source = eventSource;
+      newEventsByModelName[modelName].push(newEvents[i]);
+    }
+
+    var functionArray = [];
+    for (var modelName in newEventsByModelName) {
+      functionArray.push(async.apply(self._createEvents.bind(self), modelName, newEventsByModelName[modelName]));
+    }
+    async.series(functionArray, function (err, results) {
+      var createdCount = 0;
+      results.forEach(function (result) {
+        createdCount += result.createdCount;
+      });
+      cb(err, {createdCount});
+    });
+  }
+
+  _createEvents(modelName, newEvents, cb) {
+    var modelHelper = new LoopbackModelHelper(modelName);
     if (!modelHelper.isValid()) {
-      cb(new Error('Model not found: "' + options.modelName + '"'));
+      cb(new Error('Model not found: "' + modelName + '"'));
       return;
     }
-    var queries = newHashtagEvents.map(function (newHashtagEvent) {
-      return {where: {event_id: newHashtagEvent.event_id}};
+    var queries = newEvents.map(function (newEvent) {
+      return {where: {event_id: newEvent.event_id}};
     })
-    modelHelper.findOrCreateMany(queries, newHashtagEvents, function (err, results) {
+    modelHelper.findOrCreateMany(queries, newEvents, function (err, results) {
       var createdCount = 0;
       results.forEach(function (result) {
         if (result[1]) {
           ++createdCount;
         }
       });
-      var msg = err ? 'ERROR' : 'Created ' + createdCount + ' fake "' + options.modelName + '" events.';
-      cb(err, msg);
+      cb(err, {createdCount});
     });
   }
 

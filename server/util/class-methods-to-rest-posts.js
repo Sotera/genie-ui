@@ -1,5 +1,7 @@
 'use strict';
 var log = require('debug')('util:class-methods-to-rest-posts');
+var RestResponseHelper = require('../util/rest-response-helper');
+const restResponseHelper = new RestResponseHelper();
 
 module.exports = class {
   constructor(app, _class){
@@ -22,19 +24,7 @@ module.exports = class {
     var self = this;
     var fn = self.classInstance[fnName];
     fn.bind(self.classInstance)(req.body, function (err, result) {
-      restResponse(err, res, result);
+      restResponseHelper.respond(err, res, result);
     });
-  }
-}
-
-
-function restResponse(err, res, result) {
-  if (err) {
-    res.status(200).end(err.toString());
-  } else if (result) {
-    var msg = (result instanceof Object) ? JSON.stringify(result) : result.toString();
-    res.status(200).end(msg);
-  } else {
-    res.status(200).end('SUCCESS: ' + (new Date()).toISOString());
   }
 }
