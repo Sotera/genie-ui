@@ -1,7 +1,7 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('eventsList', ['ImageManagerService', '$timeout', 'sourceIconFilter',
-  function(ImageManagerService, $timeout, sourceIconFilter) {
+.directive('eventsList', ['$timeout', 'sourceIconFilter',
+  function($timeout, sourceIconFilter) {
 
   function link(scope, elem, attrs, netGraphCtrl) {
     scope.$watchCollection(
