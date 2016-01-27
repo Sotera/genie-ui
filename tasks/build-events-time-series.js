@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-var app = require('../server/server'),
+const app = require('../server/server'),
   LoopbackModelHelper = require('../server/util/loopback-model-helper'),
   Chart = new LoopbackModelHelper('Chart'),
   ZoomLevel = new LoopbackModelHelper('ZoomLevel'),
@@ -14,9 +14,13 @@ var app = require('../server/server'),
 settings(['map:maxZoom', 'zoomLevels:endDate'], findZoomLevel);
 
 function findZoomLevel(settings) {
-//settings['map:maxZoom']}
+  // Sample minutes_ago from any zoom (all zooms have same time periods)
   ZoomLevel.find(
-    { where: {zoom_level: 10} },
+    {
+      //settings['map:maxZoom']}
+      where: {zoom_level: 10},
+      order: 'minutes_ago ASC'
+    },
     createChart(settings)
   );
 }
