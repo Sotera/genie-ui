@@ -5,6 +5,7 @@ var LoopbackModelHelper = require('../util/loopback-model-helper');
 var Random = require('random-js');
 var moment = require('moment');
 var async = require('async');
+var ensureStringArray = require('../util/ensure-string-array');
 
 const clustererKMeans = new ClustererKMeans();
 
@@ -86,10 +87,6 @@ module.exports = class {
     });
   }
 
-  ensureStringArray(s) {
-    return (s instanceof Array) ? s : (typeof s !== 'string') ? [''] : [s];
-  }
-
   getEventsForClustererInput(options, cb) {
     var self = this;
     //Have to have a modelName
@@ -97,8 +94,8 @@ module.exports = class {
       cb(new Error('modelNames required'));
       return;
     }
-    options.modelNames = self.ensureStringArray(options.modelNames);
-    options.eventSources = self.ensureStringArray(options.eventSources);
+    options.modelNames = ensureStringArray(options.modelNames);
+    options.eventSources = ensureStringArray(options.eventSources);
 
     var parallelFunctionArray = [];
 
