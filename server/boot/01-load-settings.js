@@ -3,11 +3,10 @@
 // to enable these logs set `DEBUG=boot:01-load-settings` or `DEBUG=boot:*`
 var log = require('debug')('boot:01-load-settings');
 var async = require('async');
-var findOrCreateObj = require('../util/find-or-create-obj');
+var LoopbackModelHelper = require('../util/loopback-model-helper');
 
 module.exports = function (app, cb) {
-  var Setting = app.models.Setting;
-
+  log('Checking Settings collection');
   var newSettings = [{
     type: 'string',
     key: 'appName',
@@ -65,17 +64,13 @@ module.exports = function (app, cb) {
     key: 'nodeRedAdminRoot',
     value: '/red'
   }, {
-    type: 'boolean',
-    key: 'loadUpSomeClusteredEventsBaby',
-    value: false
-  }, {
     type: 'string',
     key: 'zoomLevels:startDate',
-    value: '2014-08-17'
+    value: '2016-01-14'
   }, {
     type: 'string',
     key: 'zoomLevels:endDate',
-    value: '2014-08-21'
+    value: '2016-01-16'
   }, {
     type: 'int',
     key: 'map:minZoom',
@@ -91,16 +86,11 @@ module.exports = function (app, cb) {
   }
   ];
 
-  var createSettings = newSettings.map(newSetting => {
-    return async.apply(findOrCreateObj,
-      Setting,
-      {where: {key: newSetting.key}},
-      newSetting);
-  });
-  async.parallel(createSettings, (err, settings) => {
-    if (err) {
-      log(err);
-    }
+  var settingHelper = new LoopbackModelHelper('Setting');
+  var queries = newSettings.map(function (newSetting) {
+    return {where: {key: newSetting.key}};
+  })
+  settingHelper.findOrCreateMany(queries, newSettings, function(err,newSettings){
     cb();
   });
 };

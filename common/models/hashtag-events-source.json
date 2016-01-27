@@ -1,26 +1,13 @@
 {
   "name": "HashtagEventsSource",
+  "base": "EventsSourceBase",
   "properties": {
-    "uuid": {
-      "type": "string"
-    },
-    "num_users": {
-      "type": "number"
-    },
     "num_posts": {
       "type": "number"
     },
-    "tag": {
-      "type": "string"
-    },
-    "indexed_date": {
-      "type": "date"
-    },
-    "post_date": {
-      "type": "string"
-    },
-    "location": {
-      "type": "object"
+    "hashtag": {
+      "type": "string",
+      "required": true
     }
   },
   "validations": [],

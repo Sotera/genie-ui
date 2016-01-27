@@ -1,0 +1,43 @@
+{
+  "db": {
+    "host": "localhost",
+    "port": 27017,
+    "database": "genie",
+    "name": "db",
+    "connector": "mongodb"
+  },
+  "es-hashtag-events": {
+    "name": "es-hashtag-events",
+    "connector": "es",
+    "hosts": [
+      {
+        "protocol": "http",
+        "host": "localhost",
+        "port": 9200
+      }
+    ],
+    "apiVersion": "2.0",
+    "requestTimeout": 5000,
+    "log": "trace",
+    "defaultSize": 50,
+    "index": "hashtags",
+    "type": "event"
+  },
+  "es-sandbox-events": {
+    "name": "es-sandbox-events",
+    "connector": "es",
+    "hosts": [
+      {
+        "protocol": "http",
+        "host": "localhost",
+        "port": 9200
+      }
+    ],
+    "apiVersion": "2.0",
+    "requestTimeout": 5000,
+    "log": "trace",
+    "defaultSize": 50,
+    "index": "sandbox",
+    "type": "event"
+  }
+}

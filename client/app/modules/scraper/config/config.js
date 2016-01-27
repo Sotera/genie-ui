@@ -4,5 +4,4 @@ angular.module('genie.scraper')
   $rootScope.addMenu('Scraper', 'app.scraper.show','fa-map');
   $rootScope.addDashboardBox('Scraper', 'bg-blue5', '',
     5, 'app.scraper.show','modules/scraper/views/dash.html');
-
 });

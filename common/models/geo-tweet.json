@@ -1,0 +1,25 @@
+{
+  "name": "GeoTweet",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {},
+  "properties": {
+    "scored": {
+      "type": "boolean"
+    },
+    "fullTweet": {
+      "type": "string",
+      "required": true
+    },
+    "lat": {
+      "type": "number"
+    },
+    "lng": {
+      "type": "number"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

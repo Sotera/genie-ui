@@ -1,0 +1,40 @@
+{
+  "name": "GeoTwitterScrape",
+  "plural": "GeoTwitterScrapes",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "scraperId": {
+      "type": "string",
+      "required": true
+    },
+    "scraperActive": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    },
+    "locations": {
+      "type": "string",
+      "required": true
+    },
+    "timeStarted": {
+      "type": "date",
+      "required": true
+    },
+    "tweetsExamined": {
+      "type": "number",
+      "required": false
+    },
+    "tweetsSelected": {
+      "type": "number",
+      "required": false
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

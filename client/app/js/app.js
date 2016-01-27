@@ -34,7 +34,7 @@ angular.module('loopbackApp', [
     //'ui.grid',
     'smart-table',
     'ui.router',
-    //'ui.layout',
+    'ui.layout',
     'angular-toasty',
     'angular-jqcloud',
     'gettext',
@@ -42,12 +42,14 @@ angular.module('loopbackApp', [
     'com.module.about',
     'genie.common',
     'genie.eventsMap',
+    'genie.geoTwitter',
     'genie.sandboxMap',
     'genie.scraper',
     'genie.pinMap',
     'com.module.stats',
     'com.module.settings',
-    'com.module.users'
+    'com.module.users',
+    'uiGmapgoogle-maps'
   ])
   .run(function ($rootScope, $cookies, gettextCatalog) {
     $rootScope.locales = {

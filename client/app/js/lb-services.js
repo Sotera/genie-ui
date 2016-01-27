@@ -5693,7 +5693,7 @@ module.factory(
          *
          * @param {Object=} parameters Request parameters.
          *
-         *  - `id` – `{*}` - PersistedModel id
+         *  - `id` – `{*}` - EventsSourceBase id
          *
          * @param {Object} postData Request data.
          *
@@ -8653,7 +8653,7 @@ module.factory(
          *
          * @param {Object=} parameters Request parameters.
          *
-         *  - `id` – `{*}` - PersistedModel id
+         *  - `id` – `{*}` - EventsSourceBase id
          *
          * @param {Object} postData Request data.
          *

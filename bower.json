@@ -29,7 +29,9 @@
     "jquery": "~2.1.4",
     "es5-shim": "~4.3.1",
     "json3": "~3.3.2",
-    "moment": "~2.10.6"
+    "moment": "~2.10.6",
+    "angular-google-maps": "~2.2.1",
+    "angular-gridster": "~0.13.5"
   },
   "devDependencies": {},
   "overrides": {
@@ -39,6 +41,8 @@
   },
   "appPath": "client/app/",
   "resolutions": {
-    "angular": "1.4.8"
+    "angular": "1.4.8",
+    "sweetalert": ">=0.3.0",
+    "angular-animate": "1.4.8"
   }
 }

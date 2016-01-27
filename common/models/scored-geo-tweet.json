@@ -1,0 +1,49 @@
+{
+  "name": "ScoredGeoTweet",
+  "plural": "ScoredGeoTweets",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {},
+  "properties": {
+    "user": {
+      "type": "string",
+      "required": true
+    },
+    "caption": {
+      "type": "string",
+      "required": true
+    },
+    "twitterId": {
+      "type": "string",
+      "required": true
+    },
+    "cluster": {
+      "type": "string",
+      "required": false
+    },
+    "lng": {
+      "type": "number",
+      "required": true
+    },
+    "lat": {
+      "type": "number",
+      "required": true
+    },
+    "postDate": {
+      "type": "date",
+      "required": true
+    },
+    "indexedDate": {
+      "type": "date",
+      "required": true
+    },
+    "tags": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

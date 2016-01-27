@@ -1,0 +1,12 @@
+a.list-group-item {
+  background-color: black;
+}
+
+a.list-group-item:hover {
+  background-color: #333;
+}
+
+div.list-group {
+  height: 500px;
+  overflow: auto;
+}
