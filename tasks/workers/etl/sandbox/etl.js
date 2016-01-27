@@ -88,7 +88,7 @@ function convertEvent(sourceEvent, data){
   console.log("getting node image urls");
   Promise.all(data.detail.nodes.map(getUrlFromNodeId)).then(function(nodes){
 
-    destEvent.extra.node_to_url = nodes;
+    destEvent.node_to_url = nodes;
 
     esDestClient.index({
       index: esDestIndex,
