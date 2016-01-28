@@ -1,7 +1,7 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('eventsList', ['$timeout', 'sourceIconFilter',
-  function($timeout, sourceIconFilter) {
+.directive('eventsList', ['$timeout', 'sourceIconFilter', '$window',
+  function($timeout, sourceIconFilter, $window) {
 
   function link(scope, elem, attrs, netGraphCtrl) {
     scope.$watchCollection(
@@ -10,6 +10,8 @@ angular.module('genie.eventsMap')
       },
       getEvents
     );
+
+    resize(elem);
 
     function getEvents() {
       // collect events from clusters
@@ -43,6 +45,17 @@ angular.module('genie.eventsMap')
         marker.setMap(null);
         marker = null;
       }, 1000);
+    }
+
+    function resize(elem) {
+      var $win = $($window);
+      var $list = $(elem.children()[0]);
+      var doResize = function() {
+        var winHeight = $win.height();
+        $list.height(winHeight * 0.7);
+      };
+
+      $win.bind('resize', _.throttle(doResize, 33.33)).resize();
     }
   }
 

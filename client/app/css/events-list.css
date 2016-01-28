@@ -1,3 +1,6 @@
+div.events-list {
+}
+
 a.list-group-item {
   background-color: black;
 }
@@ -7,6 +10,5 @@ a.list-group-item:hover {
 }
 
 div.list-group {
-  height: 500px;
   overflow: auto;
 }
