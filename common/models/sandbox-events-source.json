@@ -7,6 +7,9 @@
     },
     "network_graph":{
       "type": "object"
+    },
+    "node_to_url":{
+      "type": "array"
     }
   },
   "validations": [],
