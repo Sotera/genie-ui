@@ -1,7 +1,8 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('tagCloud', ['HashtagEventsSource',
-  function(HashtagEventsSource) {
+.directive('tagCloud', ['HashtagEventsSource', 'sourceIconFilter',
+  '$timeout',
+  function(HashtagEventsSource, sourceIconFilter, $timeout) {
 
   function link(scope, elem, attrs) {
     scope.$watchCollection(
@@ -15,18 +16,38 @@ angular.module('genie.eventsMap')
 
     var tagHandlers = {
       click: function(e) {
-        var removeTag = e.target.textContent;
-        $scope.$apply(function(scope) {
-          _.remove(scope.tags, function(tag) {
-            return tag.text == removeTag;
-          });
-          scope.zoomLevelObj.force = Date.now(); // hack: force change, for watchers
-          _.remove(scope.zoomLevelObj.clusters, function(cluster) {
-            return cluster.tag == removeTag;
-          });
+        var clickedTag = e.target.textContent;
+        scope.events.forEach(function(event) {
+          if (event.event_source === 'hashtag') {
+            animateMarker(event);
+          }
         });
+        // scope.$apply(function(scope) {
+          // _.remove(scope.tags, function(tag) {
+          //   return tag.text == clickedTag;
+          // });
+          // scope.zoomLevelObj.force = Date.now(); // hack: force change, for watchers
+          // _.remove(scope.zoomLevelObj.clusters, function(cluster) {
+          //   return cluster.tag == clickedTag;
+          // });
+        // });
       }
     };
+
+    function animateMarker(event) {
+      var iconPath = sourceIconFilter(event.event_source);
+      var marker = new google.maps.Marker({
+        map: scope.map,
+        animation: google.maps.Animation.DROP,
+        icon: iconPath,
+        position: {lat: event.lat, lng: event.lng}
+      });
+
+      $timeout(function() {
+        marker.setMap(null);
+        marker = null;
+      }, 1000);
+    }
 
     function updateTagCloud(events) {
       if (!(events && events.length)) return;
@@ -47,7 +68,7 @@ angular.module('genie.eventsMap')
           return {
             text: source.hashtag,
             weight: source.num_users,
-            // handlers: tagHandlers
+            handlers: tagHandlers
           };
         });
 

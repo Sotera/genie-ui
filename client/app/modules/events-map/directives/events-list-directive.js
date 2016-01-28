@@ -4,26 +4,10 @@ angular.module('genie.eventsMap')
   function($timeout, sourceIconFilter, $window) {
 
   function link(scope, elem, attrs, netGraphCtrl) {
-    scope.$watchCollection(
-      function(scope) {
-        return scope.zoomLevelObj;
-      },
-      getEvents
-    );
-
     resize(elem);
 
-    function getEvents() {
-      // collect events from clusters
-      var clusters = _.sortBy(scope.zoomLevelObj.clusters, 'weight').reverse();
-      var allEvents = clusters.map(function(cluster) {
-        return cluster.events;
-      });
-      scope.events = _.flatten(allEvents);
-    }
-
     scope.showEvent = function(event) {
-      var source = event.eventSource;
+      var source = event.event_source;
       if (source === 'sandbox') {
         netGraphCtrl.createNetGraph(event);
       } else if (event.eventSource === 'hashtag') {
