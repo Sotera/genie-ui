@@ -1,6 +1,6 @@
 'use strict';
 angular.module('genie.common')
-.directive('drawingTools', [function () {
+.directive('drawingTools', [function() {
 
   function link(scope, elem, attrs) {
     scope.scraperCoords = [];

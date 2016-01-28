@@ -16,7 +16,7 @@ body.skin-midnight{
   color: #fff;
 }
 
-.skin-midnight table tr:hover {
+.skin-midnight table tbody tr:hover {
   background-color: #333;
   color: #f00;
 }
