@@ -19,7 +19,8 @@ angular.module('genie.eventsMap')
     .getZoomLevel({zoom_level: 18, minutes_ago: 1440})
     .then(function(zoomLevelObj) {
       scope.zoomLevelObj = zoomLevelObj;
-      scope.map.setCenter(zoomLevelObj.centerPoint);
+      scope.map.setCenter({lat: zoomLevelObj.center_lat,
+        lng: zoomLevelObj.center_lng});
     });
   }
 
