@@ -76,13 +76,14 @@ function getUrlFromNodeId(node){
 function convertEvent(sourceEvent, data){
   var created = moment(sourceEvent.created_time).format('YYYY-MM-DD');
   var destEvent = {
-    id: sourceEvent.id,
-    post_date: created,
-    indexed_date: created, // TODO: get from sandbox
-    location: [sourceEvent.location.lat.min, sourceEvent.location.lon.min],
+    event_id: sourceEvent.id,
     event_source: esDestIndex,
-    num_images: sourceEvent.count,
-    network_graph: data.detail
+    indexed_date: created,
+    post_date: created,
+    lat:sourceEvent.location.lat.min,
+    lng:sourceEvent.location.lon.min,
+    network_graph: data.detail,
+    num_images: sourceEvent.count
   };
 
   console.log("getting node image urls");

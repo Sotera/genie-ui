@@ -15,9 +15,6 @@
       "type": "string",
       "required": true
     },
-    "num_users": {
-      "type": "number"
-    },
     "indexed_date": {
       "type": "date",
       "required": true
