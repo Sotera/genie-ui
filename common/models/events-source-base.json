@@ -1,7 +1,6 @@
 {
   "name": "EventsSourceBase",
   "base": "PersistedModel",
-  "strict": "throw",
   "idInjection": true,
   "options": {
     "validateUpsert": true

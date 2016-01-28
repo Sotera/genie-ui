@@ -347,7 +347,7 @@ module.exports = class {
       }
       if (modelName === 'HashtagEventsSource') {
         newEvents[i].hashtag = options.tags[random.integer(0, options.tags.length - 1)];
-        newEvents[i].num_posts = random.integer(options.minNumPosts, options.maxNumPosts);
+        newEvents[i].num_users = random.integer(options.minNumPosts, options.maxNumPosts);
       }
       newEvents[i].event_source = eventSource;
       newEventsByModelName[modelName].push(newEvents[i]);
