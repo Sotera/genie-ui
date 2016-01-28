@@ -7,7 +7,11 @@
     "scored": {
       "type": "boolean"
     },
-    "fullTweet": {
+    "tweet_id": {
+      "type": "string",
+      "required": true
+    },
+    "full_tweet": {
       "type": "string",
       "required": true
     },

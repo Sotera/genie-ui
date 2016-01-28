@@ -9,7 +9,11 @@ module.exports = class {
       //Assume Loopback 'app' constructor if 'function'
       serverApp = modelNameOrApp;
     } else if (typeof modelNameOrApp === 'string') {
-      this.model = serverApp.models[modelNameOrApp];
+      if (!(this.model = serverApp.models[modelNameOrApp])) {
+        return;
+      }
+      this.findOrCreateQueueQueries = [];
+      this.findOrCreateQueueObjectsToCreate = [];
     }
   }
 
@@ -82,6 +86,17 @@ module.exports = class {
 
   create(objectToCreate, cb) {
     createObj(this.model, objectToCreate, cb);
+  }
+
+  findOrCreateEnqueue(query, objectToCreate) {
+    this.findOrCreateQueueQueries.push(query);
+    this.findOrCreateQueueObjectsToCreate.push(objectToCreate);
+  }
+
+  flushQueues(cb) {
+    var queries = this.findOrCreateQueueQueries.splice(0, this.findOrCreateQueueQueries.length);
+    var objectsToCreate = this.findOrCreateQueueObjectsToCreate.splice(0, this.findOrCreateQueueObjectsToCreate.length);
+    this.findOrCreateMany(queries, objectsToCreate, cb);
   }
 
   findOrCreate(query, objectToCreate, cb) {

@@ -208,13 +208,13 @@ module.exports = class {
               if (!geoTweet) {
                 throw new Error('<null> GeoTweet!');
               }
-              var fullTweet = JSON.parse(geoTweet.fullTweet);
+              var fullTweet = JSON.parse(geoTweet.full_tweet);
               //Now shall we score the tweet
               //Set GeoTweet instance to scored so we don't look at it again
               /*                geoTweet.updateAttribute('scored', true, function (err, o) {
                var e = err;
                });*/
-              var scoreRecord = new ScoreRecord(fullTweet);
+              var scoreRecord = new ScoreRecord(full_tweet);
               scoreRecords.push(scoreRecord);
             } catch (err) {
               log(err);
@@ -276,7 +276,7 @@ module.exports = class {
           cb(null, null);
           return;
         }
-        log('We have coordinates! CenterPoint: [' + tweet.genieLoc.lng + ',' + tweet.genieLoc.lat + ']');
+        //log('We have coordinates! CenterPoint: [' + tweet.genieLoc.lng + ',' + tweet.genieLoc.lat + ']');
       }
       //Let's lowercase those hashtags (for string comparisons later)!
       if (tweet.entities && tweet.entities.hashtags) {
@@ -289,7 +289,8 @@ module.exports = class {
           lat: tweet.genieLoc.lat,
           lng: tweet.genieLoc.lng,
           scored: false,
-          fullTweet: JSON.stringify(tweet)
+          tweet_id: tweet.id_str,
+          full_tweet: JSON.stringify(tweet)
         });
     } catch (err) {
       log(err);
@@ -371,43 +372,53 @@ module.exports = class {
   loadTestTweetFiles(options, cb) {
     var foldersToSearch = ensureStringArray(options.foldersToSearch);
     var globExpression = options.globExpression || '*';
-    const fileNames = [];
     var glob = require('glob-fs')({gitignore: true});
+    var JSONStream = require('JSONStream');
     var fs = require('fs');
-    var path = require('path');
+    var es = require('event-stream');
     var self = this;
-    foldersToSearch.forEach(function (folderToSearch) {
-      var foundFileNames = glob.readdirSync(globExpression, {cwd: folderToSearch});
-      foundFileNames.forEach(function (foundFileName) {
-        fileNames.push(path.join(folderToSearch, foundFileName));
-      });
-    });
-
-    fileNames.forEach(function (fileName) {
-      var fileText = fs.readFileSync(fileName, 'utf8');
-      var tweets = JSON.parse(fileText);
-      tweets.forEach(function (tweet) {
-        if (!tweet) {
-          return;
-        }
-        self.convertTweetToGeoTweet({
-          tweet,
-          onlyWithLocation: true,
-          onlyWithHashtags: true
-        }, function (err, geoTweet) {
-          var gt = geoTweet;
+    var taskQueue = async.queue(function(path, cb){
+      fs.createReadStream(path, 'utf8')
+        .pipe(JSONStream.parse('*'))
+        .pipe(es.map(function (tweet, cb) {
+          self.convertTweetToGeoTweet({
+            tweet,
+            onlyWithLocation: true,
+            onlyWithHashtags: true
+          }, function (err, geoTweet) {
+            cb(err, geoTweet);
+          });
+        }))
+        .on('data', function (geoTweet) {
+          self.geoTweetHelper.findOrCreateEnqueue({where:{tweet_id: geoTweet.tweet_id}}, geoTweet);
+        })
+        .on('end', function () {
+          self.geoTweetHelper.flushQueues(function(err, results){
+            log(err);
+            cb(err);
+          });
         });
-      });
-      cb(null,null);
-      return;
-      self.geoTweetHelper.create(
-        {
-          lat: tweet.genieLoc.lat,
-          lng: tweet.genieLoc.lng,
-          scored: false,
-          fullTweet: JSON.stringify(tweet)
-        }
-        , cb);
+    }, 4);
+    foldersToSearch.forEach(function (folderToSearch) {
+      //In the spirit of scalability let's stream the globbed filenames
+      var fileCount = 0;
+      glob.readdirStream(globExpression, {cwd: folderToSearch})
+        .on('data', function (file) {
+          log('Queuing: ' + file.name + '[' + (++fileCount) + ']');
+          taskQueue.push(file.path, function(err){
+            if(err){
+              log(err);
+            }
+          });
+        })
+        .on('error', function (err) {
+          log(err);
+          cb(err, {fileCount});
+        })
+        .on('end', function () {
+          log('end');
+          cb(null, {fileCount});
+        });
     });
   }
 
