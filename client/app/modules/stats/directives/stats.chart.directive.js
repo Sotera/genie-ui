@@ -6,18 +6,20 @@ angular.module('com.module.stats')
   function (StatsChip, $window) {
 
     function main(scope, element, attrs) {
-      StatsChip.findOne().$promise
-        .then(function (instance) {
+      StatsChip.find({filter: {limit: 1}}).$promise
+        .then(function (statChips) {
+          var statChip = statChips[0];
+          if (!statChip) return;
 
           var baseColor = '#181818';
 
           var data = new google.visualization.DataTable();
-          _.map(instance.columns,
+          _.map(statChip.columns,
             function (column) {
               data.addColumn(column.type, column.name);
             });
 
-          _.map(instance.rows,
+          _.map(statChip.rows,
             function (row) {
               var dateRow = [new Date(row[0]),row[1]];
               data.addRow(dateRow);
