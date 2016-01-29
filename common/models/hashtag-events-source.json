@@ -2,7 +2,7 @@
   "name": "HashtagEventsSource",
   "base": "EventsSourceBase",
   "properties": {
-    "num_posts": {
+    "num_users": {
       "type": "number"
     },
     "hashtag": {

@@ -12,14 +12,15 @@ angular.module('genie.eventsMap')
     scope.map = new google.maps.Map(elem[0], mapOptions);
 
     var zoomLevelObj = new ZoomLevel();
-    zoomLevelObj.events = [];
+    zoomLevelObj.clusters = [];
     scope.zoomLevelObj = zoomLevelObj;
 
     mapService
-    .getZoomLevel({zoomLevel: 18, minutesAgo: 1440})
+    .getZoomLevel({zoom_level: 18, minutes_ago: 1440})
     .then(function(zoomLevelObj) {
       scope.zoomLevelObj = zoomLevelObj;
-      scope.map.setCenter(zoomLevelObj.centerPoint);
+      scope.map.setCenter({lat: zoomLevelObj.center_lat,
+        lng: zoomLevelObj.center_lng});
     });
   }
 

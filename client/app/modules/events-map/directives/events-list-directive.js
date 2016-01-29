@@ -1,24 +1,13 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('eventsList', ['ImageManagerService', 'SandboxEventsSource',
-  '$timeout', 'sourceIconFilter',
-  function (ImageManagerService, SandboxEventsSource, $timeout,
-    sourceIconFilter) {
+.directive('eventsList', ['$timeout', 'sourceIconFilter', '$window',
+  function($timeout, sourceIconFilter, $window) {
 
   function link(scope, elem, attrs, netGraphCtrl) {
-    scope.$watchCollection(
-      function(scope) {
-        return scope.zoomLevelObj;
-      },
-      getEvents
-    );
-
-    function getEvents() {
-      scope.events = _.sortBy(scope.zoomLevelObj.events, 'weight').reverse();
-    }
+    resize(elem);
 
     scope.showEvent = function(event) {
-      var source = event.eventSource;
+      var source = event.event_source;
       if (source === 'sandbox') {
         netGraphCtrl.createNetGraph(event);
       } else if (event.eventSource === 'hashtag') {
@@ -28,18 +17,29 @@ angular.module('genie.eventsMap')
     }
 
     function animateMarker(event) {
-      var iconPath = sourceIconFilter(event.eventSource);
+      var iconPath = sourceIconFilter(event.event_source);
       var marker = new google.maps.Marker({
         map: scope.map,
         icon: iconPath,
         animation: google.maps.Animation.DROP,
-        position: {lat: event.location.lat(), lng: event.location.lng()}
+        position: {lat: event.lat, lng: event.lng}
       });
 
       $timeout(function() {
         marker.setMap(null);
         marker = null;
       }, 1000);
+    }
+
+    function resize(elem) {
+      var $win = $($window);
+      var $list = $(elem.children()[0]);
+      var doResize = function() {
+        var winHeight = $win.height();
+        $list.height(winHeight * 0.7);
+      };
+
+      $win.bind('resize', _.throttle(doResize, 33.33)).resize();
     }
   }
 

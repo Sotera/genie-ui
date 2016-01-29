@@ -4,7 +4,7 @@ angular.module('genie.eventsMap')
   function(sourceIconFilter) {
 
   function link(scope, elem, attrs, netGraphCtrl) {
-    var gmarkers = []; // needed to remove markers on input change
+    var markers = []; // needed to remove markers on input change
     var heatmapLayer = new google.maps.visualization.HeatmapLayer(
       {
         radius: attrs.radius || 24
@@ -18,41 +18,38 @@ angular.module('genie.eventsMap')
     );
 
     function reheat() {
-      var events = scope.zoomLevelObj.events;
+      markers = [];
+      var clusters = scope.zoomLevelObj.clusters;
       heatmapLayer.setMap(scope.map);
-      heatmapLayer.setData(events);
+      heatmapLayer.setData(clusters);
       // optionally bypass map markers (default: on)
       if (attrs.markers !== 'off') {
-        removeMarkers();
-        addMarkers(events, scope.map);
+        resetMarkers();
+        addMarkers(clusters, scope.map);
       }
     }
 
-    function removeMarkers() {
-      for(var i=0; i<gmarkers.length; i++) {
-        gmarkers[i].setMap(null);
+    function resetMarkers() {
+      for(var i=0; i<markers.length; i++) {
+        markers[i].setMap(null);
+        markers[i] = null;
       }
+      markers = [];
     }
 
-    function addMarkers(events, map) {
-      events.forEach(function addMarker(event) {
-        var iconPath = sourceIconFilter(event.eventSource);
+    function addMarkers(clusters, map) {
+      clusters.forEach(function addMarker(cluster) {
         var marker = new google.maps.Marker({
-          position: event.location,
+          position: cluster.location,
           map: map,
-          icon: iconPath,
           opacity: 0.3
         });
 
-        gmarkers.push(marker);
+        markers.push(marker);
 
         marker.addListener('click', function() {
-          var source = event.eventSource;
-          if (source === 'sandbox') {
-            netGraphCtrl.createNetGraph(event);
-          } else if (event.eventSource === 'hashtag') {
-            console.info('TODO');
-          }
+          scope.events = cluster.events;
+          scope.$apply();
         });
       });
     }

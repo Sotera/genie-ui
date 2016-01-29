@@ -13,19 +13,20 @@ angular.module('genie.eventsMap')
       SandboxEventsSource.find(query,
         function(eventSources) {
           var source = eventSources[0];
-          if (source) {
-            render_graph(
-              format_graph(source.extra.network_graph),
-              {
-                onHover: function(node) {
-                  console.log('node:: ', node.id);
-                  $('#' + node.id).removeClass('muted');
-                }
-              }
-            );
+          // TODO: bring back when API is ready
+          // if (source) {
+          //   render_graph(
+          //     format_graph(source.extra.network_graph),
+          //     {
+          //       onHover: function(node) {
+          //         console.log('node:: ', node.id);
+          //         $('#' + node.id).removeClass('muted');
+          //       }
+          //     }
+          //   );
 
-            ImageManagerService.setImages(source.extra.node_to_url);
-          }
+          //   ImageManagerService.setImages(source.extra.node_to_url);
+          // }
         }
       );
     }

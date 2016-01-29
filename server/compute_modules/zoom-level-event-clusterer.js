@@ -26,16 +26,16 @@ module.exports = class {
 
   generateDevelopmentData(options, cb) {
     options.randomGeneratorSeed = options.randomGeneratorSeed || 0xbaadf00d;
-    options.minPostDate = options.minPostDate || '2015-08-19T09:20:00.000Z';
+    options.minPostDate = options.minPostDate || '2015-08-16T09:20:00.000Z';
     options.maxPostDate = options.maxPostDate || '2015-08-19T09:45:00.000Z';
     options.eventCountMin = options.eventCountMin || 1200;
     options.eventCountMax = options.eventCountMax || 1500;
-    options.modelNames = options.modelNames || ['HashtagEventsSource'];
-    options.eventSources = options.eventSources || ['hashtag'];
+    options.modelNames = options.modelNames || ['HashtagEventsSource', 'SandboxEventsSource'];
+    options.eventSources = options.eventSources || ['hashtag', 'sandbox'];
     options.endDate = options.endDate || '2015-08-19T09:40:00.000Z';
-    options.intervalDurationMinutes = options.intervalDurationMinutes || 2;
-    options.totalIntervals = options.totalIntervals || 5;
-    options.zoomLevelClusterCounts = options.zoomLevelClusterCounts || [4, 8, 12, 16];
+    options.intervalDurationMinutes = options.intervalDurationMinutes || 1440;
+    options.totalIntervals = options.totalIntervals || 4;
+    options.zoomLevelClusterCounts = options.zoomLevelClusterCounts || Array(19).fill(8);
     var self = this;
     self.createFakeEvents(options, function (err, results) {
       var functionArray = [];
@@ -344,7 +344,7 @@ module.exports = class {
       }
       if (modelName === 'HashtagEventsSource') {
         newEvents[i].hashtag = options.tags[random.integer(0, options.tags.length - 1)];
-        newEvents[i].num_posts = random.integer(options.minNumPosts, options.maxNumPosts);
+        newEvents[i].num_users = random.integer(options.minNumPosts, options.maxNumPosts);
       }
       newEvents[i].event_source = eventSource;
       newEventsByModelName[modelName].push(newEvents[i]);

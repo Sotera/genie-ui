@@ -6,7 +6,6 @@ dockerConf.updateDatasources();
 
 // to enable these logs set `DEBUG=server:server` or `DEBUG=server:*`
 var log = require('debug')('server:server');
-require('dotenv').load();
 var LoopbackModelHelper = require('./util/loopback-model-helper');
 /*var twitterClientOptions = {
   consumer_key: process.env.CONSUMER_KEY,

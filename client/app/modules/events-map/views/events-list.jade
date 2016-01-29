@@ -1,11 +1,5 @@
-table.table( ng-show='events.length' )
-  thead
-    tr
-      th Source
-      th Count
-  tbody
-    tr( ng-repeat='event in events track by event.eventId'
-      ng-click='showEvent(event)' )
-      td
-        img( ng-src='{{ event.eventSource | sourceIcon }}' )
-      td {{ event.weight }}
+.list-group( ng-show='events.length' )
+  a.list-group-item( ng-repeat='event in events track by event.event_id'
+    ng-click='showEvent(event)' )
+    span.badge 08-17-15
+    img( ng-src='{{ event.event_source | sourceIcon }}' )
