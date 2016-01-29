@@ -198,17 +198,24 @@ module.exports = class {
   }
 
   clusterEvents(options, cb) {
-    options.zoomLevel = options.zoomLevel || 8;
-    options.clusterCount = options.clusterCount || 20;
+    var vectorToCluster = options.vectorToCluster || [];
+    if(!(vectorToCluster instanceof Array) || !vectorToCluster.length){
+      cb(new Error('Invalid clusterer input'));
+      return;
+    }
+    var zoomLevel = options.zoomLevel || 8;
+    var clusterCount = options.clusterCount || 20;
+    var minutesAgo = options.minutesAgo || 2;
+    var endDate = options.endDate || (new Date()).toISOString();
     /*    var msg = 'Clustering @ zoomLevel: ' + zoomLevel;
      msg += ', endDate: ' + endDate;
      msg += ', intervalDurationMinutes: ' + intervalDurationMinutes;
      msg += ', intervalsAgo: ' + intervalsAgo;
      msg += ' [' + clustersPerZoomLevel[zoomLevel - 1] + '] clusters.';*/
-    options.clusterCount = options.vectorToCluster.length < options.clusterCount
-      ? options.vectorToCluster.length
-      : options.clusterCount;
-    clustererKMeans.geoCluster(options.vectorToCluster, options.clusterCount, function (err, kmeanClusters) {
+    clusterCount = vectorToCluster.length < clusterCount
+      ? vectorToCluster.length
+      : clusterCount;
+    clustererKMeans.geoCluster(vectorToCluster, clusterCount, function (err, kmeanClusters) {
       if (err) {
         cb(err);
         return;
@@ -218,10 +225,10 @@ module.exports = class {
         var events = [];
         kmeanCluster.clusterInd.forEach(function (idx) {
           events.push({
-            lat: options.vectorToCluster[idx].lat,
-            lng: options.vectorToCluster[idx].lng,
-            event_id: options.vectorToCluster[idx].event_id,
-            event_source: options.vectorToCluster[idx].event_source
+            lat: vectorToCluster[idx].lat,
+            lng: vectorToCluster[idx].lng,
+            event_id: vectorToCluster[idx].event_id,
+            event_source: vectorToCluster[idx].event_source
           });
         });
         clusters.push({
@@ -232,9 +239,9 @@ module.exports = class {
         });
       });
       cb(err, {
-        endDate: options.endDate,
-        zoomLevel: options.zoomLevel,
-        minutesAgo: options.minutesAgo,
+        endDate,
+        zoomLevel,
+        minutesAgo,
         clusters
       });
     })
@@ -242,6 +249,10 @@ module.exports = class {
 
   updateZoomLevel(options, cb) {
     var clusters = options.clusters;
+    if(!clusters){
+      cb(new Error('Invalid cluster collection'));
+      return;
+    }
     var zoomLevel = options.zoomLevel;
     var minutesAgo = options.minutesAgo;
     var centerPoint = this.getGeoCenter(clusters);
@@ -325,7 +336,7 @@ module.exports = class {
       newEvents.push(
         {
           event_id: random.uuid4().toString(),
-          num_users: random.integer(options.minNumUsers, options.maxNumUsers),
+          num_unique_users: random.integer(options.minNumUsers, options.maxNumUsers),
           indexed_date: self.randomDate(options.minIndexDate, options.maxIndexDate),
           post_date: self.randomDate(options.minPostDate, options.maxPostDate),
           lat,
@@ -344,7 +355,7 @@ module.exports = class {
       }
       if (modelName === 'HashtagEventsSource') {
         newEvents[i].hashtag = options.tags[random.integer(0, options.tags.length - 1)];
-        newEvents[i].num_users = random.integer(options.minNumPosts, options.maxNumPosts);
+        newEvents[i].num_unique_users = random.integer(options.minNumPosts, options.maxNumPosts);
       }
       newEvents[i].event_source = eventSource;
       newEventsByModelName[modelName].push(newEvents[i]);

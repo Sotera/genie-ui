@@ -17,7 +17,12 @@ module.exports = function (app, cb) {
     });
   });
 
-  new ClassMethodsToRestPosts(app, ZoomLevelEventClusterer);
+  new ClassMethodsToRestPosts(app, ZoomLevelEventClusterer,{},
+    {
+    className: 'ZoomLevelEventClusterer',
+    hideUnderscoreMethods: true
+  }
+  );
   cb();
 }
 

@@ -5,7 +5,10 @@ var TwitterHashtagClusterer = require('../compute_modules/twitter-hashtag-cluste
 
 module.exports = function (app, cb) {
   log('Adding TwitterHashtagClustering ReST endpoints.');
-  new ClassMethodsToRestPosts(app, TwitterHashtagClusterer);
+  new ClassMethodsToRestPosts(app, TwitterHashtagClusterer, {
+    className: 'TwitterHashtagClusterer',
+    hideUnderscoreMethods: true
+  });
   cb();
 }
 

@@ -67,7 +67,7 @@ angular.module('genie.eventsMap')
         var tags = _.map(sources, function(source) {
           return {
             text: source.hashtag,
-            weight: source.num_users,
+            weight: source.num_unique_users,
             handlers: tagHandlers
           };
         });

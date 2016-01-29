@@ -1,8 +1,9 @@
 {
   "name": "HashtagEventsSource",
+  "strict": "throw",
   "base": "EventsSourceBase",
   "properties": {
-    "num_users": {
+    "num_unique_users": {
       "type": "number"
     },
     "hashtag": {

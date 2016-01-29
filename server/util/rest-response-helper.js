@@ -3,24 +3,27 @@ var log = require('debug')('util:rest-response-helper');
 var stringify = require('json-stable-stringify');
 
 module.exports = class {
-  constructor(){
+  constructor() {
   }
 
   respond(err, res, result, status) {
-    status = status || 200;
     if (err) {
       err = this.toString(err);
       log(err);
-      res.status(status).end(err);
+      res.status(500).end(err);
     } else if (result) {
-      res.status(status).end(this.toString(result));
+      res.status(status || 200).end(this.toString(result));
     } else {
-      res.status(status).end('SUCCESS: ' + (new Date()).toISOString());
+      res.status(status || 200).end('SUCCESS: ' + (new Date()).toISOString());
     }
   }
 
-  toString(o){
-    return (o instanceof Object) ? stringify(o, {space: 3}) : o.toString();
+  toString(o) {
+    return (o instanceof Error)
+      ? stringify({error: o.message}, {space: 3})
+      : (o instanceof Object)
+      ? stringify(o, {space: 3})
+      : o.toString();
   }
 }
 
