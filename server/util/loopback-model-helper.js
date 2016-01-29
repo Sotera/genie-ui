@@ -96,7 +96,9 @@ module.exports = class {
   flushQueues(cb) {
     var queries = this.findOrCreateQueueQueries.splice(0, this.findOrCreateQueueQueries.length);
     var objectsToCreate = this.findOrCreateQueueObjectsToCreate.splice(0, this.findOrCreateQueueObjectsToCreate.length);
-    this.findOrCreateMany(queries, objectsToCreate, cb);
+    this.findOrCreateMany(queries, objectsToCreate, function(err,results){
+      cb(err, results);
+    });
   }
 
   findOrCreate(query, objectToCreate, cb) {

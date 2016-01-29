@@ -18,7 +18,8 @@ var inUseTwitterStreams = {};
 
 
 module.exports = class {
-  constructor() {
+  constructor(app) {
+    this.app = app;
     this.geoTweetHelper = new LoopbackModelHelper('GeoTweet');
     this.geoTwitterScrape = new LoopbackModelHelper('GeoTwitterScrape');
     this.scoredGeoTweetHelper = new LoopbackModelHelper('ScoredGeoTweet');
@@ -369,46 +370,70 @@ module.exports = class {
     }
   }
 
+  _restTranslateFileToGeoTweet(options, cb) {
+    var path = options.path;
+    var JSONStream = require('JSONStream');
+    var es = require('event-stream');
+    var fs = require('fs');
+    var self = this;
+    fs.createReadStream(path, 'utf8')
+      .pipe(JSONStream.parse('*'))
+      .pipe(es.map(function (tweet, cb) {
+        self.convertTweetToGeoTweet({
+          tweet,
+          onlyWithLocation: true,
+          onlyWithHashtags: true
+        }, function (err, geoTweet) {
+          cb(err, geoTweet);
+        });
+      }))
+      .on('data', function (geoTweet) {
+        self.geoTweetHelper.findOrCreateEnqueue({where: {tweet_id: geoTweet.tweet_id}}, geoTweet);
+      })
+      .on('end', function () {
+        self.geoTweetHelper.flushQueues(function (err, results) {
+          if (err) {
+            log(err);
+          }
+          cb(err, results);
+        });
+      });
+  }
+
+  translateFileToGeoTweet(options, cb) {
+    var request = require('request');
+    var host = this.app.get('host');
+    var port = this.app.get('port');
+
+    request.post({
+      url: 'http://' + host + ':' + port + '/_restTranslateFileToGeoTweet',
+      json: true,
+      body: options
+    }, function (err, response, body) {
+      cb(err);
+    });
+  }
+
   loadTestTweetFiles(options, cb) {
     var foldersToSearch = ensureStringArray(options.foldersToSearch);
     var globExpression = options.globExpression || '*';
     var glob = require('glob-fs')({gitignore: true});
-    var JSONStream = require('JSONStream');
-    var fs = require('fs');
-    var es = require('event-stream');
     var self = this;
-    var taskQueue = async.queue(function(path, cb){
-      fs.createReadStream(path, 'utf8')
-        .pipe(JSONStream.parse('*'))
-        .pipe(es.map(function (tweet, cb) {
-          self.convertTweetToGeoTweet({
-            tweet,
-            onlyWithLocation: true,
-            onlyWithHashtags: true
-          }, function (err, geoTweet) {
-            cb(err, geoTweet);
-          });
-        }))
-        .on('data', function (geoTweet) {
-          self.geoTweetHelper.findOrCreateEnqueue({where:{tweet_id: geoTweet.tweet_id}}, geoTweet);
-        })
-        .on('end', function () {
-          self.geoTweetHelper.flushQueues(function(err, results){
-            log(err);
-            cb(err);
-          });
-        });
-    }, 4);
+    var taskQueue = async.queue(self.translateFileToGeoTweet.bind(self), 8);
     foldersToSearch.forEach(function (folderToSearch) {
       //In the spirit of scalability let's stream the globbed filenames
       var fileCount = 0;
       glob.readdirStream(globExpression, {cwd: folderToSearch})
         .on('data', function (file) {
           log('Queuing: ' + file.name + '[' + (++fileCount) + ']');
-          taskQueue.push(file.path, function(err){
-            if(err){
-              log(err);
-            }
+          process.nextTick(()=> {
+            taskQueue.push({path: file.path}, function (err) {
+              if (err) {
+                log(err);
+                return;
+              }
+              log('Processed: ' + file.name);
+            });
           });
         })
         .on('error', function (err) {
@@ -416,7 +441,6 @@ module.exports = class {
           cb(err, {fileCount});
         })
         .on('end', function () {
-          log('end');
           cb(null, {fileCount});
         });
     });

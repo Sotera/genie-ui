@@ -6,7 +6,7 @@ const restResponseHelper = new RestResponseHelper();
 module.exports = class {
   constructor(app, _class){
     var self = this;
-    self.classInstance = new _class();
+    self.classInstance = new _class(app);
     var methods = Object.getOwnPropertyNames(_class.prototype).filter(function(p){
       if(p === 'constructor'){
         return false;
