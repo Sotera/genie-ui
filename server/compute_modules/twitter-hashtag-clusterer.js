@@ -348,7 +348,7 @@ module.exports = class {
             var newTweetsExamined = (geoTwitterScraper.tweetsExamined || 0) + 1;
             geoTwitterScraper.updateAttribute('tweetsExamined', newTweetsExamined, function (err, o) {
               options.tweet = tweet;
-              self.convertTweetToGeoTweet(options);
+              self.post_convertTweetToGeoTweet(options);
             });
           });
           stream.on('end', function () {
@@ -379,7 +379,7 @@ module.exports = class {
     fs.createReadStream(path, 'utf8')
       .pipe(JSONStream.parse('*'))
       .pipe(es.map(function (tweet, cb) {
-        self.convertTweetToGeoTweet({
+        self.post_convertTweetToGeoTweet({
           tweet,
           onlyWithLocation: true,
           onlyWithHashtags: true
@@ -406,11 +406,11 @@ module.exports = class {
     var port = this.app.get('port');
 
     request.post({
-      url: 'http://' + host + ':' + port + '/restTranslateFileToGeoTweet',
+      url: 'http://' + host + ':' + port + '/TwitterHashtagClusterer/restTranslateFileToGeoTweet',
       json: true,
       body: options
     }, function (err, response, body) {
-      cb(err);
+      cb(err, body);
     });
   }
 

@@ -183,7 +183,8 @@ module.exports = class {
                 lat: ces[i].lat,
                 lng: ces[i].lng,
                 event_id: ces[i].event_id,
-                event_source: ces[i].event_source
+                event_source: ces[i].event_source,
+                weight: ces[i].num_posts
               };
               if (ces[i].hashtag) {
                 vectorToCluster[i].hashtag = ces[i].hashtag;
@@ -199,7 +200,7 @@ module.exports = class {
 
   post_clusterEvents(options, cb) {
     var vectorToCluster = options.vectorToCluster || [];
-    if(!(vectorToCluster instanceof Array) || !vectorToCluster.length){
+    if (!(vectorToCluster instanceof Array) || !vectorToCluster.length) {
       cb(new Error('Invalid clusterer input'));
       return;
     }
@@ -223,18 +224,21 @@ module.exports = class {
       var clusters = [];
       kmeanClusters.forEach(function (kmeanCluster) {
         var events = [];
+        var weight  = 0;
         kmeanCluster.clusterInd.forEach(function (idx) {
           events.push({
             lat: vectorToCluster[idx].lat,
             lng: vectorToCluster[idx].lng,
             event_id: vectorToCluster[idx].event_id,
+            weight: vectorToCluster[idx].weight,
             event_source: vectorToCluster[idx].event_source
           });
+          weight += vectorToCluster[idx].weight;
         });
         clusters.push({
           lat: kmeanCluster.centroid[0],
           lng: kmeanCluster.centroid[1],
-          weight: events.length,
+          weight,
           events
         });
       });
@@ -249,7 +253,7 @@ module.exports = class {
 
   post_updateZoomLevel(options, cb) {
     var clusters = options.clusters;
-    if(!clusters){
+    if (!clusters) {
       cb(new Error('Invalid cluster collection'));
       return;
     }
@@ -338,12 +342,14 @@ module.exports = class {
           event_id: random.uuid4().toString(),
           indexed_date: self._randomDate(options.minIndexDate, options.maxIndexDate),
           post_date: self._randomDate(options.minPostDate, options.maxPostDate),
+          num_posts: random.integer(options.minNumPosts, options.maxNumPosts),
           lat,
           lng
         }
       );
     }
     var newEventsByModelName = {};
+    var sandboxNetworkGraphInfo = self._getSandboxNetworkGraphInfo(options.sandboxEventSourceFile);
     for (var i = 0; i < newEvents.length; ++i) {
       //var modelNameIdx = i % options.modelNames.length;
       var modelNameIdx = random.integer(0, options.modelNames.length - 1);
@@ -352,7 +358,12 @@ module.exports = class {
       if (!newEventsByModelName[modelName]) {
         newEventsByModelName[modelName] = [];
       }
-      if (modelName === 'HashtagEventsSource') {
+
+      //See if we have any external sandbox event specific info
+      if (modelName === 'SandboxEventsSource') {
+        newEvents[i].network_graph = sandboxNetworkGraphInfo.network_graph || {};
+        newEvents[i].node_to_url = sandboxNetworkGraphInfo.node_to_url || [];
+      } else if (modelName === 'HashtagEventsSource') {
         newEvents[i].hashtag = options.tags[random.integer(0, options.tags.length - 1)];
         newEvents[i].num_unique_users = random.integer(options.minNumUsers, options.maxNumUsers);
       }
@@ -412,6 +423,22 @@ module.exports = class {
   _randomDate(start, end) {
     var random = new Random(Random.engines.mt19937().autoSeed());
     return new Date(start.getTime() + random.real(0, 1, false) * (end.getTime() - start.getTime()));
+  }
+
+  _getSandboxNetworkGraphInfo(relativePath) {
+    var retVal = {};
+    if (relativePath) {
+      try {
+        var fs = require('fs');
+        var path = require('path');
+        var fullPath = path.join(__dirname, relativePath);
+        var o = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+        retVal = {network_graph: o.network_graph, node_to_url: o.node_to_url};
+      } catch (err) {
+        log(err);
+      }
+    }
+    return retVal;
   }
 
   _convertToDate(obj) {

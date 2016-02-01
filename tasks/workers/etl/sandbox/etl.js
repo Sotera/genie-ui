@@ -83,7 +83,7 @@ function convertEvent(sourceEvent, data){
     lat:sourceEvent.location.lat.min,
     lng:sourceEvent.location.lon.min,
     network_graph: data.detail,
-    num_images: sourceEvent.count
+    num_posts: sourceEvent.count
   };
 
   console.log("getting node image urls");
