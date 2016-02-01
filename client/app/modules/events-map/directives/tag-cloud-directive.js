@@ -52,7 +52,6 @@ angular.module('genie.eventsMap')
     function updateTagCloud(events) {
       if (!(events && events.length)) return;
 
-      //jqcloud tag collection
       var eventIds = _.map(events, 'event_id');
 
       HashtagEventsSource.find({
@@ -67,13 +66,22 @@ angular.module('genie.eventsMap')
         var tags = _.map(sources, function(source) {
           return {
             text: source.hashtag,
-            weight: source.num_unique_users,
-            handlers: tagHandlers
+            weight: source.num_users
           };
         });
 
-        // TODO: remove .uniq() once the server has TagCloud api
-        scope.tags = _.uniq(tags, 'text');
+        Genie.worker.run({
+          worker: 'tagCloud',
+          method: 'prepare',
+          args: { tags: tags }
+        },
+        function(e) {
+          var tags = e.data.tags;
+          // handlers don't serialize web worker messaging so add them here
+          tags.forEach(function(tag) { tag.handlers = tagHandlers; });
+          scope.tags = tags;
+          scope.$apply();
+        });
       },
       function(err) { console.error(err); });
     }
