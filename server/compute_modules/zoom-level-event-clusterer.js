@@ -24,7 +24,7 @@ module.exports = class {
     this.zoomLevelHelper = new LoopbackModelHelper('ZoomLevel');
   }
 
-  generateDevelopmentData(options, cb) {
+  get_generateDevelopmentData(options, cb) {
     options.randomGeneratorSeed = options.randomGeneratorSeed || 0xbaadf00d;
     options.minPostDate = options.minPostDate || '2015-08-16T09:20:00.000Z';
     options.maxPostDate = options.maxPostDate || '2015-08-19T09:45:00.000Z';
@@ -37,7 +37,7 @@ module.exports = class {
     options.totalIntervals = options.totalIntervals || 4;
     options.zoomLevelClusterCounts = options.zoomLevelClusterCounts || Array(19).fill(8);
     var self = this;
-    self.createFakeEvents(options, function (err, results) {
+    self.post_createFakeEvents(options, function (err, results) {
       var functionArray = [];
       for (var i = 0; i < options.totalIntervals; ++i) {
         var getEventsOptions = {
@@ -46,7 +46,7 @@ module.exports = class {
           intervalDurationMinutes: options.intervalDurationMinutes,
           intervalsAgo: (i + 1)
         };
-        functionArray.push(async.apply(self.getEventsForClustererInput.bind(self), getEventsOptions));
+        functionArray.push(async.apply(self.post_getEventsForClustererInput.bind(self), getEventsOptions));
       }
       async.parallel(functionArray, function (err, results) {
         functionArray = [];
@@ -59,7 +59,7 @@ module.exports = class {
               minutesAgo: result.minutesAgo,
               vectorToCluster: result.vectorToCluster
             };
-            functionArray.push(async.apply(self.clusterEvents.bind(self), clusterEventsOptions));
+            functionArray.push(async.apply(self.post_clusterEvents.bind(self), clusterEventsOptions));
           });
         }
         async.series(functionArray, function (err, results) {
@@ -71,7 +71,7 @@ module.exports = class {
               minutesAgo: result.minutesAgo,
               zoomLevel: result.zoomLevel
             };
-            functionArray.push(async.apply(self.updateZoomLevel.bind(self), updateZoomLevelOptions));
+            functionArray.push(async.apply(self.post_updateZoomLevel.bind(self), updateZoomLevelOptions));
           });
           async.parallel(functionArray, function (err, result) {
             var operationResult = {
@@ -87,7 +87,7 @@ module.exports = class {
     });
   }
 
-  getEventsForClustererInput(options, cb) {
+  post_getEventsForClustererInput(options, cb) {
     var self = this;
     //Have to have a modelName
     if (!options.modelNames) {
@@ -135,7 +135,7 @@ module.exports = class {
   }
 
   _getEventsForClustererInput(options, cb) {
-    var endDate = this.convertToDate(options.endDate) || new Date();
+    var endDate = this._convertToDate(options.endDate) || new Date();
     var intervalDurationMinutes = options.intervalDurationMinutes || (24 * 60);
     var intervalsAgo = options.intervalsAgo || 1;
     var modelName = options.modelName;
@@ -197,7 +197,7 @@ module.exports = class {
       });
   }
 
-  clusterEvents(options, cb) {
+  post_clusterEvents(options, cb) {
     var vectorToCluster = options.vectorToCluster || [];
     if(!(vectorToCluster instanceof Array) || !vectorToCluster.length){
       cb(new Error('Invalid clusterer input'));
@@ -247,7 +247,7 @@ module.exports = class {
     })
   }
 
-  updateZoomLevel(options, cb) {
+  post_updateZoomLevel(options, cb) {
     var clusters = options.clusters;
     if(!clusters){
       cb(new Error('Invalid cluster collection'));
@@ -255,7 +255,7 @@ module.exports = class {
     }
     var zoomLevel = options.zoomLevel;
     var minutesAgo = options.minutesAgo;
-    var centerPoint = this.getGeoCenter(clusters);
+    var centerPoint = this._getGeoCenter(clusters);
     /*    cb(null, 'hello');
      return;*/
     var newZoomLevel =
@@ -297,7 +297,7 @@ module.exports = class {
       });
   }
 
-  createFakeEvents(options, cb) {
+  post_createFakeEvents(options, cb) {
     var self = this;
     options = options || {};
     //Setup some defaults for options
@@ -315,10 +315,10 @@ module.exports = class {
     options.locCenters = options.locCenters || randomishPointsOnEarth;
     options.distFromCenterMin = options.distFromCenterMin || 0.05;
     options.distFromCenterMax = options.distFromCenterMax || 0.5;
-    options.maxPostDate = self.convertToDate(options.maxPostDate) || now;
-    options.minPostDate = self.convertToDate(options.minPostDate) || sixMonthsAgo;
-    options.maxIndexDate = self.convertToDate(options.maxIndexDate) || now;
-    options.minIndexDate = self.convertToDate(options.minIndexDate) || sixMonthsAgo;
+    options.maxPostDate = self._convertToDate(options.maxPostDate) || now;
+    options.minPostDate = self._convertToDate(options.minPostDate) || sixMonthsAgo;
+    options.maxIndexDate = self._convertToDate(options.maxIndexDate) || now;
+    options.minIndexDate = self._convertToDate(options.minIndexDate) || sixMonthsAgo;
 
     var random =
       options.randomGeneratorSeed
@@ -336,9 +336,8 @@ module.exports = class {
       newEvents.push(
         {
           event_id: random.uuid4().toString(),
-          num_unique_users: random.integer(options.minNumUsers, options.maxNumUsers),
-          indexed_date: self.randomDate(options.minIndexDate, options.maxIndexDate),
-          post_date: self.randomDate(options.minPostDate, options.maxPostDate),
+          indexed_date: self._randomDate(options.minIndexDate, options.maxIndexDate),
+          post_date: self._randomDate(options.minPostDate, options.maxPostDate),
           lat,
           lng
         }
@@ -355,7 +354,7 @@ module.exports = class {
       }
       if (modelName === 'HashtagEventsSource') {
         newEvents[i].hashtag = options.tags[random.integer(0, options.tags.length - 1)];
-        newEvents[i].num_unique_users = random.integer(options.minNumPosts, options.maxNumPosts);
+        newEvents[i].num_unique_users = random.integer(options.minNumUsers, options.maxNumUsers);
       }
       newEvents[i].event_source = eventSource;
       newEventsByModelName[modelName].push(newEvents[i]);
@@ -394,11 +393,11 @@ module.exports = class {
     });
   }
 
-  getGeoCenter(locs) {
+  _getGeoCenter(locs) {
     //Assume locs is an array of objects that have 'lat' & 'lng' properties
     if ((!(locs instanceof Array))
       || (!(locs.length && locs[0].lat && locs[0].lng))) {
-      throw new Error('getGeoCenter() bad param')
+      throw new Error('_getGeoCenter() bad param')
     }
     var len = locs.length;
     var latSum = 0;
@@ -410,12 +409,12 @@ module.exports = class {
     return {lat: latSum / len, lng: lngSum / len};
   }
 
-  randomDate(start, end) {
+  _randomDate(start, end) {
     var random = new Random(Random.engines.mt19937().autoSeed());
     return new Date(start.getTime() + random.real(0, 1, false) * (end.getTime() - start.getTime()));
   }
 
-  convertToDate(obj) {
+  _convertToDate(obj) {
     if (obj instanceof Date) {
       return obj;
     }

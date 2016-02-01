@@ -25,7 +25,7 @@ module.exports = class {
     this.scoredGeoTweetHelper = new LoopbackModelHelper('ScoredGeoTweet');
   }
 
-  clusterScoredRecords(options, cb) {
+  post_clusterScoredRecords(options, cb) {
     options = options || {};
     apiCheck.throw([apiCheck.object, apiCheck.func], arguments);
     async.waterfall(
@@ -176,7 +176,7 @@ module.exports = class {
       });
   }
 
-  processNewTweets(options, cb) {
+  post_processNewTweets(options, cb) {
     options = options || {};
     apiCheck.throw([apiCheck.object, apiCheck.func], arguments);
     async.waterfall(
@@ -240,7 +240,7 @@ module.exports = class {
     );
   }
 
-  convertTweetToGeoTweet(options, cb) {
+  post_convertTweetToGeoTweet(options, cb) {
     try {
       var tweet = options.tweet;
       //Hashtags check is quicker so do it first
@@ -266,7 +266,7 @@ module.exports = class {
          var coords = tweet.place.bounding_box.coordinates;
          if (coords instanceof Array) {
          if (coords.length == 1 && coords[0] instanceof Array) {
-         var distanceInfo = this.diagonalDistanceOfBoundingBoxInMeters(coords[0]);
+         var distanceInfo = this._diagonalDistanceOfBoundingBoxInMeters(coords[0]);
          if (distanceInfo.distanceMeters < options.maxPlaceSizeMeters) {
          tweet.genieLoc = {lng: distanceInfo.center.lng, lat: distanceInfo.center.lat};
          }
@@ -299,10 +299,10 @@ module.exports = class {
     }
   }
 
-  stopTwitterScrape(options, cb) {
+  post_stopTwitterScrape(options, cb) {
     try {
       options = options || {};
-      cb = cb || function (err, aa) {
+      cb = cb || function (err) {
           if (err) {
             log(err);
           }
@@ -315,7 +315,7 @@ module.exports = class {
     }
   }
 
-  startTwitterScrape(options, cb) {
+  post_startTwitterScrape(options, cb) {
     var self = this;
     var locations = options.boundingBox.lngWest.toFixed(4);
     locations += ',' + options.boundingBox.latSouth.toFixed(4);
@@ -370,7 +370,7 @@ module.exports = class {
     }
   }
 
-  _restTranslateFileToGeoTweet(options, cb) {
+  post_restTranslateFileToGeoTweet(options, cb) {
     var path = options.path;
     var JSONStream = require('JSONStream');
     var es = require('event-stream');
@@ -400,13 +400,13 @@ module.exports = class {
       });
   }
 
-  translateFileToGeoTweet(options, cb) {
+  post_translateFileToGeoTweet(options, cb) {
     var request = require('request');
     var host = this.app.get('host');
     var port = this.app.get('port');
 
     request.post({
-      url: 'http://' + host + ':' + port + '/_restTranslateFileToGeoTweet',
+      url: 'http://' + host + ':' + port + '/restTranslateFileToGeoTweet',
       json: true,
       body: options
     }, function (err, response, body) {
@@ -414,7 +414,7 @@ module.exports = class {
     });
   }
 
-  loadTestTweetFiles(options, cb) {
+  post_loadTestTweetFiles(options, cb) {
     var foldersToSearch = ensureStringArray(options.foldersToSearch);
     var globExpression = options.globExpression || '*';
     var glob = require('glob-fs')({gitignore: true});
@@ -446,7 +446,7 @@ module.exports = class {
     });
   }
 
-  diagonalDistanceOfBoundingBoxInMeters(coords) {
+  _diagonalDistanceOfBoundingBoxInMeters(coords) {
     var minLng = Number.MAX_SAFE_INTEGER;
     var maxLng = Number.MIN_SAFE_INTEGER;
     var minLat = Number.MAX_SAFE_INTEGER;
