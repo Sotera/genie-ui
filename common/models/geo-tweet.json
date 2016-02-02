@@ -1,11 +1,13 @@
 {
   "name": "GeoTweet",
   "base": "PersistedModel",
+  "strict": "throw",
   "idInjection": true,
   "options": {},
   "properties": {
-    "scored": {
-      "type": "boolean"
+    "hashtag_indexed": {
+      "type": "boolean",
+      "default": false
     },
     "tweet_id": {
       "type": "string",
@@ -15,11 +17,23 @@
       "type": "string",
       "required": true
     },
+    "post_date": {
+      "type": "date",
+      "required": true
+    },
+    "hashtags": {
+      "type": [
+        "string"
+      ],
+      "required": true
+    },
     "lat": {
-      "type": "number"
+      "type": "number",
+      "required": true
     },
     "lng": {
-      "type": "number"
+      "type": "number",
+      "required": true
     }
   },
   "validations": [],

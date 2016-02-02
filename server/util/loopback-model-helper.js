@@ -45,6 +45,14 @@ module.exports = class {
     this.model.find(query, options, cb);
   }
 
+  updateAll(query, objectToUpdateWith, cb){
+    this.model.updateAll(query, objectToUpdateWith, cb);
+  }
+
+  destroyAll(query, cb){
+    this.model.destroyAll(query, cb);
+  }
+
   init(objectToInitWith, cb) {
     var self = this;
     self.find(function (err) {

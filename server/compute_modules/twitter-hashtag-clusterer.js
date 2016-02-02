@@ -20,14 +20,15 @@ var inUseTwitterStreams = {};
 module.exports = class {
   constructor(app) {
     this.app = app;
+    this.hashtagBlacklist = [];
     this.geoTweetHelper = new LoopbackModelHelper('GeoTweet');
     this.geoTwitterScrape = new LoopbackModelHelper('GeoTwitterScrape');
     this.scoredGeoTweetHelper = new LoopbackModelHelper('ScoredGeoTweet');
+    this.geoTweetHashtagIndexHelper = new LoopbackModelHelper('GeoTweetHashtagIndex');
   }
 
   post_clusterScoredRecords(options, cb) {
     options = options || {};
-    apiCheck.throw([apiCheck.object, apiCheck.func], arguments);
     async.waterfall(
       [
         function getScoredRecordCount(cb) {
@@ -178,7 +179,7 @@ module.exports = class {
 
   post_processNewTweets(options, cb) {
     options = options || {};
-    apiCheck.throw([apiCheck.object, apiCheck.func], arguments);
+    var self = this;
     async.waterfall(
       [
         //Doing it all in memory for now. Later we may add ES query result paging, etc.
@@ -188,15 +189,15 @@ module.exports = class {
           //get 10 documents returned. Note that {where: {scored: false}} is ignored by the ES
           //Loopback data connector. 'count' will always return the total number of documents.
 
-          //geoTweetHelper.count({where: {scored: false}}, function (err, count) {
-          geoTweetHelper.count(function (err, count) {
+          //self.geoTweetHelper.count({where: {scored: false}}, function (err, count) {
+          self.geoTweetHelper.count(function (err, count) {
             cb(err, count);
           });
         },
         function getGeoTweets(count, cb) {
           //Retrieve all the unscored GeoTweets in one query (no paging)
-          //geoTweetHelper.find({where: {scored: false}, limit: count}, function (err, geoTweets) {
-          geoTweetHelper.find({limit: count}, function (err, geoTweets) {
+          //self.geoTweetHelper.find({where: {scored: false}, limit: count}, function (err, geoTweets) {
+          self.geoTweetHelper.find({limit: count}, function (err, geoTweets) {
             cb(err, geoTweets)
           });
         },
@@ -280,23 +281,138 @@ module.exports = class {
         //log('We have coordinates! CenterPoint: [' + tweet.genieLoc.lng + ',' + tweet.genieLoc.lat + ']');
       }
       //Let's lowercase those hashtags (for string comparisons later)!
-      if (tweet.entities && tweet.entities.hashtags) {
-        for (var i = 0; i < tweet.entities.hashtags.length; ++i) {
-          tweet.entities.hashtags[i].text = tweet.entities.hashtags[i].text.toLowerCase();
-        }
+      var hashtags = [];
+      for (var i = 0; i < tweet.entities.hashtags.length; ++i) {
+        var ht = tweet.entities.hashtags;
+        hashtags.push(ht[i].text = ht[i].text.toLowerCase());
       }
       cb(null,
         {
-          lat: tweet.genieLoc.lat,
-          lng: tweet.genieLoc.lng,
-          scored: false,
-          tweet_id: tweet.id_str,
-          full_tweet: JSON.stringify(tweet)
+          lat: tweet.genieLoc.lat
+          , lng: tweet.genieLoc.lng
+          , post_date: new Date(tweet.created_at)
+          , tweet_id: tweet.id_str
+          , full_tweet: JSON.stringify(tweet)
+          , hashtags
         });
     } catch (err) {
       log(err);
       cb(err);
     }
+  }
+
+  get_resetGeoTweetHashtagIndexed(options, cb) {
+    var self = this;
+    self.geoTweetHelper.updateAll({hashtag_indexed: false}, function (err, result) {
+      cb(null, 'Reset hashtag_indexed');
+    });
+  }
+
+  post_indexGeoTweetsByHashtag(options, cb) {
+    var self = this;
+    var finished = false;
+    const limit = 100;
+    var skip = 0;
+    async.whilst(function () {
+        return !finished;
+      },
+      function (cb) {
+        var query = {where: {hashtag_indexed: false}, fields: {hashtags: true, tweet_id: true}, limit, skip};
+        skip += limit;
+        self.geoTweetHelper.find(query, function (err, results) {
+          finished = (results.length < limit);
+          //finished = true;
+          var tweetsByHashtag = {};
+          results.forEach(function (result) {
+            self.geoTweetHelper.updateAll(
+              {tweet_id: result.tweet_id},
+              {hashtag_indexed: true},
+              ()=> {
+              });
+            result.hashtags.forEach(function (hashtag) {
+              if (self.hashtagBlacklist.indexOf(hashtag) !== -1) {
+                return;
+              }
+              if (!tweetsByHashtag[hashtag]) {
+                tweetsByHashtag[hashtag] = {};
+              }
+              if (!tweetsByHashtag[hashtag][result.tweet_id]) {
+                tweetsByHashtag[hashtag][result.tweet_id] = null;
+              }
+            });
+          });
+          var tweetsByHashtagArray = [];
+          for (var hashtag in tweetsByHashtag) {
+            var tweetIds = [];
+            for (var tweetId in tweetsByHashtag[hashtag]) {
+              tweetIds.push(tweetId);
+            }
+            tweetsByHashtagArray.push({hashtag, geo_tweet_ids: tweetIds});
+          }
+          var queries = tweetsByHashtagArray.map(function (x) {
+            return {where: {hashtag: x.hashtag}};
+          });
+          self.geoTweetHashtagIndexHelper.findOrCreateMany(queries, tweetsByHashtagArray, function (err, results) {
+            async.each(results,
+              function (result, cb) {
+                if (result[1]) {
+                  //record was created and not found
+                  cb(null);
+                  return;
+                }
+                //record was found and must be updated with new twitter ids
+                var tweetIds = [];
+                for (var tweetId in tweetsByHashtag[result[0].hashtag]) {
+                  tweetIds.push(tweetId);
+                }
+                async.each(tweetIds,
+                  function (tweetId, cb) {
+                    var foundTweetId = false;
+                    for (var i = 0; i < result[0].geo_tweet_ids.length; ++i) {
+                      if (tweetId === result[0].geo_tweet_ids[i]) {
+                        foundTweetId = true;
+                        break;
+                      }
+                    }
+                    if (foundTweetId) {
+                      cb(null);
+                      return;
+                    }
+                    var geo_tweet_ids = [];
+                    result[0].geo_tweet_ids.forEach(function (geo_tweet_id) {
+                      geo_tweet_ids.push(geo_tweet_id);
+                    });
+                    if (geo_tweet_ids.length > 100) {
+                      var hashtag = result[0].hashtag;
+                      if (self.hashtagBlacklist.indexOf(hashtag) === -1) {
+                        self.hashtagBlacklist.push(hashtag);
+                        self.geoTweetHashtagIndexHelper.destroyAll({hashtag}, (err, result)=> {
+                          log('Adding ' + hashtag + ' to blacklist');
+                        });
+                      }
+                    }
+                    geo_tweet_ids.push(tweetId);
+                    result[0].updateAttributes({
+                      geo_tweet_ids
+                      , geo_tweet_id_count: geo_tweet_ids.length
+                    }, function (err, result) {
+                      //log(result);
+                      cb(err);
+                    });
+                  },
+                  function (err) {
+                    cb(null);
+                  });
+              },
+              function (err) {
+                cb(null, results);
+              });
+          });
+        });
+      },
+      function (err, results) {
+        cb(null, 'Processed ' + limit + ' new tweets');
+      });
   }
 
   post_stopTwitterScrape(options, cb) {
@@ -419,7 +535,7 @@ module.exports = class {
     var globExpression = options.globExpression || '*';
     var glob = require('glob-fs')({gitignore: true});
     var self = this;
-    var taskQueue = async.queue(self.translateFileToGeoTweet.bind(self), 8);
+    var taskQueue = async.queue(self.post_translateFileToGeoTweet.bind(self), 2);
     foldersToSearch.forEach(function (folderToSearch) {
       //In the spirit of scalability let's stream the globbed filenames
       var fileCount = 0;

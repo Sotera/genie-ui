@@ -1,12 +1,12 @@
 {
   "name": "SandboxEventsSource",
-  "strict": "throw",
   "base": "EventsSourceBase",
+  "strict": "throw",
   "properties": {
-    "network_graph":{
+    "network_graph": {
       "type": "object"
     },
-    "node_to_url":{
+    "node_to_url": {
       "type": "array"
     }
   },
