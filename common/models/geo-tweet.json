@@ -9,6 +9,10 @@
       "type": "boolean",
       "default": false
     },
+    "username": {
+      "type": "string",
+      "required": true
+    },
     "tweet_id": {
       "type": "string",
       "required": true

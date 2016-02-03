@@ -8,7 +8,6 @@ var clustering = require('density-clustering');
 var LoopbackModelHelper = require('../util/loopback-model-helper');
 var ScoreRecord = require('../compute_modules/geo-tweet-score-record');
 var Random = require('random-js');
-var random = new Random(Random.engines.mt19937().seed(0xc01dbeef));
 var ensureStringArray = require('../util/ensure-string-array');
 
 var twitterKeyFilename = require('path').join(__dirname, '../../.twitter-keys.json');
@@ -16,6 +15,8 @@ var twitterKeys = JSON.parse(require('fs').readFileSync(twitterKeyFilename, 'utf
 var twitterKeyIdx = 0;
 var inUseTwitterStreams = {};
 
+const random = new Random(Random.engines.mt19937().seed(0xc01dbeef));
+const dbscan = new clustering.DBSCAN();
 
 module.exports = class {
   constructor(app) {
@@ -27,7 +28,7 @@ module.exports = class {
     this.geoTweetHashtagIndexHelper = new LoopbackModelHelper('GeoTweetHashtagIndex');
   }
 
-  post_clusterScoredRecords(options, cb) {
+  post_deprecated_I_think_clusterScoredRecords(options, cb) {
     options = options || {};
     async.waterfall(
       [
@@ -138,7 +139,6 @@ module.exports = class {
             var dataToCluster = geoTweetArray.map(function (geoTweet) {
               return [geoTweet.lng, geoTweet.lat];
             });
-            var dbscan = new clustering.DBSCAN();
             geoTweetArray.clusters = dbscan.run(
               dataToCluster,
               options.dbscanEpsilonMeters,
@@ -177,7 +177,8 @@ module.exports = class {
       });
   }
 
-  post_processNewTweets(options, cb) {
+
+  post_deprecated_I_think_ProcessNewTweets(options, cb) {
     options = options || {};
     var self = this;
     async.waterfall(
@@ -241,6 +242,115 @@ module.exports = class {
     );
   }
 
+  post_clusterHashtags(options, cb) {
+    const millisecondsToMinutes = 1 / (60 * 1000);
+    options = options || {};
+    var minTweetCount = options.minTweetCount || 2;
+    var dbscanTimeEpsilonMinutes = options.dbscanTimeEpsilonMinutes || 60;
+    var dbscanTimeMinMembersInCluster = options.dbscanTimeMinMembersInCluster || 5;
+    var dbscanGeoEpsilonMeters = options.dbscanGeoEpsilonMeters || 2000;
+    var dbscanGeoMinMembersInCluster = options.dbscanGeoMinMembersInCluster || 5;
+
+    var self = this;
+    async.waterfall(
+      [
+        function getHashtagIndexWithEnoughTweets(cb) {
+          self.geoTweetHashtagIndexHelper.find({where: {geo_tweet_id_count: {gt: minTweetCount}}}, function (err, hashtagIndices) {
+            cb(null, hashtagIndices);
+          });
+        },
+        function clusterHashtagIndicesToTimeClusters(hashtagIndices, cb) {
+          async.mapSeries(hashtagIndices,
+            function (hashtagIndex, cb) {
+              var geo_tweet_ids = hashtagIndex.geo_tweet_ids;
+              self.geoTweetHelper.find({
+                where: {tweet_id: {inq: geo_tweet_ids}},
+                fields: {post_date: true, username: true, tweet_id: true, lat: true, lng: true}
+              }, function (err, geoTweets) {
+                var timeDataToCluster = geoTweets.map(function (geoTweet) {
+                  return [geoTweet.post_date.valueOf() * millisecondsToMinutes, 0];
+                });
+                var timeClusters = dbscan.run(
+                  timeDataToCluster,
+                  dbscanTimeEpsilonMinutes,
+                  dbscanTimeMinMembersInCluster,
+                  function (p, q) {
+                    return Math.abs(p[0] - q[0]);
+                  });
+                var timeGeoTweetClusters = [];
+                timeClusters.forEach(function (timeCluster) {
+                  timeGeoTweetClusters.push({
+                    hashtag: hashtagIndex.hashtag,
+                    geoTweets: timeCluster.map(function (tweetIdx) {
+                      return geoTweets[tweetIdx];
+                    })
+                  })
+                  ;
+                });
+                cb(null, timeGeoTweetClusters);
+              });
+            },
+            function (err, results) {
+              var timeClusters = [];
+              results.forEach(function (result) {
+                result.forEach(function (timeCluster) {
+                  timeClusters.push(timeCluster);
+                })
+              })
+              cb(err, timeClusters);
+            });
+        },
+        function clusterTimeClustersToGeoClusters(timeClusters, cb) {
+          var loc0 = new loopback.GeoPoint({lat: 0, lng: 0});
+          var loc1 = new loopback.GeoPoint({lat: 0, lng: 0});
+          var eventSourceClusters = [];
+          timeClusters.forEach(function (timeCluster) {
+            var geoDataToCluster = timeCluster.geoTweets.map(function (geoTweet) {
+              return [geoTweet.lng, geoTweet.lat];
+            });
+            var geoClusters = dbscan.run(
+              geoDataToCluster,
+              dbscanGeoEpsilonMeters,
+              dbscanGeoMinMembersInCluster,
+              function (p, q) {
+                if (p.length != 2 || q.length != 2) {
+                  return Number.MAX_VALUE;
+                }
+                //Quick look to exclude very far away
+                /*                      var quickDist = (((p[1] - q[1]) * (p[1] - q[1])) + ((p[0] - q[0]) * (p[0] - q[0])));
+                 if (quickDist > 0.001) {
+                 return Number.MAX_VALUE;
+                 }*/
+                loc0.lat = p[1];
+                loc0.lng = p[0];
+                loc1.lat = q[1];
+                loc1.lng = q[0];
+                var distanceMeters = loopback.GeoPoint.distanceBetween(loc0, loc1, {type: 'meters'});
+                return distanceMeters;
+              });
+            if(!geoClusters.length){
+              return;
+            }
+            var clustersOfTweets = [];
+            geoClusters.forEach(function (geoCluster) {
+              clustersOfTweets.push(geoCluster.map(function (idx) {
+                return timeCluster.geoTweets[idx];
+              }));
+            });
+            eventSourceClusters.push({hashtag: timeCluster.hashtag, clustersOfTweets})
+          });
+          cb(null, eventSourceClusters);
+        },
+        function updateHashtagEventSourceCollection(eventSourceClusters, cb){
+          cb(null);
+        }
+      ],
+      function (err, results) {
+        var r = results;
+      }
+    );
+  }
+
   post_convertTweetToGeoTweet(options, cb) {
     try {
       var tweet = options.tweet;
@@ -292,6 +402,7 @@ module.exports = class {
           , lng: tweet.genieLoc.lng
           , post_date: new Date(tweet.created_at)
           , tweet_id: tweet.id_str
+          , username: tweet.user.screen_name
           , full_tweet: JSON.stringify(tweet)
           , hashtags
         });
