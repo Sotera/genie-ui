@@ -8,10 +8,13 @@ var workers = {
       var tags = _.uniq(args.tags, 'text');
       postMessage({tags: tags});
     }
+  },
+  eventsList: {
+    prepare: function(args) {
+      var events = _.sortByOrder(args.events, 'weight', 'desc');
+      postMessage({events: events});
+    }
   }
-  // , anotherworker: {
-  //   method: function(args) {}
-  // }
 };
 
 onmessage = function(e) {

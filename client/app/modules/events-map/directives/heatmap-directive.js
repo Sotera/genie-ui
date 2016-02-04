@@ -48,8 +48,15 @@ angular.module('genie.eventsMap')
         markers.push(marker);
 
         marker.addListener('click', function() {
-          scope.events = cluster.events;
-          scope.$apply();
+          Genie.worker.run({
+            worker: 'eventsList',
+            method: 'prepare',
+            args: { events: cluster.events }
+          },
+          function(e) {
+            scope.events = e.data.events;
+            scope.$apply();
+          });
         });
       });
     }

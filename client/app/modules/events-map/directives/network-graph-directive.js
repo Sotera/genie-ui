@@ -6,27 +6,26 @@ angular.module('genie.eventsMap')
     function createNetGraph(event) {
       var query = {
         filter: {
-          where: { id: event.eventId }
+          where: { event_id: event.event_id }
         }
       };
 
       SandboxEventsSource.find(query,
         function(eventSources) {
           var source = eventSources[0];
-          // TODO: bring back when API is ready
-          // if (source) {
-          //   render_graph(
-          //     format_graph(source.extra.network_graph),
-          //     {
-          //       onHover: function(node) {
-          //         console.log('node:: ', node.id);
-          //         $('#' + node.id).removeClass('muted');
-          //       }
-          //     }
-          //   );
+          if (source) {
+            render_graph(
+              format_graph(source.network_graph),
+              {
+                onHover: function(node) {
+                  console.log('node:: ', node.id);
+                  $('#' + node.id).removeClass('muted');
+                }
+              }
+            );
 
-          //   ImageManagerService.setImages(source.extra.node_to_url);
-          // }
+            ImageManagerService.setImages(source.node_to_url);
+          }
         }
       );
     }
