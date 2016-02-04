@@ -3,7 +3,7 @@
   "strict": "throw",
   "base": "EventsSourceBase",
   "properties": {
-    "num_unique_users": {
+    "unique_user_count": {
       "type": "number"
     },
     "hashtag": {
