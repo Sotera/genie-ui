@@ -21,6 +21,5 @@ lb-ng server/server.js client/app/js/lb-services.js
 ## Dev boostrap
 
 ```
-curl localhost:3000/generateDevelopmentData
-./tasks/build-events-time-series.js
+./script/setup.js
 ```
