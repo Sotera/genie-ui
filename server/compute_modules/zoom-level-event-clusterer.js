@@ -224,7 +224,7 @@ module.exports = class {
       var clusters = [];
       kmeanClusters.forEach(function (kmeanCluster) {
         var events = [];
-        var weight  = 0;
+        var weight = 0;
         kmeanCluster.clusterInd.forEach(function (idx) {
           events.push({
             lat: vectorToCluster[idx].lat,
@@ -323,6 +323,8 @@ module.exports = class {
     options.minPostDate = self._convertToDate(options.minPostDate) || sixMonthsAgo;
     options.maxIndexDate = self._convertToDate(options.maxIndexDate) || now;
     options.minIndexDate = self._convertToDate(options.minIndexDate) || sixMonthsAgo;
+    options.sandboxEventSourceFile = options.sandboxEventSourceFile
+      || '../../import/sandbox/exampleSandboxEventSource.json';
 
     var random =
       options.randomGeneratorSeed
@@ -365,7 +367,7 @@ module.exports = class {
         newEvents[i].node_to_url = sandboxNetworkGraphInfo.node_to_url || [];
       } else if (modelName === 'HashtagEventsSource') {
         newEvents[i].hashtag = options.tags[random.integer(0, options.tags.length - 1)];
-        newEvents[i].num_unique_users = random.integer(options.minNumUsers, options.maxNumUsers);
+        newEvents[i].unique_user_count = random.integer(options.minNumUsers, options.maxNumUsers);
       }
       newEvents[i].event_source = eventSource;
       newEventsByModelName[modelName].push(newEvents[i]);

@@ -1,5 +1,6 @@
 'use strict';
 var log = require('debug')('compute_modules:twitter-hashtag-clusterer');
+var now = require('performance-now');
 var Twitter = require('twitter');
 var async = require('async');
 var moment = require('moment');
@@ -15,7 +16,7 @@ var twitterKeys = JSON.parse(require('fs').readFileSync(twitterKeyFilename, 'utf
 var twitterKeyIdx = 0;
 var inUseTwitterStreams = {};
 
-const random = new Random(Random.engines.mt19937().seed(0xc01dbeef));
+const random = new Random(Random.engines.mt19937().autoSeed());
 const dbscan = new clustering.DBSCAN();
 
 module.exports = class {
@@ -26,6 +27,7 @@ module.exports = class {
     this.geoTwitterScrape = new LoopbackModelHelper('GeoTwitterScrape');
     this.scoredGeoTweetHelper = new LoopbackModelHelper('ScoredGeoTweet');
     this.geoTweetHashtagIndexHelper = new LoopbackModelHelper('GeoTweetHashtagIndex');
+    this.hashtagEventsSourceHelper = new LoopbackModelHelper('HashtagEventsSource');
   }
 
   post_deprecated_I_think_clusterScoredRecords(options, cb) {
@@ -246,6 +248,7 @@ module.exports = class {
     const millisecondsToMinutes = 1 / (60 * 1000);
     options = options || {};
     var minTweetCount = options.minTweetCount || 2;
+    var minUniqueUsers = options.minUniqueUsers || 3;
     var dbscanTimeEpsilonMinutes = options.dbscanTimeEpsilonMinutes || 60;
     var dbscanTimeMinMembersInCluster = options.dbscanTimeMinMembersInCluster || 5;
     var dbscanGeoEpsilonMeters = options.dbscanGeoEpsilonMeters || 2000;
@@ -304,6 +307,9 @@ module.exports = class {
           var loc0 = new loopback.GeoPoint({lat: 0, lng: 0});
           var loc1 = new loopback.GeoPoint({lat: 0, lng: 0});
           var eventSourceClusters = [];
+          //Use empirical constant 1.1e-5 to quickly filter large distances
+          var sqrtQuickDistanceExclude = (dbscanGeoEpsilonMeters) * 1.1e-5;
+          var quickDistanceExclude = 1.1 * (sqrtQuickDistanceExclude * sqrtQuickDistanceExclude);
           timeClusters.forEach(function (timeCluster) {
             var geoDataToCluster = timeCluster.geoTweets.map(function (geoTweet) {
               return [geoTweet.lng, geoTweet.lat];
@@ -317,18 +323,21 @@ module.exports = class {
                   return Number.MAX_VALUE;
                 }
                 //Quick look to exclude very far away
-                /*                      var quickDist = (((p[1] - q[1]) * (p[1] - q[1])) + ((p[0] - q[0]) * (p[0] - q[0])));
-                 if (quickDist > 0.001) {
-                 return Number.MAX_VALUE;
-                 }*/
+                var delX = (p[1] - q[1]);
+                var delY = (p[0] - q[0]);
+                var quickDist = ((delY * delY) + (delX * delX));
+                if (quickDist > quickDistanceExclude) {
+                  return Number.MAX_VALUE;
+                }
                 loc0.lat = p[1];
                 loc0.lng = p[0];
                 loc1.lat = q[1];
                 loc1.lng = q[0];
+                //Use great circle distance for more accuracy
                 var distanceMeters = loopback.GeoPoint.distanceBetween(loc0, loc1, {type: 'meters'});
                 return distanceMeters;
               });
-            if(!geoClusters.length){
+            if (!geoClusters.length) {
               return;
             }
             var clustersOfTweets = [];
@@ -341,8 +350,63 @@ module.exports = class {
           });
           cb(null, eventSourceClusters);
         },
-        function updateHashtagEventSourceCollection(eventSourceClusters, cb){
-          cb(null);
+        function cullTweetClustersWithoutEnoughUniqueUsers(eventSourceClusters, cb) {
+          eventSourceClusters.forEach(function (eventSourceCluster) {
+            eventSourceCluster.clustersOfTweets =
+              eventSourceCluster.clustersOfTweets.filter(function (clusterOfTweets) {
+                var userSet = {};
+                clusterOfTweets.forEach(function (tweet) {
+                  //We may want to know number of tweets per user later
+                  if (!userSet[tweet.username]) {
+                    userSet[tweet.username] = 0;
+                  }
+                  ++userSet[tweet.username];
+                });
+                var uniqueUserCount = Object.keys(userSet).length;
+                var retVal = (uniqueUserCount >= minUniqueUsers);
+                if (retVal) {
+                  clusterOfTweets.uniqueUserCount = uniqueUserCount;
+                }
+                return retVal;
+              });
+          });
+          //Filter our eventSourceClusters with no clusters of tweets
+          cb(null, eventSourceClusters.filter(function (eventSourceCluster) {
+            return eventSourceCluster.clustersOfTweets.length != 0;
+          }));
+        },
+        function updateHashtagEventSourceCollection(eventSourceClusters, cb) {
+          eventSourceClusters.forEach(function (eventSourceCluster) {
+            var hashtag = eventSourceCluster.hashtag;
+            eventSourceCluster.clustersOfTweets.forEach(function (clusterOfTweets) {
+              var numPosts = clusterOfTweets.length;
+              var reduceResult = clusterOfTweets.reduce(function (prev, curr, idx) {
+                return {
+                  lat: prev.lat + curr.lat,
+                  lng: prev.lng + curr.lng,
+                  post_date: prev.post_date + curr.post_date.getTime()
+                };
+              }, {lat: 0, lng: 0, post_date: 0});
+              var lat = reduceResult.lat / numPosts;
+              var lng = reduceResult.lng / numPosts;
+              var post_date = reduceResult.post_date / numPosts;
+              //Construct EventsSource object to write to collection
+              var newHashtagEventsSource = {
+                event_id: random.uuid4().toString(),
+                unique_user_count: clusterOfTweets.uniqueUserCount,
+                num_posts: numPosts,
+                event_source: 'hashtag',
+                post_date: new Date(post_date),
+                indexed_date: new Date(),
+                hashtag,
+                lat,
+                lng
+              };
+              self.hashtagEventsSourceHelper.create(newHashtagEventsSource, function (err, result) {
+                var r = result;
+              });
+            });
+          });
         }
       ],
       function (err, results) {
