@@ -367,7 +367,7 @@ module.exports = class {
         newEvents[i].node_to_url = sandboxNetworkGraphInfo.node_to_url || [];
       } else if (modelName === 'HashtagEventsSource') {
         newEvents[i].hashtag = options.tags[random.integer(0, options.tags.length - 1)];
-        newEvents[i].num_unique_users = random.integer(options.minNumUsers, options.maxNumUsers);
+        newEvents[i].unique_user_count = random.integer(options.minNumUsers, options.maxNumUsers);
       }
       newEvents[i].event_source = eventSource;
       newEventsByModelName[modelName].push(newEvents[i]);
