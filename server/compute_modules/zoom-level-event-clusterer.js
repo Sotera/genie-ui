@@ -323,6 +323,8 @@ module.exports = class {
     options.minPostDate = self._convertToDate(options.minPostDate) || sixMonthsAgo;
     options.maxIndexDate = self._convertToDate(options.maxIndexDate) || now;
     options.minIndexDate = self._convertToDate(options.minIndexDate) || sixMonthsAgo;
+    options.sandboxEventSourceFile = options.sandboxEventSourceFile
+      || '../../import/sandbox/exampleSandboxEventSource.json';
 
     var random =
       options.randomGeneratorSeed
