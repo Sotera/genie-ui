@@ -459,6 +459,9 @@ module.exports = class {
         self.restTaskQueue.push({
           restMethod: 'convertTweetToGeoTweet',
           tweet,
+          cb: function(err, geoTweet){
+            cb(err, geoTweet);
+          },
           onlyWithLocation: true,
           onlyWithHashtags: true
         });
