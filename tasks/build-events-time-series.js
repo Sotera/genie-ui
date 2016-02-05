@@ -62,6 +62,7 @@ function createChart(settings) {
         }
         chart.data = chartData;
         chart.save();
+        console.info('✔ Chart created')
       }
     );
   }

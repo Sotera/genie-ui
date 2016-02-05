@@ -12,7 +12,10 @@ var async = require('async'),
 
 function clean(model) {
   return function(done) {
-    model.destroyAll({}, err => { done(err); });
+    model.destroyAll({}, err => {
+      console.info('cleaned', model.model.definition.name);
+      done(err);
+    });
   };
 }
 
@@ -24,6 +27,7 @@ async.parallel([
   ],
   (err, results) => {
     if (err) throw err;
+    console.info('Generating mock data...');
     request('http://localhost:3000/zoomLevelEventClusterer/generateDevelopmentData',
       (err, res) => {
         if (err) throw err;
