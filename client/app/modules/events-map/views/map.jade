@@ -1,12 +1,14 @@
 image-grid.map-overlay.truncate.hide( style='top:45px;left:0' map-overlay action='hide' )
 
 .container-fluid
-  .row
-    .col-md-10
+  .row( dynamic-cols='events'
+    before='["col-md-12", "gone"]'
+    after='["col-md-10", "col-md-2"]' )
+    div( style='padding:15px 0' class='{{colClasses[0]}}' )
       //
         twitter-stream( stream-controls )
-      #map( events-map heat-map network-graph zoom='5' class='events-map' )
-    .col-md-2
+      .events-map( events-map heat-map network-graph zoom='5' )
+    div( style='padding-left:0' class='{{colClasses[1]}}' )
       events-list( network-graph )
 
 .map-overlay( style='bottom:0;left:0' map-overlay action='shrink' )

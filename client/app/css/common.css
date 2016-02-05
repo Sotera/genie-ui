@@ -35,3 +35,7 @@ div.time-series .border {
 .truncate {
   overflow: auto;
 }
+
+.gone {
+  display: none;
+}
