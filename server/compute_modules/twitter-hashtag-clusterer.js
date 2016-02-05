@@ -3,6 +3,7 @@ var log = require('debug')('compute_modules:twitter-hashtag-clusterer');
 var now = require('performance-now');
 var Twitter = require('twitter');
 var async = require('async');
+var request = require('request');
 var moment = require('moment');
 var loopback = require('loopback');
 var clustering = require('density-clustering');
@@ -27,7 +28,9 @@ module.exports = class {
     this.scoredGeoTweetHelper = new LoopbackModelHelper('ScoredGeoTweet');
     this.geoTweetHashtagIndexHelper = new LoopbackModelHelper('GeoTweetHashtagIndex');
     this.hashtagEventsSourceHelper = new LoopbackModelHelper('HashtagEventsSource');
-    this.restTaskQueue = async.queue(this._callViaReST.bind(this), 2);
+    this.restCallTaskQueues = {
+      apiName: 'TwitterHashtagClusterer'
+    }
   }
 
   post_clusterHashtags(options, cb) {
@@ -201,6 +204,165 @@ module.exports = class {
     );
   }
 
+  post_getSomeUnprocessedGeoTweets(options, cb) {
+    var self = this;
+    var limit = options.limit || 32;
+    //var skip = options.skip || 0;
+    var query = {
+      where: {
+        hashtag_indexed: false
+      },
+      fields: {
+        hashtags: true,
+        tweet_id: true
+      },
+      limit
+      //,skip
+    };
+    self.geoTweetHelper.find(query, function (err, geoTweets) {
+      cb(err, geoTweets);
+    });
+  }
+
+  post_createTweetsByHashtagAndMarkGeoTweetAsIndexed(options, cb) {
+    var self = this;
+    var geoTweets = options.geoTweets;
+    var hashtagBlacklist = options.hashtagBlacklist;
+    var tweetsByHashtag = {};
+    geoTweets.forEach(function (geoTweet) {
+      var tweet_id = geoTweet.tweet_id;
+      self.geoTweetHelper.updateAll(
+        {tweet_id},
+        {hashtag_indexed: true},
+        (err)=> {
+          if (err) {
+            log(err);
+          }
+        });
+      geoTweet.hashtags.forEach(function (hashtag) {
+        if (hashtagBlacklist.indexOf(hashtag) !== -1) {
+          return;
+        }
+        if (!tweetsByHashtag[hashtag]) {
+          tweetsByHashtag[hashtag] = {};
+        }
+        if (!tweetsByHashtag[hashtag][tweet_id]) {
+          tweetsByHashtag[hashtag][tweet_id] = null;
+        }
+      });
+    });
+    var tweetsByHashtagArray = [];
+    for (var hashtag in tweetsByHashtag) {
+      var tweetIds = [];
+      for (var tweetId in tweetsByHashtag[hashtag]) {
+        tweetIds.push(tweetId);
+      }
+      tweetsByHashtagArray.push({hashtag, geo_tweet_ids: tweetIds});
+    }
+    cb(null, tweetsByHashtagArray);
+  }
+
+  post_findOrCreateHashtagIndices(options, cb) {
+    var self = this;
+    var tweetsByHashtagArray = options.tweetsByHashtagArray;
+    var queries = tweetsByHashtagArray.map(function (x) {
+      return {where: {hashtag: x.hashtag}};
+    });
+    self.geoTweetHashtagIndexHelper.findOrCreateMany(queries, tweetsByHashtagArray, function (err, createResults) {
+      cb(null, createResults);
+    });
+  }
+
+  post_indexGeoTweetsByHashtag(options, cb) {
+    var self = this;
+    async.waterfall(
+      [
+        function (cb) {
+          self._callViaPost('getSomeUnprocessedGeoTweets',
+            {
+              limit: 100
+            }, function (err, geoTweets) {
+              cb(err, geoTweets);
+            });
+        },
+        function (geoTweets, cb) {
+          self._callViaPost('createTweetsByHashtagAndMarkGeoTweetAsIndexed',
+            {
+              geoTweets,
+              hashtagBlacklist: self.hashtagBlacklist
+            }, function (err, tweetsByHashtagArray) {
+              cb(err, tweetsByHashtagArray);
+            });
+        },
+        function (tweetsByHashtagArray, cb) {
+          self._callViaPost('findOrCreateHashtagIndices',
+            {
+              tweetsByHashtagArray
+            }, function (err, createResults) {
+              cb(err, createResults);
+            });
+        },
+        function (createResults, cb) {
+          async.each(createResults,
+            function (createResult, cb) {
+              if (createResult[1]) {
+                //record was created and not found
+                cb(null);
+                return;
+              }
+              //record was found and must be updated with new twitter ids
+              var tweetIds = [];
+              for (var tweetId in tweetsByHashtag[createResult[0].hashtag]) {
+                tweetIds.push(tweetId);
+              }
+              async.each(tweetIds,
+                function (tweetId, cb) {
+                  var foundTweetId = false;
+                  for (var i = 0; i < createResult[0].geo_tweet_ids.length; ++i) {
+                    if (tweetId === createResult[0].geo_tweet_ids[i]) {
+                      foundTweetId = true;
+                      break;
+                    }
+                  }
+                  if (foundTweetId) {
+                    cb(null);
+                    return;
+                  }
+                  var geo_tweet_ids = [];
+                  createResult[0].geo_tweet_ids.forEach(function (geo_tweet_id) {
+                    geo_tweet_ids.push(geo_tweet_id);
+                  });
+                  if (geo_tweet_ids.length > 100) {
+                    var hashtag = createResult[0].hashtag;
+                    if (self.hashtagBlacklist.indexOf(hashtag) === -1) {
+                      self.hashtagBlacklist.push(hashtag);
+                      self.geoTweetHashtagIndexHelper.destroyAll({hashtag}, (err, result)=> {
+                        log('Adding ' + hashtag + ' to blacklist');
+                      });
+                    }
+                  }
+                  geo_tweet_ids.push(tweetId);
+                  createResult[0].updateAttributes({
+                    geo_tweet_ids
+                    , geo_tweet_id_count: geo_tweet_ids.length
+                  }, function (err, result) {
+                    //log(result);
+                    cb(err);
+                  });
+                },
+                function (err) {
+                  cb(null);
+                });
+            },
+            function (err) {
+              cb(null, results);
+            });
+        }
+      ], function (err, results) {
+        cb(err, results);
+      });
+  }
+
   post_convertTweetToGeoTweet(options, cb) {
     try {
       var tweet = options.tweet;
@@ -262,134 +424,69 @@ module.exports = class {
     }
   }
 
-  get_resetGeoTweetHashtagIndexed(options, cb) {
+  post_translateFileToGeoTweet(options, cb) {
+    var path = options.path;
+    var JSONStream = require('JSONStream');
+    var es = require('event-stream');
+    var fs = require('fs');
     var self = this;
-    self.geoTweetHelper.updateAll({hashtag_indexed: false}, function (err, result) {
-      cb(null, 'Reset hashtag_indexed');
-    });
-  }
-
-  post_indexGeoTweetsByHashtag(options, cb) {
-    var self = this;
-    var finished = false;
-    const limit = 100;
-    var skip = 0;
-    async.whilst(function () {
-        return !finished;
-      },
-      function (cb) {
-        var query = {where: {hashtag_indexed: false}, fields: {hashtags: true, tweet_id: true}, limit, skip};
-        skip += limit;
-        self.geoTweetHelper.find(query, function (err, results) {
-          finished = (results.length < limit);
-          //finished = true;
-          var tweetsByHashtag = {};
-          results.forEach(function (result) {
-            self.geoTweetHelper.updateAll(
-              {tweet_id: result.tweet_id},
-              {hashtag_indexed: true},
-              ()=> {
-              });
-            result.hashtags.forEach(function (hashtag) {
-              if (self.hashtagBlacklist.indexOf(hashtag) !== -1) {
-                return;
-              }
-              if (!tweetsByHashtag[hashtag]) {
-                tweetsByHashtag[hashtag] = {};
-              }
-              if (!tweetsByHashtag[hashtag][result.tweet_id]) {
-                tweetsByHashtag[hashtag][result.tweet_id] = null;
-              }
-            });
+    fs.createReadStream(path, 'utf8')
+      .pipe(JSONStream.parse('*'))
+      .pipe(es.map(function (tweet, cb) {
+        self._callViaPost('convertTweetToGeoTweet',
+          {
+            tweet,
+            onlyWithLocation: true,
+            onlyWithHashtags: true
+          }, function (err, geoTweet) {
+            cb(err, geoTweet);
           });
-          var tweetsByHashtagArray = [];
-          for (var hashtag in tweetsByHashtag) {
-            var tweetIds = [];
-            for (var tweetId in tweetsByHashtag[hashtag]) {
-              tweetIds.push(tweetId);
-            }
-            tweetsByHashtagArray.push({hashtag, geo_tweet_ids: tweetIds});
-          }
-          var queries = tweetsByHashtagArray.map(function (x) {
-            return {where: {hashtag: x.hashtag}};
-          });
-          self.geoTweetHashtagIndexHelper.findOrCreateMany(queries, tweetsByHashtagArray, function (err, results) {
-            async.each(results,
-              function (result, cb) {
-                if (result[1]) {
-                  //record was created and not found
-                  cb(null);
-                  return;
-                }
-                //record was found and must be updated with new twitter ids
-                var tweetIds = [];
-                for (var tweetId in tweetsByHashtag[result[0].hashtag]) {
-                  tweetIds.push(tweetId);
-                }
-                async.each(tweetIds,
-                  function (tweetId, cb) {
-                    var foundTweetId = false;
-                    for (var i = 0; i < result[0].geo_tweet_ids.length; ++i) {
-                      if (tweetId === result[0].geo_tweet_ids[i]) {
-                        foundTweetId = true;
-                        break;
-                      }
-                    }
-                    if (foundTweetId) {
-                      cb(null);
-                      return;
-                    }
-                    var geo_tweet_ids = [];
-                    result[0].geo_tweet_ids.forEach(function (geo_tweet_id) {
-                      geo_tweet_ids.push(geo_tweet_id);
-                    });
-                    if (geo_tweet_ids.length > 100) {
-                      var hashtag = result[0].hashtag;
-                      if (self.hashtagBlacklist.indexOf(hashtag) === -1) {
-                        self.hashtagBlacklist.push(hashtag);
-                        self.geoTweetHashtagIndexHelper.destroyAll({hashtag}, (err, result)=> {
-                          log('Adding ' + hashtag + ' to blacklist');
-                        });
-                      }
-                    }
-                    geo_tweet_ids.push(tweetId);
-                    result[0].updateAttributes({
-                      geo_tweet_ids
-                      , geo_tweet_id_count: geo_tweet_ids.length
-                    }, function (err, result) {
-                      //log(result);
-                      cb(err);
-                    });
-                  },
-                  function (err) {
-                    cb(null);
-                  });
-              },
-              function (err) {
-                cb(null, results);
-              });
-          });
-        });
-      },
-      function (err, results) {
-        cb(null, 'Processed ' + limit + ' new tweets');
-      });
-  }
-
-  post_stopTwitterScrape(options, cb) {
-    try {
-      options = options || {};
-      cb = cb || function (err) {
+      }))
+      .on('data', function (geoTweet) {
+        self.geoTweetHelper.findOrCreateEnqueue({where: {tweet_id: geoTweet.tweet_id}}, geoTweet);
+      })
+      .on('end', function () {
+        self.geoTweetHelper.flushQueues(function (err, results) {
           if (err) {
             log(err);
           }
-        };
-      var twitterStream = inUseTwitterStreams[options.scraperId.id];
-      twitterStream.destroy();
-      cb(null, null);
-    } catch (err) {
-      log(err);
-    }
+          if (results) {
+            log('Wrote: ' + results.length + ' GeoTweets');
+          }
+          cb(err, results);
+        });
+      });
+  }
+
+  post_loadTestTweetFiles(options, cb) {
+    var foldersToSearch = ensureStringArray(options.foldersToSearch);
+    var globExpression = options.globExpression || '*';
+    var glob = require('glob-fs')({gitignore: true});
+    var self = this;
+    foldersToSearch.forEach(function (folderToSearch) {
+      //In the spirit of scalability let's stream the globbed filenames
+      var fileCount = 0;
+      glob.readdirStream(globExpression, {cwd: folderToSearch})
+        .on('data', function (file) {
+          log('Queuing: ' + file.name + '[' + (++fileCount) + ']');
+          self._callViaPost('translateFileToGeoTweet',
+            {
+              path: file.path
+            }, function (err, results) {
+              log('Translated: ' + file.name);
+              if (err) {
+                log(err);
+              }
+            });
+        })
+        .on('error', function (err) {
+          log(err);
+          cb(err, {fileCount});
+        })
+        .on('end', function () {
+          cb(null, {fileCount});
+        });
+    });
   }
 
   post_startTwitterScrape(options, cb) {
@@ -447,77 +544,41 @@ module.exports = class {
     }
   }
 
-  post_translateFileToGeoTweet(options, cb) {
-    var path = options.path;
-    var JSONStream = require('JSONStream');
-    var es = require('event-stream');
-    var fs = require('fs');
-    var self = this;
-    fs.createReadStream(path, 'utf8')
-      .pipe(JSONStream.parse('*'))
-      .pipe(es.map(function (tweet, cb) {
-        self.restTaskQueue.push({
-          restMethod: 'convertTweetToGeoTweet',
-          tweet,
-          cb: function(err, geoTweet){
-            cb(err, geoTweet);
-          },
-          onlyWithLocation: true,
-          onlyWithHashtags: true
-        });
-        return;
-        self.post_convertTweetToGeoTweet({
-          tweet,
-          onlyWithLocation: true,
-          onlyWithHashtags: true
-        }, function (err, geoTweet) {
-          cb(err, geoTweet);
-        });
-      }))
-      .on('data', function (geoTweet) {
-        self.geoTweetHelper.findOrCreateEnqueue({where: {tweet_id: geoTweet.tweet_id}}, geoTweet);
-      })
-      .on('end', function () {
-        self.geoTweetHelper.flushQueues(function (err, results) {
+  post_stopTwitterScrape(options, cb) {
+    try {
+      options = options || {};
+      cb = cb || function (err) {
           if (err) {
             log(err);
           }
-          cb(err, results);
-        });
-      });
+        };
+      var twitterStream = inUseTwitterStreams[options.scraperId.id];
+      twitterStream.destroy();
+      cb(null, null);
+    } catch (err) {
+      log(err);
+    }
   }
 
-  post_loadTestTweetFiles(options, cb) {
-    var foldersToSearch = ensureStringArray(options.foldersToSearch);
-    var globExpression = options.globExpression || '*';
-    var glob = require('glob-fs')({gitignore: true});
+  get_resetGeoTweetHashtagIndexed(options, cb) {
     var self = this;
-    foldersToSearch.forEach(function (folderToSearch) {
-      //In the spirit of scalability let's stream the globbed filenames
-      var fileCount = 0;
-      glob.readdirStream(globExpression, {cwd: folderToSearch})
-        .on('data', function (file) {
-          log('Queuing: ' + file.name + '[' + (++fileCount) + ']');
-          self.restTaskQueue.push({
-            restMethod: 'translateFileToGeoTweet',
-            path: file.path,
-            cb: function(err, results){
-              var r = results;
-            }
-          });
-        })
-        .on('error', function (err) {
-          log(err);
-          cb(err, {fileCount});
-        })
-        .on('end', function () {
-          cb(null, {fileCount});
-        });
+    self.geoTweetHelper.updateAll({hashtag_indexed: false}, function (err, result) {
+      cb(null, 'Reset hashtag_indexed');
     });
   }
 
+  _callViaPost(restMethod, options, cb) {
+    if (!this.restCallTaskQueues[restMethod]) {
+      this.restCallTaskQueues[restMethod] = async.queue(this._callViaReST.bind(this), 8);
+    }
+    options.restMethod = restMethod;
+    options.cb = cb;
+    this.restCallTaskQueues[restMethod].push(options, function (err) {
+      var e = err;
+    })
+  }
+
   _callViaReST(options, taskCb) {
-    var request = require('request');
     var host = this.app.get('host');
     var port = this.app.get('port');
     var apiName = options.apiName || 'TwitterHashtagClusterer';
