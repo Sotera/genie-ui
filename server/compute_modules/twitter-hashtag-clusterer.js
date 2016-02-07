@@ -208,19 +208,23 @@ module.exports = class {
     var self = this;
     var limit = options.limit || 32;
     //var skip = options.skip || 0;
-    var query = {
-      where: {
-        hashtag_indexed: false
-      },
-      fields: {
-        hashtags: true,
-        tweet_id: true
-      },
-      limit
-      //,skip
-    };
-    self.geoTweetHelper.find(query, function (err, geoTweets) {
-      cb(err, geoTweets);
+
+    self.geoTweetHelper.count({hashtag_indexed: false}, function (err, count) {
+      var remaining = count - limit;
+      var query = {
+        where: {
+          hashtag_indexed: false
+        },
+        fields: {
+          hashtags: true,
+          tweet_id: true
+        },
+        limit
+        //,skip
+      };
+      self.geoTweetHelper.find(query, function (err, geoTweets) {
+        cb(err, {geoTweets, limit, remaining});
+      });
     });
   }
 
@@ -257,32 +261,92 @@ module.exports = class {
       for (var tweetId in tweetsByHashtag[hashtag]) {
         tweetIds.push(tweetId);
       }
-      tweetsByHashtagArray.push({hashtag, geo_tweet_ids: tweetIds});
+      tweetsByHashtagArray.push({
+        hashtag,
+        geo_tweet_ids: tweetIds,
+        geo_tweet_id_count: tweetIds.length
+      });
     }
-    cb(null, tweetsByHashtagArray);
+    cb(null, {tweetsByHashtag, tweetsByHashtagArray});
   }
 
   post_findOrCreateHashtagIndices(options, cb) {
     var self = this;
     var tweetsByHashtagArray = options.tweetsByHashtagArray;
+    var tweetsByHashtag = options.tweetsByHashtag;
     var queries = tweetsByHashtagArray.map(function (x) {
       return {where: {hashtag: x.hashtag}};
     });
     self.geoTweetHashtagIndexHelper.findOrCreateMany(queries, tweetsByHashtagArray, function (err, createResults) {
-      cb(null, createResults);
+      cb(null, {createResults, tweetsByHashtag});
     });
+  }
+
+  post_updateHashtagIndex(options, cb) {
+    var self = this;
+    var tweetIds = options.tweetIds;
+    var tweetsByHashtagArray = options.tweetsByHashtagArray;
+    async.each(tweetIds,
+      function (tweetId, cb) {
+        var foundTweetId = false;
+        for (var i = 0; i < tweetsByHashtagArray.geo_tweet_ids.length; ++i) {
+          if (tweetId === tweetsByHashtagArray.geo_tweet_ids[i]) {
+            foundTweetId = true;
+            break;
+          }
+        }
+        if (foundTweetId) {
+          cb(null);
+          return;
+        }
+        var geo_tweet_ids = [];
+        tweetsByHashtagArray.geo_tweet_ids.forEach(function (geo_tweet_id) {
+          geo_tweet_ids.push(geo_tweet_id);
+        });
+        if (geo_tweet_ids.length > 100) {
+          var hashtag = tweetsByHashtagArray.hashtag;
+          if (self.hashtagBlacklist.indexOf(hashtag) === -1) {
+            self.hashtagBlacklist.push(hashtag);
+            self.geoTweetHashtagIndexHelper.destroyAll({hashtag}, (err, result)=> {
+              log('Adding ' + hashtag + ' to blacklist');
+            });
+          }
+        }
+        //add tweet_id to this hashtags tweet_id array and update collection
+        geo_tweet_ids.push(tweetId);
+        self.geoTweetHashtagIndexHelper.updateAll({
+            hashtag: tweetsByHashtagArray.hashtag
+          }, {
+            geo_tweet_ids
+            , geo_tweet_id_count: geo_tweet_ids.length
+          },
+          function (err, results) {
+            if (err) {
+              log(err);
+            }
+            cb(null);
+          }
+        );
+      },
+      function (err) {
+        cb(null);
+      });
   }
 
   post_indexGeoTweetsByHashtag(options, cb) {
     var self = this;
+    var limit = 0;
+    var remaining = 0;
     async.waterfall(
       [
         function (cb) {
           self._callViaPost('getSomeUnprocessedGeoTweets',
             {
-              limit: 100
-            }, function (err, geoTweets) {
-              cb(err, geoTweets);
+              limit: 200
+            }, function (err, getGeoTweetsResults) {
+              limit = getGeoTweetsResults.limit;
+              remaining = getGeoTweetsResults.remaining;
+              cb(err, getGeoTweetsResults.geoTweets);
             });
         },
         function (geoTweets, cb) {
@@ -290,68 +354,44 @@ module.exports = class {
             {
               geoTweets,
               hashtagBlacklist: self.hashtagBlacklist
-            }, function (err, tweetsByHashtagArray) {
-              cb(err, tweetsByHashtagArray);
-            });
-        },
-        function (tweetsByHashtagArray, cb) {
-          self._callViaPost('findOrCreateHashtagIndices',
-            {
-              tweetsByHashtagArray
             }, function (err, createResults) {
               cb(err, createResults);
             });
         },
         function (createResults, cb) {
+          self._callViaPost('findOrCreateHashtagIndices',
+            {
+              tweetsByHashtag: createResults.tweetsByHashtag,
+              tweetsByHashtagArray: createResults.tweetsByHashtagArray
+            },
+            function (err, results) {
+              cb(err, results);
+            }
+          );
+        },
+        function (results, cb) {
+          var createResults = results.createResults;
+          var tweetsByHashtag = results.tweetsByHashtag;
           async.each(createResults,
             function (createResult, cb) {
-              if (createResult[1]) {
+              var tweetsByHashtagArray = createResult[0];
+              var hashtagIndexWasCreated = createResult[1];
+              if (hashtagIndexWasCreated) {
                 //record was created and not found
                 cb(null);
                 return;
               }
               //record was found and must be updated with new twitter ids
               var tweetIds = [];
-              for (var tweetId in tweetsByHashtag[createResult[0].hashtag]) {
+              for (var tweetId in tweetsByHashtag[tweetsByHashtagArray.hashtag]) {
                 tweetIds.push(tweetId);
               }
-              async.each(tweetIds,
-                function (tweetId, cb) {
-                  var foundTweetId = false;
-                  for (var i = 0; i < createResult[0].geo_tweet_ids.length; ++i) {
-                    if (tweetId === createResult[0].geo_tweet_ids[i]) {
-                      foundTweetId = true;
-                      break;
-                    }
-                  }
-                  if (foundTweetId) {
-                    cb(null);
-                    return;
-                  }
-                  var geo_tweet_ids = [];
-                  createResult[0].geo_tweet_ids.forEach(function (geo_tweet_id) {
-                    geo_tweet_ids.push(geo_tweet_id);
-                  });
-                  if (geo_tweet_ids.length > 100) {
-                    var hashtag = createResult[0].hashtag;
-                    if (self.hashtagBlacklist.indexOf(hashtag) === -1) {
-                      self.hashtagBlacklist.push(hashtag);
-                      self.geoTweetHashtagIndexHelper.destroyAll({hashtag}, (err, result)=> {
-                        log('Adding ' + hashtag + ' to blacklist');
-                      });
-                    }
-                  }
-                  geo_tweet_ids.push(tweetId);
-                  createResult[0].updateAttributes({
-                    geo_tweet_ids
-                    , geo_tweet_id_count: geo_tweet_ids.length
-                  }, function (err, result) {
-                    //log(result);
-                    cb(err);
-                  });
-                },
-                function (err) {
-                  cb(null);
+              self._callViaPost('updateHashtagIndex',
+                {
+                  tweetIds
+                  , tweetsByHashtagArray
+                }, function (err, updateResults) {
+                  cb(err, updateResults);
                 });
             },
             function (err) {
@@ -359,7 +399,11 @@ module.exports = class {
             });
         }
       ], function (err, results) {
-        cb(err, results);
+        cb(err, {
+          msg: 'Indexed GeoTweets',
+          limit,
+          remaining
+        });
       });
   }
 
@@ -569,7 +613,7 @@ module.exports = class {
 
   _callViaPost(restMethod, options, cb) {
     if (!this.restCallTaskQueues[restMethod]) {
-      this.restCallTaskQueues[restMethod] = async.queue(this._callViaReST.bind(this), 8);
+      this.restCallTaskQueues[restMethod] = async.queue(this._callViaReST.bind(this), 16);
     }
     options.restMethod = restMethod;
     options.cb = cb;
