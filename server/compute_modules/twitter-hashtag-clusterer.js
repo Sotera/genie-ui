@@ -288,14 +288,7 @@ module.exports = class {
     var tweetsByHashtagArray = options.tweetsByHashtagArray;
     async.each(tweetIds,
       function (tweetId, cb) {
-        var foundTweetId = false;
-        for (var i = 0; i < tweetsByHashtagArray.geo_tweet_ids.length; ++i) {
-          if (tweetId === tweetsByHashtagArray.geo_tweet_ids[i]) {
-            foundTweetId = true;
-            break;
-          }
-        }
-        if (foundTweetId) {
+        if(tweetsByHashtagArray.geo_tweet_ids.indexOf(tweetId) !== -1){
           cb(null);
           return;
         }
@@ -613,7 +606,7 @@ module.exports = class {
 
   _callViaPost(restMethod, options, cb) {
     if (!this.restCallTaskQueues[restMethod]) {
-      this.restCallTaskQueues[restMethod] = async.queue(this._callViaReST.bind(this), 16);
+      this.restCallTaskQueues[restMethod] = async.queue(this._callViaReST.bind(this), 4);
     }
     options.restMethod = restMethod;
     options.cb = cb;
