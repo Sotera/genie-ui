@@ -196,10 +196,11 @@ module.exports = class {
               });
             });
           });
+          cb(null);
         }
       ],
       function (err, results) {
-        var r = results;
+        cb(err, {msg: 'Finished Clustering'});
       }
     );
   }
