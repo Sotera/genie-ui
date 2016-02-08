@@ -79,5 +79,9 @@
   "EventsSourceBase": {
     "dataSource": "db",
     "public": false
+  },
+  "GeoTweetHashtagIndex": {
+    "dataSource": "db",
+    "public": true
   }
 }

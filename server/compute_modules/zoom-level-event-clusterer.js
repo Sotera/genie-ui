@@ -224,7 +224,7 @@ module.exports = class {
       var clusters = [];
       kmeanClusters.forEach(function (kmeanCluster) {
         var events = [];
-        var weight  = 0;
+        var weight = 0;
         kmeanCluster.clusterInd.forEach(function (idx) {
           events.push({
             lat: vectorToCluster[idx].lat,

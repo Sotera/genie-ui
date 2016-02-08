@@ -1,14 +1,14 @@
 'use strict';
 var log = require('debug')('compute_modules:twitter-hashtag-clusterer');
+var now = require('performance-now');
 var Twitter = require('twitter');
 var async = require('async');
+var request = require('request');
 var moment = require('moment');
 var loopback = require('loopback');
 var clustering = require('density-clustering');
 var LoopbackModelHelper = require('../util/loopback-model-helper');
-var ScoreRecord = require('../compute_modules/geo-tweet-score-record');
 var Random = require('random-js');
-var random = new Random(Random.engines.mt19937().seed(0xc01dbeef));
 var ensureStringArray = require('../util/ensure-string-array');
 
 var twitterKeyFilename = require('path').join(__dirname, '../../.twitter-keys.json');
@@ -16,228 +16,388 @@ var twitterKeys = JSON.parse(require('fs').readFileSync(twitterKeyFilename, 'utf
 var twitterKeyIdx = 0;
 var inUseTwitterStreams = {};
 
+const random = new Random(Random.engines.mt19937().autoSeed());
+const dbscan = new clustering.DBSCAN();
 
 module.exports = class {
   constructor(app) {
     this.app = app;
+    this.hashtagBlacklist = [];
     this.geoTweetHelper = new LoopbackModelHelper('GeoTweet');
     this.geoTwitterScrape = new LoopbackModelHelper('GeoTwitterScrape');
     this.scoredGeoTweetHelper = new LoopbackModelHelper('ScoredGeoTweet');
+    this.geoTweetHashtagIndexHelper = new LoopbackModelHelper('GeoTweetHashtagIndex');
+    this.hashtagEventsSourceHelper = new LoopbackModelHelper('HashtagEventsSource');
+    this.restCallTaskQueues = {
+      apiName: 'TwitterHashtagClusterer'
+    }
   }
 
-  post_clusterScoredRecords(options, cb) {
+  post_clusterHashtags(options, cb) {
+    const millisecondsToMinutes = 1 / (60 * 1000);
     options = options || {};
-    apiCheck.throw([apiCheck.object, apiCheck.func], arguments);
+    var minTweetCount = options.minTweetCount || 2;
+    var minUniqueUsers = options.minUniqueUsers || 3;
+    var dbscanTimeEpsilonMinutes = options.dbscanTimeEpsilonMinutes || 60;
+    var dbscanTimeMinMembersInCluster = options.dbscanTimeMinMembersInCluster || 5;
+    var dbscanGeoEpsilonMeters = options.dbscanGeoEpsilonMeters || 2000;
+    var dbscanGeoMinMembersInCluster = options.dbscanGeoMinMembersInCluster || 5;
+
+    var self = this;
     async.waterfall(
       [
-        function getScoredRecordCount(cb) {
-          scoredGeoTweetHelper.count(function (err, count) {
-            cb(err, count);
+        function getHashtagIndexWithEnoughTweets(cb) {
+          self.geoTweetHashtagIndexHelper.find({where: {geo_tweet_id_count: {gt: minTweetCount}}}, function (err, hashtagIndices) {
+            cb(null, hashtagIndices);
           });
         },
-        function getClusterTimeWindow(count, cb) {
-          try {
-            options.count = count;
-            options.blackList = options.blackList || [];
-            options.dbscanEpsilonMeters = options.dbscanEpsilonMeters || 500;
-            options.dbscanMinMembersInCluster = options.dbscanMinMembersInCluster || 5;
-            //See if caller provided us an end date
-            /*              options.startDate = '2016-01-04T20:06:00.000Z';
-             options.endDate = '2016-01-05T20:06:00.000Z';
-             options.clusteringWindowMinutes = 4 * 60;*/
-            options.minTweetsToCluster = options.minTweetsToCluster || 5;
-            options.minTweetsToCluster = (options.minTweetsToCluster < 3)
-              ? 3
-              : (options.minTweetsToCluster > 10)
-              ? 10
-              : options.minTweetsToCluster;
-            options._filterClusteringWindowMinutes = options.clusteringWindowMinutes || 8 * 60;
-            options._filterClusteringWindowMinutes = (options._filterClusteringWindowMinutes < 60)
-              ? 60
-              : (options._filterClusteringWindowMinutes > (8 * 60))
-              ? (8 * 60)
-              : options._filterClusteringWindowMinutes;
-
-            options._filterStartDate = (isNaN(Date.parse(options.startDate)))
-              ? null
-              : moment(Date.parse(options.startDate));
-
-            options._filterEndDate = (isNaN(Date.parse(options.endDate)))
-              ? null
-              : moment(Date.parse(options.endDate));
-          } catch (err) {
-            options._filterStartDate = options._filterEndDate = null;
-          }
-          //If we can't get enough info from user about clustering time window then get latest
-          //date from data and go back _filterClusteringWindowMinutes to create window
-          if (options._filterStartDate && options._filterEndDate) {
-            cb(null, options);
-          } else if (!options._filterStartDate && !options._filterEndDate) {
-            scoredGeoTweetHelper.find(
-              function (err, timeWindowedScoredGeoTweets) {
-                var minDate = new Date();
-                var maxDate = new Date('1900-01-01');
-                timeWindowedScoredGeoTweets.forEach(function (tweet) {
-                  var postDate = new Date(tweet.postDate);
-                  minDate = (postDate < minDate) ? postDate : minDate;
-                  maxDate = (postDate > maxDate) ? postDate : maxDate;
+        function clusterHashtagIndicesToTimeClusters(hashtagIndices, cb) {
+          async.mapSeries(hashtagIndices,
+            function (hashtagIndex, cb) {
+              var geo_tweet_ids = hashtagIndex.geo_tweet_ids;
+              self.geoTweetHelper.find({
+                where: {tweet_id: {inq: geo_tweet_ids}},
+                fields: {post_date: true, username: true, tweet_id: true, lat: true, lng: true}
+              }, function (err, geoTweets) {
+                var timeDataToCluster = geoTweets.map(function (geoTweet) {
+                  return [geoTweet.post_date.valueOf() * millisecondsToMinutes, 0];
                 });
-                options._filterEndDate = moment(maxDate);
-                options._filterStartDate = moment(maxDate);
-                options._filterStartDate.subtract(options._filterClusteringWindowMinutes, 'minutes');
-                cb(null, options);
-              }
-            );
-          } else if (options._filterStartDate) {
-            options._filterEndDate = moment(options._filterStartDate);
-            options._filterEndDate.add(options._filterClusteringWindowMinutes, 'minutes');
-            cb(null, options);
-          } else if (options._filterEndDate) {
-            options._filterStartDate = moment(options._filterEndDate);
-            options._filterEndDate.subtract(options._filterClusteringWindowMinutes, 'minutes');
-            cb(null, options);
-          }
-        },
-        function (options, cb) {
-          scoredGeoTweetHelper.find({
-              where: {
-                and: [
-                  {postDate: {gte: options._filterStartDate}},
-                  {postDate: {lte: options._filterEndDate}}
-                ]
-              },
-              limit: options.count
+                var timeClusters = dbscan.run(
+                  timeDataToCluster,
+                  dbscanTimeEpsilonMinutes,
+                  dbscanTimeMinMembersInCluster,
+                  function (p, q) {
+                    return Math.abs(p[0] - q[0]);
+                  });
+                var timeGeoTweetClusters = [];
+                timeClusters.forEach(function (timeCluster) {
+                  timeGeoTweetClusters.push({
+                    hashtag: hashtagIndex.hashtag,
+                    geoTweets: timeCluster.map(function (tweetIdx) {
+                      return geoTweets[tweetIdx];
+                    })
+                  })
+                  ;
+                });
+                cb(null, timeGeoTweetClusters);
+              });
             },
-            function (err, timeWindowedScoredGeoTweets) {
-              cb(null, options, timeWindowedScoredGeoTweets);
+            function (err, results) {
+              var timeClusters = [];
+              results.forEach(function (result) {
+                result.forEach(function (timeCluster) {
+                  timeClusters.push(timeCluster);
+                })
+              })
+              cb(err, timeClusters);
             });
         },
-        function (options, timeWindowedScoredGeoTweets, cb) {
-          var geoTweetBuckets = {};
-          timeWindowedScoredGeoTweets.forEach(function (sr) {
-            var tagArray = sr.tags.split(',');
-            tagArray.forEach(function (tagText) {
-              if (options.blackList.indexOf(tagText) != -1) {
-                return;
-              }
-              if (geoTweetBuckets[tagText]) {
-                geoTweetBuckets[tagText].push(sr);
-              } else {
-                geoTweetBuckets[tagText] = [sr];
-              }
-            });
-          });
-          cb(null, options, geoTweetBuckets);
-        },
-        function (options, geoTweetBuckets, cb) {
+        function clusterTimeClustersToGeoClusters(timeClusters, cb) {
           var loc0 = new loopback.GeoPoint({lat: 0, lng: 0});
           var loc1 = new loopback.GeoPoint({lat: 0, lng: 0});
-          for (var geoTweetBucket in geoTweetBuckets) {
-            var geoTweetArray = geoTweetBuckets[geoTweetBucket];
-            var dataToCluster = geoTweetArray.map(function (geoTweet) {
+          var eventSourceClusters = [];
+          //Use empirical constant 1.1e-5 to quickly filter large distances
+          var sqrtQuickDistanceExclude = (dbscanGeoEpsilonMeters) * 1.1e-5;
+          var quickDistanceExclude = 1.1 * (sqrtQuickDistanceExclude * sqrtQuickDistanceExclude);
+          timeClusters.forEach(function (timeCluster) {
+            var geoDataToCluster = timeCluster.geoTweets.map(function (geoTweet) {
               return [geoTweet.lng, geoTweet.lat];
             });
-            var dbscan = new clustering.DBSCAN();
-            geoTweetArray.clusters = dbscan.run(
-              dataToCluster,
-              options.dbscanEpsilonMeters,
-              options.dbscanMinMembersInCluster,
+            var geoClusters = dbscan.run(
+              geoDataToCluster,
+              dbscanGeoEpsilonMeters,
+              dbscanGeoMinMembersInCluster,
               function (p, q) {
                 if (p.length != 2 || q.length != 2) {
                   return Number.MAX_VALUE;
                 }
                 //Quick look to exclude very far away
-                /*                p = [-97,30.99];
-                 q = [-96.99,31];*/
-                var quickDist = (((p[1] - q[1]) * (p[1] - q[1])) + ((p[0] - q[0]) * (p[0] - q[0])));
-                if (quickDist > 0.001) {
+                var delX = (p[1] - q[1]);
+                var delY = (p[0] - q[0]);
+                var quickDist = ((delY * delY) + (delX * delX));
+                if (quickDist > quickDistanceExclude) {
                   return Number.MAX_VALUE;
                 }
                 loc0.lat = p[1];
                 loc0.lng = p[0];
                 loc1.lat = q[1];
                 loc1.lng = q[0];
+                //Use great circle distance for more accuracy
                 var distanceMeters = loopback.GeoPoint.distanceBetween(loc0, loc1, {type: 'meters'});
                 return distanceMeters;
               });
-          }
-          cb(null, options, geoTweetBuckets);
+            if (!geoClusters.length) {
+              return;
+            }
+            var clustersOfTweets = [];
+            geoClusters.forEach(function (geoCluster) {
+              clustersOfTweets.push(geoCluster.map(function (idx) {
+                return timeCluster.geoTweets[idx];
+              }));
+            });
+            eventSourceClusters.push({hashtag: timeCluster.hashtag, clustersOfTweets})
+          });
+          cb(null, eventSourceClusters);
         },
-        function (options, geoTweetBuckets, cb) {
-          for (var geoTweetBucket in geoTweetBuckets) {
-            var geoTweetArray = geoTweetBuckets[geoTweetBucket];
-            geoTweetArray = geoTweetBuckets[geoTweetBucket];
-          }
-          cb();
+        function cullTweetClustersWithoutEnoughUniqueUsers(eventSourceClusters, cb) {
+          eventSourceClusters.forEach(function (eventSourceCluster) {
+            eventSourceCluster.clustersOfTweets =
+              eventSourceCluster.clustersOfTweets.filter(function (clusterOfTweets) {
+                var userSet = {};
+                clusterOfTweets.forEach(function (tweet) {
+                  //We may want to know number of tweets per user later
+                  if (!userSet[tweet.username]) {
+                    userSet[tweet.username] = 0;
+                  }
+                  ++userSet[tweet.username];
+                });
+                var uniqueUserCount = Object.keys(userSet).length;
+                var retVal = (uniqueUserCount >= minUniqueUsers);
+                if (retVal) {
+                  clusterOfTweets.uniqueUserCount = uniqueUserCount;
+                }
+                return retVal;
+              });
+          });
+          //Filter our eventSourceClusters with no clusters of tweets
+          cb(null, eventSourceClusters.filter(function (eventSourceCluster) {
+            return eventSourceCluster.clustersOfTweets.length != 0;
+          }));
+        },
+        function updateHashtagEventSourceCollection(eventSourceClusters, cb) {
+          eventSourceClusters.forEach(function (eventSourceCluster) {
+            var hashtag = eventSourceCluster.hashtag;
+            eventSourceCluster.clustersOfTweets.forEach(function (clusterOfTweets) {
+              var numPosts = clusterOfTweets.length;
+              var reduceResult = clusterOfTweets.reduce(function (prev, curr, idx) {
+                return {
+                  lat: prev.lat + curr.lat,
+                  lng: prev.lng + curr.lng,
+                  post_date: prev.post_date + curr.post_date.getTime()
+                };
+              }, {lat: 0, lng: 0, post_date: 0});
+              var lat = reduceResult.lat / numPosts;
+              var lng = reduceResult.lng / numPosts;
+              var post_date = reduceResult.post_date / numPosts;
+              //Construct EventsSource object to write to collection
+              var newHashtagEventsSource = {
+                event_id: random.uuid4().toString(),
+                unique_user_count: clusterOfTweets.uniqueUserCount,
+                num_posts: numPosts,
+                event_source: 'hashtag',
+                post_date: new Date(post_date),
+                indexed_date: new Date(),
+                hashtag,
+                lat,
+                lng
+              };
+              self.hashtagEventsSourceHelper.create(newHashtagEventsSource, function (err, result) {
+                var r = result;
+              });
+            });
+          });
         }
       ],
       function (err, results) {
-        var e = err;
+        var r = results;
+      }
+    );
+  }
+
+  post_getSomeUnprocessedGeoTweets(options, cb) {
+    var self = this;
+    var limit = options.limit || 32;
+    //var skip = options.skip || 0;
+
+    self.geoTweetHelper.count({hashtag_indexed: false}, function (err, count) {
+      var remaining = count - limit;
+      var query = {
+        where: {
+          hashtag_indexed: false
+        },
+        fields: {
+          hashtags: true,
+          tweet_id: true
+        },
+        limit
+        //,skip
+      };
+      self.geoTweetHelper.find(query, function (err, geoTweets) {
+        cb(err, {geoTweets, limit, remaining});
+      });
+    });
+  }
+
+  post_createTweetsByHashtagAndMarkGeoTweetAsIndexed(options, cb) {
+    var self = this;
+    var geoTweets = options.geoTweets;
+    var hashtagBlacklist = options.hashtagBlacklist;
+    var tweetsByHashtag = {};
+    geoTweets.forEach(function (geoTweet) {
+      var tweet_id = geoTweet.tweet_id;
+      self.geoTweetHelper.updateAll(
+        {tweet_id},
+        {hashtag_indexed: true},
+        (err)=> {
+          if (err) {
+            log(err);
+          }
+        });
+      geoTweet.hashtags.forEach(function (hashtag) {
+        if (hashtagBlacklist.indexOf(hashtag) !== -1) {
+          return;
+        }
+        if (!tweetsByHashtag[hashtag]) {
+          tweetsByHashtag[hashtag] = {};
+        }
+        if (!tweetsByHashtag[hashtag][tweet_id]) {
+          tweetsByHashtag[hashtag][tweet_id] = null;
+        }
+      });
+    });
+    var tweetsByHashtagArray = [];
+    for (var hashtag in tweetsByHashtag) {
+      var tweetIds = [];
+      for (var tweetId in tweetsByHashtag[hashtag]) {
+        tweetIds.push(tweetId);
+      }
+      tweetsByHashtagArray.push({
+        hashtag,
+        geo_tweet_ids: tweetIds,
+        geo_tweet_id_count: tweetIds.length
+      });
+    }
+    cb(null, {tweetsByHashtag, tweetsByHashtagArray});
+  }
+
+  post_findOrCreateHashtagIndices(options, cb) {
+    var self = this;
+    var tweetsByHashtagArray = options.tweetsByHashtagArray;
+    var tweetsByHashtag = options.tweetsByHashtag;
+    var queries = tweetsByHashtagArray.map(function (x) {
+      return {where: {hashtag: x.hashtag}};
+    });
+    self.geoTweetHashtagIndexHelper.findOrCreateMany(queries, tweetsByHashtagArray, function (err, createResults) {
+      cb(null, {createResults, tweetsByHashtag});
+    });
+  }
+
+  post_updateHashtagIndex(options, cb) {
+    var self = this;
+    var tweetIds = options.tweetIds;
+    var tweetsByHashtagArray = options.tweetsByHashtagArray;
+    async.each(tweetIds,
+      function (tweetId, cb) {
+        if(tweetsByHashtagArray.geo_tweet_ids.indexOf(tweetId) !== -1){
+          cb(null);
+          return;
+        }
+        var geo_tweet_ids = [];
+        tweetsByHashtagArray.geo_tweet_ids.forEach(function (geo_tweet_id) {
+          geo_tweet_ids.push(geo_tweet_id);
+        });
+        if (geo_tweet_ids.length > 100) {
+          var hashtag = tweetsByHashtagArray.hashtag;
+          if (self.hashtagBlacklist.indexOf(hashtag) === -1) {
+            self.hashtagBlacklist.push(hashtag);
+            self.geoTweetHashtagIndexHelper.destroyAll({hashtag}, (err, result)=> {
+              log('Adding ' + hashtag + ' to blacklist');
+            });
+          }
+        }
+        //add tweet_id to this hashtags tweet_id array and update collection
+        geo_tweet_ids.push(tweetId);
+        self.geoTweetHashtagIndexHelper.updateAll({
+            hashtag: tweetsByHashtagArray.hashtag
+          }, {
+            geo_tweet_ids
+            , geo_tweet_id_count: geo_tweet_ids.length
+          },
+          function (err, results) {
+            if (err) {
+              log(err);
+            }
+            cb(null);
+          }
+        );
+      },
+      function (err) {
+        cb(null);
       });
   }
 
-  post_processNewTweets(options, cb) {
-    options = options || {};
-    apiCheck.throw([apiCheck.object, apiCheck.func], arguments);
+  post_indexGeoTweetsByHashtag(options, cb) {
+    var self = this;
+    var limit = 0;
+    var remaining = 0;
     async.waterfall(
       [
-        //Doing it all in memory for now. Later we may add ES query result paging, etc.
-        //(but probably not)
-        function getGeoTweetCount(cb) {
-          //Get number of GeoTweets so we can set an ES query limit. If we don't set one we'll
-          //get 10 documents returned. Note that {where: {scored: false}} is ignored by the ES
-          //Loopback data connector. 'count' will always return the total number of documents.
-
-          //geoTweetHelper.count({where: {scored: false}}, function (err, count) {
-          geoTweetHelper.count(function (err, count) {
-            cb(err, count);
-          });
+        function (cb) {
+          self._callViaPost('getSomeUnprocessedGeoTweets',
+            {
+              limit: 200
+            }, function (err, getGeoTweetsResults) {
+              limit = getGeoTweetsResults.limit;
+              remaining = getGeoTweetsResults.remaining;
+              cb(err, getGeoTweetsResults.geoTweets);
+            });
         },
-        function getGeoTweets(count, cb) {
-          //Retrieve all the unscored GeoTweets in one query (no paging)
-          //geoTweetHelper.find({where: {scored: false}, limit: count}, function (err, geoTweets) {
-          geoTweetHelper.find({limit: count}, function (err, geoTweets) {
-            cb(err, geoTweets)
-          });
+        function (geoTweets, cb) {
+          self._callViaPost('createTweetsByHashtagAndMarkGeoTweetAsIndexed',
+            {
+              geoTweets,
+              hashtagBlacklist: self.hashtagBlacklist
+            }, function (err, createResults) {
+              cb(err, createResults);
+            });
         },
-        function convertGeoTweetsToScoreRecords(geoTweets, cb) {
-          //Map the fields from the full tweet object we need to do clustering and put them in a
-          //nice array
-          var scoreRecords = [];
-          geoTweets.forEach(function (geoTweet) {
-            try {
-              if (!geoTweet) {
-                throw new Error('<null> GeoTweet!');
-              }
-              var fullTweet = JSON.parse(geoTweet.full_tweet);
-              //Now shall we score the tweet
-              //Set GeoTweet instance to scored so we don't look at it again
-              /*                geoTweet.updateAttribute('scored', true, function (err, o) {
-               var e = err;
-               });*/
-              var scoreRecord = new ScoreRecord(full_tweet);
-              scoreRecords.push(scoreRecord);
-            } catch (err) {
-              log(err);
+        function (createResults, cb) {
+          self._callViaPost('findOrCreateHashtagIndices',
+            {
+              tweetsByHashtag: createResults.tweetsByHashtag,
+              tweetsByHashtagArray: createResults.tweetsByHashtagArray
+            },
+            function (err, results) {
+              cb(err, results);
             }
-          });
-          cb(null, scoreRecords);
+          );
         },
-        function putScoreRecordsIntoDatabase(scoreRecords, cb) {
-          //Take the nice array of ScoredGeoTweets and slam them in to ES. Check twitterId so we don't
-          //have any repeats (pretty unlikely but pretty easy to check so, why not?)
-          var queries = scoreRecords.map(function (sr) {
-            return {where: {twitterId: sr.id}};
-          });
-          scoredGeoTweetHelper.findOrCreateMany(queries, scoreRecords, function (err, newScoredRecords) {
-            cb(null);
-          });
+        function (results, cb) {
+          var createResults = results.createResults;
+          var tweetsByHashtag = results.tweetsByHashtag;
+          async.each(createResults,
+            function (createResult, cb) {
+              var tweetsByHashtagArray = createResult[0];
+              var hashtagIndexWasCreated = createResult[1];
+              if (hashtagIndexWasCreated) {
+                //record was created and not found
+                cb(null);
+                return;
+              }
+              //record was found and must be updated with new twitter ids
+              var tweetIds = [];
+              for (var tweetId in tweetsByHashtag[tweetsByHashtagArray.hashtag]) {
+                tweetIds.push(tweetId);
+              }
+              self._callViaPost('updateHashtagIndex',
+                {
+                  tweetIds
+                  , tweetsByHashtagArray
+                }, function (err, updateResults) {
+                  cb(err, updateResults);
+                });
+            },
+            function (err) {
+              cb(null, results);
+            });
         }
-      ],
-      function (err, results) {
-        var e = err;
-      }
-    );
+      ], function (err, results) {
+        cb(err, {
+          msg: 'Indexed GeoTweets',
+          limit,
+          remaining
+        });
+      });
   }
 
   post_convertTweetToGeoTweet(options, cb) {
@@ -280,18 +440,20 @@ module.exports = class {
         //log('We have coordinates! CenterPoint: [' + tweet.genieLoc.lng + ',' + tweet.genieLoc.lat + ']');
       }
       //Let's lowercase those hashtags (for string comparisons later)!
-      if (tweet.entities && tweet.entities.hashtags) {
-        for (var i = 0; i < tweet.entities.hashtags.length; ++i) {
-          tweet.entities.hashtags[i].text = tweet.entities.hashtags[i].text.toLowerCase();
-        }
+      var hashtags = [];
+      for (var i = 0; i < tweet.entities.hashtags.length; ++i) {
+        var ht = tweet.entities.hashtags;
+        hashtags.push(ht[i].text = ht[i].text.toLowerCase());
       }
       cb(null,
         {
-          lat: tweet.genieLoc.lat,
-          lng: tweet.genieLoc.lng,
-          scored: false,
-          tweet_id: tweet.id_str,
-          full_tweet: JSON.stringify(tweet)
+          lat: tweet.genieLoc.lat
+          , lng: tweet.genieLoc.lng
+          , post_date: new Date(tweet.created_at)
+          , tweet_id: tweet.id_str
+          , username: tweet.user.screen_name
+          , full_tweet: JSON.stringify(tweet)
+          , hashtags
         });
     } catch (err) {
       log(err);
@@ -299,20 +461,69 @@ module.exports = class {
     }
   }
 
-  post_stopTwitterScrape(options, cb) {
-    try {
-      options = options || {};
-      cb = cb || function (err) {
+  post_translateFileToGeoTweet(options, cb) {
+    var path = options.path;
+    var JSONStream = require('JSONStream');
+    var es = require('event-stream');
+    var fs = require('fs');
+    var self = this;
+    fs.createReadStream(path, 'utf8')
+      .pipe(JSONStream.parse('*'))
+      .pipe(es.map(function (tweet, cb) {
+        self._callViaPost('convertTweetToGeoTweet',
+          {
+            tweet,
+            onlyWithLocation: true,
+            onlyWithHashtags: true
+          }, function (err, geoTweet) {
+            cb(err, geoTweet);
+          });
+      }))
+      .on('data', function (geoTweet) {
+        self.geoTweetHelper.findOrCreateEnqueue({where: {tweet_id: geoTweet.tweet_id}}, geoTweet);
+      })
+      .on('end', function () {
+        self.geoTweetHelper.flushQueues(function (err, results) {
           if (err) {
             log(err);
           }
-        };
-      var twitterStream = inUseTwitterStreams[options.scraperId.id];
-      twitterStream.destroy();
-      cb(null, null);
-    } catch (err) {
-      log(err);
-    }
+          if (results) {
+            log('Wrote: ' + results.length + ' GeoTweets');
+          }
+          cb(err, results);
+        });
+      });
+  }
+
+  post_loadTestTweetFiles(options, cb) {
+    var foldersToSearch = ensureStringArray(options.foldersToSearch);
+    var globExpression = options.globExpression || '*';
+    var glob = require('glob-fs')({gitignore: true});
+    var self = this;
+    foldersToSearch.forEach(function (folderToSearch) {
+      //In the spirit of scalability let's stream the globbed filenames
+      var fileCount = 0;
+      glob.readdirStream(globExpression, {cwd: folderToSearch})
+        .on('data', function (file) {
+          log('Queuing: ' + file.name + '[' + (++fileCount) + ']');
+          self._callViaPost('translateFileToGeoTweet',
+            {
+              path: file.path
+            }, function (err, results) {
+              log('Translated: ' + file.name);
+              if (err) {
+                log(err);
+              }
+            });
+        })
+        .on('error', function (err) {
+          log(err);
+          cb(err, {fileCount});
+        })
+        .on('end', function () {
+          cb(null, {fileCount});
+        });
+    });
   }
 
   post_startTwitterScrape(options, cb) {
@@ -370,79 +581,55 @@ module.exports = class {
     }
   }
 
-  post_restTranslateFileToGeoTweet(options, cb) {
-    var path = options.path;
-    var JSONStream = require('JSONStream');
-    var es = require('event-stream');
-    var fs = require('fs');
-    var self = this;
-    fs.createReadStream(path, 'utf8')
-      .pipe(JSONStream.parse('*'))
-      .pipe(es.map(function (tweet, cb) {
-        self.post_convertTweetToGeoTweet({
-          tweet,
-          onlyWithLocation: true,
-          onlyWithHashtags: true
-        }, function (err, geoTweet) {
-          cb(err, geoTweet);
-        });
-      }))
-      .on('data', function (geoTweet) {
-        self.geoTweetHelper.findOrCreateEnqueue({where: {tweet_id: geoTweet.tweet_id}}, geoTweet);
-      })
-      .on('end', function () {
-        self.geoTweetHelper.flushQueues(function (err, results) {
+  post_stopTwitterScrape(options, cb) {
+    try {
+      options = options || {};
+      cb = cb || function (err) {
           if (err) {
             log(err);
           }
-          cb(err, results);
-        });
-      });
+        };
+      var twitterStream = inUseTwitterStreams[options.scraperId.id];
+      twitterStream.destroy();
+      cb(null, null);
+    } catch (err) {
+      log(err);
+    }
   }
 
-  post_translateFileToGeoTweet(options, cb) {
-    var request = require('request');
+  get_resetGeoTweetHashtagIndexed(options, cb) {
+    var self = this;
+    self.geoTweetHelper.updateAll({hashtag_indexed: false}, function (err, result) {
+      cb(null, 'Reset hashtag_indexed');
+    });
+  }
+
+  _callViaPost(restMethod, options, cb) {
+    if (!this.restCallTaskQueues[restMethod]) {
+      this.restCallTaskQueues[restMethod] = async.queue(this._callViaReST.bind(this), 4);
+    }
+    options.restMethod = restMethod;
+    options.cb = cb;
+    this.restCallTaskQueues[restMethod].push(options, function (err) {
+      var e = err;
+    })
+  }
+
+  _callViaReST(options, taskCb) {
     var host = this.app.get('host');
     var port = this.app.get('port');
+    var apiName = options.apiName || 'TwitterHashtagClusterer';
+    var cb = options.cb || function () {
+      };
+    var restMethod = options.restMethod;
 
     request.post({
-      url: 'http://' + host + ':' + port + '/TwitterHashtagClusterer/restTranslateFileToGeoTweet',
+      url: 'http://' + host + ':' + port + '/' + apiName + '/' + restMethod,
       json: true,
       body: options
     }, function (err, response, body) {
       cb(err, body);
-    });
-  }
-
-  post_loadTestTweetFiles(options, cb) {
-    var foldersToSearch = ensureStringArray(options.foldersToSearch);
-    var globExpression = options.globExpression || '*';
-    var glob = require('glob-fs')({gitignore: true});
-    var self = this;
-    var taskQueue = async.queue(self.translateFileToGeoTweet.bind(self), 8);
-    foldersToSearch.forEach(function (folderToSearch) {
-      //In the spirit of scalability let's stream the globbed filenames
-      var fileCount = 0;
-      glob.readdirStream(globExpression, {cwd: folderToSearch})
-        .on('data', function (file) {
-          log('Queuing: ' + file.name + '[' + (++fileCount) + ']');
-          process.nextTick(()=> {
-            taskQueue.push({path: file.path}, function (err) {
-              if (err) {
-                log(err);
-                return;
-              }
-              log('Processed: ' + file.name);
-            });
-          });
-        })
-        .on('error', function (err) {
-          log(err);
-          cb(err, {fileCount});
-        })
-        .on('end', function () {
-          cb(null, {fileCount});
-        });
+      taskCb();
     });
   }
 

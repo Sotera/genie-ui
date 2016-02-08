@@ -1,0 +1,31 @@
+{
+  "name": "GeoTweetHashtagIndex",
+  "plural": "GeoTweetHashtagIndices",
+  "base": "PersistedModel",
+  "strict": "throw",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "hashtag": {
+      "type": "string",
+      "required": true
+    },
+    "geo_tweet_id_count": {
+      "type": "number",
+      "required": true,
+      "default": 0
+    },
+    "geo_tweet_ids": {
+      "type": [
+        "string"
+      ],
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
