@@ -35,8 +35,9 @@ module.exports = class {
         .apply(null, {length: 18})
         .map(Number.call, Number)
         .map(function (level) {
-          return level * 50;
+          return level * 1;
         });
+    //zoomLevelClusterCounts = Array(19).fill(8);
     var functionArray = [];
     for (var i = 0; i < totalIntervals; ++i) {
       var getEventsOptions = {
