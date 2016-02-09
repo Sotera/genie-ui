@@ -329,14 +329,14 @@ module.exports = class {
 
   post_indexGeoTweetsByHashtag(options, cb) {
     var self = this;
-    var limit = 0;
+    var limit = options.limit || 200;
     var remaining = 0;
     async.waterfall(
       [
         function (cb) {
           self._callViaPost('getSomeUnprocessedGeoTweets',
             {
-              limit: 200
+              limit
             }, function (err, getGeoTweetsResults) {
               limit = getGeoTweetsResults.limit;
               remaining = getGeoTweetsResults.remaining;
