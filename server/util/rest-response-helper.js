@@ -14,7 +14,9 @@ module.exports = class {
     } else if (result) {
       res.status(status || 200).end(this.toString(result));
     } else {
-      res.status(status || 200).end('SUCCESS: ' + (new Date()).toISOString());
+      res
+      .status(status || 200)
+      .end(stringify({success: (new Date()).toISOString()}), {space: 3});
     }
   }
 

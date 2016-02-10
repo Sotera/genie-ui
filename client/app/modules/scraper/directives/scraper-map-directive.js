@@ -9,7 +9,7 @@ angular.module('genie.scraper')
       styles: StylesService.dark,
       streetViewControl: false,
       mapTypeControl: false,
-      scrollwheel: false,
+      // scrollwheel: false,
       zoomControlOptions: {
         position: google.maps.ControlPosition.TOP_LEFT
       },

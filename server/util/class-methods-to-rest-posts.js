@@ -67,7 +67,9 @@ module.exports = class {
         ? req.query
         : {}
       fn.bind(self.classInstance)(options, function (err, result) {
-        res.setHeader('Content-Type', 'application/json');
+        if (!res.headersSent) {
+          res.setHeader('Content-Type', 'application/json');
+        }
         restResponseHelper.respond(err, res, result);
       });
     } catch (err) {

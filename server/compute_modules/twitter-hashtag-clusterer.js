@@ -24,7 +24,7 @@ module.exports = class {
     this.app = app;
     this.hashtagBlacklist = [];
     this.geoTweetHelper = new LoopbackModelHelper('GeoTweet');
-    this.geoTwitterScrape = new LoopbackModelHelper('GeoTwitterScrape');
+    this.geoTwitterScrapeHelper = new LoopbackModelHelper('GeoTwitterScrape');
     this.scoredGeoTweetHelper = new LoopbackModelHelper('ScoredGeoTweet');
     this.geoTweetHashtagIndexHelper = new LoopbackModelHelper('GeoTweetHashtagIndex');
     this.hashtagEventsSourceHelper = new LoopbackModelHelper('HashtagEventsSource');
@@ -404,42 +404,44 @@ module.exports = class {
   post_convertTweetToGeoTweet(options, cb) {
     try {
       var tweet = options.tweet;
+      var geo = tweet.geo;
       //Hashtags check is quicker so do it first
-      if (options.onlyWithHashtags &&
-        (!tweet.entities || !tweet.entities.hashtags || !tweet.entities.hashtags.length)) {
+      if (!(tweet.entities && tweet.entities.hashtags && tweet.entities.hashtags.length)) {
         log('No Hashtags');
-        cb(null, null);
+        cb();
         return;
       }
-      if (options.onlyWithLocation) {
-        if (tweet.geo) {
-          if (tweet.geo.type === 'Point') {
-            if (tweet.geo.coordinates && tweet.geo.coordinates.length == 2) {
-              tweet.genieLoc = {lng: tweet.geo.coordinates[1], lat: tweet.geo.coordinates[0]};
-            }
+      if (geo) {
+        if (geo.type === 'Point') {
+          if (geo.coordinates && geo.coordinates.length == 2) {
+            tweet.genieLoc = {lng: geo.coordinates[1], lat: geo.coordinates[0]};
           }
         }
-        if (!tweet.genieLoc && tweet.coordinates) {
-          tweet.genieLoc = {lng: tweet.coordinates[0], lat: tweet.coordinates[1]};
-        }
-        //Let's check the 'place' property
-        /*          if (!tweet.genieLoc && tweet.place && tweet.place.bounding_box && tweet.place.bounding_box.coordinates) {
-         var coords = tweet.place.bounding_box.coordinates;
-         if (coords instanceof Array) {
-         if (coords.length == 1 && coords[0] instanceof Array) {
-         var distanceInfo = this._diagonalDistanceOfBoundingBoxInMeters(coords[0]);
-         if (distanceInfo.distanceMeters < options.maxPlaceSizeMeters) {
-         tweet.genieLoc = {lng: distanceInfo.center.lng, lat: distanceInfo.center.lat};
-         }
-         }
-         }
-         }*/
-        if (!tweet.genieLoc) {
-          cb(null, null);
-          return;
-        }
-        //log('We have coordinates! CenterPoint: [' + tweet.genieLoc.lng + ',' + tweet.genieLoc.lat + ']');
       }
+      if (!tweet.genieLoc && tweet.coordinates) {
+        tweet.genieLoc = {lng: tweet.coordinates[0], lat: tweet.coordinates[1]};
+      }
+      // TODO: what to do when tweet has place.bounding_box.coordinates (polygon)?
+
+      //Let's check the 'place' property
+      /*          if (!tweet.genieLoc && tweet.place && tweet.place.bounding_box && tweet.place.bounding_box.coordinates) {
+       var coords = tweet.place.bounding_box.coordinates;
+       if (coords instanceof Array) {
+       if (coords.length == 1 && coords[0] instanceof Array) {
+       var distanceInfo = this._diagonalDistanceOfBoundingBoxInMeters(coords[0]);
+       if (distanceInfo.distanceMeters < options.maxPlaceSizeMeters) {
+       tweet.genieLoc = {lng: distanceInfo.center.lng, lat: distanceInfo.center.lat};
+       }
+       }
+       }
+       }*/
+      if (!tweet.genieLoc) {
+        cb();
+        return;
+      } else {
+        log(tweet);
+      }
+      //log('We have coordinates! CenterPoint: [' + tweet.genieLoc.lng + ',' + tweet.genieLoc.lat + ']');
       //Let's lowercase those hashtags (for string comparisons later)!
       var hashtags = [];
       for (var i = 0; i < tweet.entities.hashtags.length; ++i) {
@@ -529,10 +531,11 @@ module.exports = class {
 
   post_startTwitterScrape(options, cb) {
     var self = this;
-    var locations = options.boundingBox.lngWest.toFixed(4);
-    locations += ',' + options.boundingBox.latSouth.toFixed(4);
-    locations += ',' + options.boundingBox.lngEast.toFixed(4);
-    locations += ',' + options.boundingBox.latNorth.toFixed(4);
+    var boundingBox = options.boundingBox;
+    var locations = boundingBox.lngWest.toFixed(4);
+    locations += ',' + boundingBox.latSouth.toFixed(4);
+    locations += ',' + boundingBox.lngEast.toFixed(4);
+    locations += ',' + boundingBox.latNorth.toFixed(4);
     var twitterClientStreamOptions = {
       stall_warnings: true,
       locations
@@ -544,28 +547,48 @@ module.exports = class {
         inUseTwitterStreams[scraperId] = stream;
         stream.scraperId = scraperId;
         //Add record to GeoTwitterScrape to keep track of this scraper
-        geoTwitterScrape.create({
+        self.geoTwitterScrapeHelper.create({
           scraperId,
           scraperActive: true,
           timeStarted: new Date(),
           locations
-        }, function (err, geoTwitterScraper) {
+        }, function (err, scraper) {
           if (err) {
+            log(err);
             cb(err);
             return;
           }
-          cb(err, geoTwitterScraper);
+          cb(err, scraper);
           //Sign up for stream events we care about
           stream.on('data', function (tweet) {
-            var newTweetsExamined = (geoTwitterScraper.tweetsExamined || 0) + 1;
-            geoTwitterScraper.updateAttribute('tweetsExamined', newTweetsExamined, function (err, o) {
-              options.tweet = tweet;
-              self.post_convertTweetToGeoTweet(options);
+            log('got tweet...');
+            var newTweetsExamined = (scraper.tweetsExamined || 0) + 1;
+            scraper.updateAttribute('tweetsExamined', newTweetsExamined, function (err) {
+              if (err) {
+                log(err);
+                return;
+              }
+            });
+            options.tweet = tweet;
+            self.post_convertTweetToGeoTweet(options, function(err, convertedTweet) {
+              if (err) {
+                log(err);
+                return;
+              }
+              if (convertedTweet) {
+                self.geoTweetHelper.create(convertedTweet, function(err, geoTweet) {
+                  if (err) {
+                    log(err);
+                    return;
+                  }
+                  cb(geoTweet);
+                });
+              }
             });
           });
           stream.on('end', function () {
             var scraperId = this.scraperId;
-            geoTwitterScrape.findOne({where: {scraperId}}, function (err, geoTwitterScraper) {
+            self.geoTwitterScrapeHelper.findOne({where: {scraperId}}, function (err, scraper) {
               if (err) {
                 log(err);
                 return;
@@ -584,15 +607,14 @@ module.exports = class {
 
   post_stopTwitterScrape(options, cb) {
     try {
-      options = options || {};
-      cb = cb || function (err) {
-          if (err) {
-            log(err);
-          }
-        };
-      var twitterStream = inUseTwitterStreams[options.scraperId.id];
+      if (!options.scraperId) {
+        cb();
+        return;
+      }
+      var twitterStream = inUseTwitterStreams[options.scraperId];
       twitterStream.destroy();
-      cb(null, null);
+      log('twitter scrape stopped');
+      cb();
     } catch (err) {
       log(err);
     }

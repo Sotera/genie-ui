@@ -6,55 +6,87 @@ angular.module('genie.scraper')
 
   function link(scope, elem, attrs) {
     var map = scope.map;
-    var scrapeButton = document.createElement('div');
-    var twitterScrapeButton = document.createElement('div');
+    // var scrapeButton = document.createElement('div');
+    var startTwitBtn = document.createElement('div');
+    var stopTwitBtn = document.createElement('div');
+    var twitIcon = "<i class='fa fa-lg fa-fw fa-twitter'></i>";
+    var stopIcon = "<i class='fa fa-lg fa-fw fa-hand-stop-o'></i>";
     var controls = map.controls[google.maps.ControlPosition.TOP_RIGHT];
 
-    createButton(scrapeButton, { label: '▶', title: 'Start scrape' });
-    createButton(twitterScrapeButton, { label: '*', title: 'Add Twitter scrape' });
+    // createButton(scrapeButton, { label: '▶', title: 'Start scrape' });
+    createButton(startTwitBtn,
+      { label: twitIcon, title: 'Start Twitter scrape' }
+    );
 
-    twitterScrapeButton.addEventListener('click', function() {
-      // console.log(scope.scraperCoords)
+    createButton(stopTwitBtn,
+      { label: stopIcon, title: 'Stop Twitter scrapes' }
+    );
+
+    startTwitBtn.addEventListener('click', function() {
       var coords = scope.scraperCoords;
+      console.log(coords)
       if (coords && coords.length) {
-        $http.post('/startTwitterScrape',
+        $http.post('/TwitterHashtagClusterer/startTwitterScrape',
           {
-            coords: coords
-          })
-          .then(
-            function(res) {
-              console.log(res)
-            },
-            function(res) {
-              console.log(res)
+            boundingBox: {
+              lngWest: coords[1],
+              latSouth: coords[0],
+              lngEast: coords[3],
+              latNorth: coords[2]
             }
-          );
-      }
-    });
-    scrapeButton.addEventListener('click', function() {
-      // console.log(scope.scraperCoords)
-      var coords = scope.scraperCoords;
-      if (coords && coords.length) {
-        $http.post('/scrape',
-          {
-            coords: coords,
-            startDate: '2016010100',
-            endDate: '2016010300',
-            name: 'austin'
           })
           .then(
             function(res) {
-              console.log(res)
+              console.log(res);
+              scope.scraperId = res.data.scraperId;
             },
-            function(res) {
-              console.log(res)
+            function(err) {
+              console.error(err);
             }
           );
       }
     });
 
-    controls.push(scrapeButton);
-    controls.push(twitterScrapeButton);
+    stopTwitBtn.addEventListener('click', function() {
+      $http.post('/TwitterHashtagClusterer/stopTwitterScrape',
+        {
+          scraperId: scope.scraperId
+        })
+        .then(
+          function(res) {
+            console.log(res);
+            scope.scraperId = null;
+          },
+          function(err) {
+            console.error(err);
+          }
+        );
+    });
+    // scrapeButton.addEventListener('click', function() {
+    //   var coords = scope.scraperCoords;
+    //   console.log(coords)
+    //   if (coords && coords.length) {
+    //     $http.post('/scrape',
+    //       {
+    //         coords: coords,
+    //         startDate: '2016010100',
+    //         endDate: '2016010300',
+    //         name: 'austin'
+    //       })
+    //       .then(
+    //         function(res) {
+    //           console.log(res)
+    //         },
+    //         function(res) {
+    //           console.log(res)
+    //         }
+    //       );
+    //   }
+    // });
+
+    // controls.push(scrapeButton);
+    controls.push(stopTwitBtn);
+    controls.push(startTwitBtn);
   }
 
   function createButton(container, options) {

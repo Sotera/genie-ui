@@ -83,5 +83,9 @@
   "GeoTweetHashtagIndex": {
     "dataSource": "db",
     "public": true
+  },
+  "GeoTwitterScrape": {
+    "dataSource": "db",
+    "public": true
   }
 }
