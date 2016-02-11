@@ -22,10 +22,10 @@ angular.module('genie.scraper')
     map.setCenter(toronto);
 
     map.addListener('zoom_changed', function() {
-      var newZoom = map.getZoom();
-      console.log(newZoom, 'zoom');
-      scope.inputs.zoomLevel = newZoom;
-      scope.$apply();
+      // var newZoom = map.getZoom();
+      // console.log(newZoom, 'zoom');
+      // scope.inputs.zoomLevel = newZoom;
+      // scope.$apply();
     });
 
     resizeMap(map, elem);
@@ -37,7 +37,7 @@ angular.module('genie.scraper')
     var parent = $('#' + elem.parent()[0].id);
     var doResize = function doResize () {
       var parentMargins = parent.outerHeight(true) - parent.height();
-      var bottomHeight = 220;
+      var bottomHeight = 90;
       var height = $window.innerHeight - elem[0].offsetTop - parentMargins -
         bottomHeight;
       elem.css('height', height + 'px');
