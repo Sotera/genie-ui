@@ -18,8 +18,8 @@ angular.module('genie.scraper')
     var map = new google.maps.Map(elem[0], mapOptions);
 
     //TODO: what to use here?
-    var toronto = {lat: 43.7, lng: -79.4};
-    map.setCenter(toronto);
+    var center = {lat: 40.7, lng: -74.0};
+    map.setCenter(center);
 
     map.addListener('zoom_changed', function() {
       // var newZoom = map.getZoom();
