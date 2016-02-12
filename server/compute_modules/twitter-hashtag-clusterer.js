@@ -419,7 +419,11 @@ module.exports = class {
         }
       }
       if (!tweet.genieLoc && tweet.coordinates) {
-        tweet.genieLoc = {lng: tweet.coordinates[0], lat: tweet.coordinates[1]};
+        tweet.genieLoc = {lng: tweet.coordinates[1], lat: tweet.coordinates[0]};
+      }
+      if (!tweet.genieLoc && tweet.place && tweet.place.bounding_box.coordinates) {
+        var coords = tweet.place.bounding_box.coordinates[0][0]; // use the first one for now
+        tweet.genieLoc = {lng: coords[0], lat: coords[1]};
       }
       // TODO: what to do when tweet has place.bounding_box.coordinates (polygon)?
 
