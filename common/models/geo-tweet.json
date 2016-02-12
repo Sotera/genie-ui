@@ -1,7 +1,6 @@
 {
   "name": "GeoTweet",
   "base": "PersistedModel",
-  "strict": "throw",
   "idInjection": true,
   "options": {},
   "properties": {

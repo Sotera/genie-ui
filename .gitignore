@@ -9,6 +9,7 @@ dist/
 .twitter-keys.json
 # Will re-ignore this once flows are stored in database
 server/node-red/*.backup
+server/node-red/*_cred.json
 server/node-red/.config.json
 server/config.json
 server/datasources.json

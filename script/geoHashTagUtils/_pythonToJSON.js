@@ -1,5 +1,5 @@
-#!/usr/local/bin/node
-const folderName = '/home/jreeme/src/hashTagClustering/raw_tweet_data/';
+#!/usr/bin/env node
+const folderName = '/home/luke/apps/sotera/2016_raw_twitter/';
 var fs = require('fs');
 var path = require('path');
 var glob = require('glob-fs')({gitignore: true});
