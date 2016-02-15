@@ -13,8 +13,8 @@
 ```
 cp server/config.json.template server/config.json
 touch .twitter-keys.json # ask a friend!
-npm install -g strongloop bower
-npm install
+npm i -g strongloop bower
+npm i
 # only if models change...
 lb-ng server/server.js client/app/js/lb-services.js
 ```
@@ -24,4 +24,11 @@ lb-ng server/server.js client/app/js/lb-services.js
 ```
 npm run dev
 ./script/setup.js
+```
+
+## Node-Red
+
+```
+CLUSTER_ON=1 npm run dev
+open http://localhost:8888
 ```
