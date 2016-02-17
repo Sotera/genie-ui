@@ -1,5 +1,5 @@
 'use strict';
-angular.module('genie.eventsMap')
+angular.module('genie.common')
 .directive('mapOverlay', [
   function() {
 

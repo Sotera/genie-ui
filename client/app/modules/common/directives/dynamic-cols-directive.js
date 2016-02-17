@@ -1,5 +1,5 @@
 'use strict';
-angular.module('genie.eventsMap')
+angular.module('genie.common')
 // watch scope variable (like 'events'), and swap class names on change.
 // expects watched var to be a string or array.
 .directive('dynamicCols', [function() {
