@@ -285,6 +285,7 @@ module.exports = class {
 
   post_updateHashtagIndex(options, cb) {
     var self = this;
+    var blacklistMinCount = options.blacklistMinCount || 100;
     var tweetIds = options.tweetIds;
     var tweetsByHashtagArray = options.tweetsByHashtagArray;
     async.each(tweetIds,
@@ -297,7 +298,7 @@ module.exports = class {
         tweetsByHashtagArray.geo_tweet_ids.forEach(function (geo_tweet_id) {
           geo_tweet_ids.push(geo_tweet_id);
         });
-        if (geo_tweet_ids.length > 100) {
+        if (geo_tweet_ids.length > blacklistMinCount) {
           var hashtag = tweetsByHashtagArray.hashtag;
           if (self.hashtagBlacklist.indexOf(hashtag) === -1) {
             self.hashtagBlacklist.push(hashtag);
@@ -330,6 +331,7 @@ module.exports = class {
   post_indexGeoTweetsByHashtag(options, cb) {
     var self = this;
     var limit = options.limit || 200;
+    var blacklistMinCount = options.blacklistMinCount || 100;
     var remaining = 0;
     async.waterfall(
       [
@@ -383,6 +385,7 @@ module.exports = class {
               self._callViaPost('updateHashtagIndex',
                 {
                   tweetIds
+                  , blacklistMinCount
                   , tweetsByHashtagArray
                 }, function (err, updateResults) {
                   cb(err, updateResults);
