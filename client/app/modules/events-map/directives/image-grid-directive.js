@@ -4,12 +4,14 @@ angular.module('genie.eventsMap')
   function(ImageManagerService, $window) {
 
   function link(scope, elem, attrs) {
+    var imageType = attrs.imageType;
+
     scope.$watchCollection(
       function() {
-        return ImageManagerService.getImages();
+        return ImageManagerService.getImages(imageType);
       },
       function() {
-        var images = ImageManagerService.getImages();
+        var images = ImageManagerService.getImages(imageType);
         if (images.length) {
           showImages({
             images: images,
@@ -18,6 +20,7 @@ angular.module('genie.eventsMap')
         }
       }
     );
+
   }
 
   function showImages(args) {
@@ -32,7 +35,7 @@ angular.module('genie.eventsMap')
       el.removeClass('hide');
       images.forEach(function(image) {
         img = $window.document.createElement('img');
-        img.className = 'grid-image muted';
+        img.className = 'grid-image';
         img.id = image.nodeId;
         img.src = image.url;
         img.addEventListener('click',
@@ -45,6 +48,13 @@ angular.module('genie.eventsMap')
 
   return {
     restrict: 'E',
-    link: link
+    link: link,
+    controller: ['$scope', 'ImageManagerService',
+      function($scope, ImageManagerService) {
+        $scope.clearImages = function(type) {
+          ImageManagerService.clear(type);
+          $scope.$apply();
+        }
+    }]
   };
 }]);

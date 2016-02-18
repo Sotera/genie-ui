@@ -7,9 +7,10 @@ angular.module('genie.common')
     scope.shrunk = false;
 
     elem.dblclick(function() {
-      if (scope.action === 'hide') {
-        $(this).addClass(scope.action);
-      } else if (scope.action === 'shrink') {
+      var action = scope.overlayAction;
+      if (action === 'hide') {
+        $(this).addClass(action);
+      } else if (action === 'shrink') {
         var height = elem.height();
         if (scope.shrunk) {
           elem.height( height * 4 );
@@ -18,12 +19,14 @@ angular.module('genie.common')
         }
         scope.shrunk = !scope.shrunk;
       }
+      if (scope.afterAction) scope.afterAction();
     });
   }
 
   return {
     scope: {
-      action: '@'
+      overlayAction: '@',
+      afterAction: '&'
     },
     link: link
   };

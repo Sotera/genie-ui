@@ -3,7 +3,7 @@ angular.module('genie.eventsMap')
 .directive('heatMap', ['sourceIconFilter',
   function(sourceIconFilter) {
 
-  function link(scope, elem, attrs, netGraphCtrl) {
+  function link(scope, elem, attrs) {
     var markers = []; // needed to remove markers on input change
     var heatmapLayer = new google.maps.visualization.HeatmapLayer(
       {
@@ -64,7 +64,6 @@ angular.module('genie.eventsMap')
 
   return {
     restrict: 'AE',
-    require: 'networkGraph',
     link: link
   };
 }]);

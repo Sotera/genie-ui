@@ -1,7 +1,7 @@
 'use strict';
 angular.module('genie.eventsMap')
 .directive('eventsMap', ['$window', 'StylesService',
-  function ($window, StylesService) {
+  function($window, StylesService) {
 
   function link(scope, elem, attrs) {
     var mapOptions = {

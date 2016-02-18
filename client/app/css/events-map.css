@@ -7,6 +7,7 @@ img.grid-image {
   width: 60px;
 }
 
+/*
 img.muted {
   -moz-filter: grayscale(100%);
   -ms-filter: grayscale(100%);
@@ -14,3 +15,4 @@ img.muted {
   -webkit-filter: grayscale(100%);
   filter: grayscale(100%);
 }
+*/

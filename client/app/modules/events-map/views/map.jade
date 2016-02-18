@@ -1,17 +1,20 @@
-image-grid.map-overlay.truncate.hide( style='top:45px;left:0' map-overlay action='hide' )
+image-grid.map-overlay.truncate.hide( image-type='unselected' style='top:45px;left:0'
+  map-overlay overlay-action='hide' )
 
 .container-fluid
   .row( dynamic-cols='events'
     before='["col-md-12", "gone"]'
     after='["col-md-10", "col-md-2"]' )
     div( style='padding:15px 0' class='{{colClasses[0]}}' )
-      //
-        twitter-stream( stream-controls )
       .events-map( events-map heat-map network-graph zoom='5' )
     div( style='padding-left:0' class='{{colClasses[1]}}' )
       events-list( network-graph )
 
-.map-overlay( style='bottom:0;left:0' map-overlay action='shrink' )
+image-grid.map-overlay.truncate.hide( image-type='selected'
+  style='bottom:200px;left:0;height:100px;' map-overlay overlay-action='hide'
+  after-action='clearImages("selected")' )
+
+.map-overlay( style='bottom:0;left:0' map-overlay overlay-action='shrink' )
   .col-md-4
     time-series( chart_name='time-series' )
   .col-md-4
@@ -19,11 +22,3 @@ image-grid.map-overlay.truncate.hide( style='top:45px;left:0' map-overlay action
   .col-md-4
     jqcloud( tag-cloud words='tags' delay='10' steps='7' class='events-cloud'
       font-size='{from:0.08, to:0.02}' )
-    //
-      .col-md-4
-        jqcloud(words='liveTags' delay='10' steps='7' class='live-cloud'
-          font-size='{from:0.08, to:0.02}')
-  //
-    .row( class='pad-top-md' )
-      .col-md-12
-        image-slider
