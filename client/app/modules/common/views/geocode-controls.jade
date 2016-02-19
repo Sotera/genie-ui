@@ -1,0 +1,10 @@
+.inputs.col-md-3( style='margin-top:10px' )
+  .input-group.input-group-sm
+    input.form-control( title='{{geocode.place}}' ng-model='geocode.place'
+      placeholder='Jump to a place' )
+    span.input-group-btn
+      button.btn.btn-default( type='button'
+        ng-disabled='geocode.running' ng-click='forwardGeocode(geocode.place)' )
+        | Jump&nbsp;
+        i.fa.fa-arrow-circle-right
+

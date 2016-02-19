@@ -5,8 +5,10 @@ image-grid.map-overlay.truncate.hide( image-type='unselected' style='top:45px;le
   .row( dynamic-cols='events'
     before='["col-md-12", "gone"]'
     after='["col-md-10", "col-md-2"]' )
+
     div( style='padding:15px 0' class='{{colClasses[0]}}' )
       .events-map( events-map heat-map network-graph zoom='5' )
+        geocode-controls
     div( style='padding-left:0' class='{{colClasses[1]}}' )
       events-list( network-graph )
 

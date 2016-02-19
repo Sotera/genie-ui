@@ -1,8 +1,8 @@
 'use strict';
 angular.module('genie.eventsMap')
 .controller('EventsMapCtrl', ['$scope', 'mapService', 'ZoomLevel',
-  'tweetService', 'CoreService',
-  function($scope, mapService, ZoomLevel, tweetService, CoreService) {
+  'CoreService',
+  function($scope, mapService, ZoomLevel, CoreService) {
 
   var PERIOD = CoreService.env.period; // days
   var DAY = CoreService.env.day; // mins
@@ -21,9 +21,6 @@ angular.module('genie.eventsMap')
     },
     getZoomLevel
   );
-
-  // Watch live hashtags
-  // $scope.liveTags = tweetService.getHashtags();
 
   function getZoomLevel() {
     mapService.getZoomLevel($scope.inputs)

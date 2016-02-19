@@ -1,8 +1,8 @@
 'use strict';
 angular.module('genie.scraper')
 
-.directive('scraperControls', ['$http', 'ScraperService',
-  function ($http, ScraperService) {
+.directive('scraperControls', ['ScraperService',
+  function (ScraperService) {
 
   function link(scope, elem, attrs) {
 
