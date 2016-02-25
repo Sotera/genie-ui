@@ -19,7 +19,7 @@ function findZoomLevel(settings) {
   // Sample minutes_ago from any zoom (all zooms have same time periods)
   ZoomLevel.find(
     {
-      where: {zoom_level: settings['map:maxZoom']},
+      where: {zoom_level: settings['map:maxZoom']}, // all zoomlevels have same # of events
       order: 'minutes_ago ASC'
     },
     createChart(settings)
@@ -40,12 +40,15 @@ function createChart(settings) {
       interval = 1440; // TODO: should be a setting
 
     var rows = [];
-    
+
     for (var mins of collections.range(firstPeriod, lastPeriod, interval)) {
       // moments are mutable
       var date = endDate.clone().subtract(mins, 'minutes');
-      var zoom = _.detect(zoomLevels, zoom => zoom.minutes_ago === mins);
-      var clusterLength = zoom ? zoom.clusters.length : 0;
+      var zoom = _(zoomLevels).detect(zoom => zoom.minutes_ago === mins);
+      var clusterLength = 0;
+      if (zoom) {
+        clusterLength = _(zoom.clusters).sum('events.length');
+      }
       rows.push([date.format('YYYY-MM-DD'), clusterLength]);
     }
     var chartData = {

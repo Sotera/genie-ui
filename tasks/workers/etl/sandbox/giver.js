@@ -1,8 +1,9 @@
 'use strict';
 
-var _        = require('underscore')._,
-          es = require('elasticsearch');
-var NewEventDetector = require('./events');
+var _ = require('lodash'),
+      es = require('elasticsearch'),
+      indexName = 'events',
+      NewEventDetector = require('./events');
 
 function Giver(es_source_client, es_source_index, es_source_scrape) {
   this.ned         = new NewEventDetector();
@@ -24,10 +25,9 @@ Giver.prototype.load_ned = function(start_date, end_date) {
   start_date/=1000;
   end_date/=1000;
 
-  // 10,000 max. TODO: run in batches
   var query = {
-    size    : 10000,
     _source : ['id', 'created_time', 'location', 'sims'],
+    size    : 100,
     sort    : [
       {
         created_time: { order: 'asc' }
@@ -43,31 +43,51 @@ Giver.prototype.load_ned = function(start_date, end_date) {
     }
   };
 
-  return this.event_client.search({
-    index : 'events',
-    type  : this.scrape_name,
+  var countDocs = 0;
+  return _this.event_client.search({
+    index : indexName,
+    type  : _this.scrape_name,
+    scroll: '5s',
     body  : query
   })
-  .then(function(res) {
-    console.log('load_ned :: got response');
-    _.map(res.hits.hits, function(hit) {
+  .then(scroll)
+  .then(() => { return { events: _this.ned.summarize() } })
+  .catch(console.error);
+
+
+  function scroll(res) {
+    console.log('scrolling...');
+    var src,
+      hits = res.hits.hits;
+    hits.forEach(hit => {
+      src = hit._source;
       _this.ned.update({
-        target       : hit['_source']['id'],
-        created_time : hit['_source']['created_time'],
-        location     : hit['_source']['location'],
-        cands        : hit['_source']['sims']
+        target       : src.id,
+        created_time : src.created_time,
+        location     : src.location,
+        cands        : src.sims
       });
     });
+    countDocs += hits.length;
 
-    return { events: _this.ned.summarize() };
-  })
+    if (res.hits.total > countDocs) {
+      return _this.event_client.scroll({
+        scrollId: res._scroll_id,
+        scroll: '5s'
+      })
+      .then(scroll)
+      .catch(console.error);
+    } else {
+      return 'done';
+    }
+  }
 };
 
 Giver.prototype.show_ned = function(cluster_id, cb) {
   var _this = this;
 
   var query = {
-    "size"  : 999,
+    "size"  : 999, // TODO: need to scroll?
     "query" : {
       "terms" : {
         "_id" : this.ned.cluster_to_id[cluster_id]
@@ -76,7 +96,7 @@ Giver.prototype.show_ned = function(cluster_id, cb) {
   };
 
   this.event_client.search({
-    index : 'events',
+    index : indexName,
     type  : this.scrape_name,
     body  : query
   }).then(function(response) {

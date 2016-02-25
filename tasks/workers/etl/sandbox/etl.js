@@ -14,7 +14,7 @@ const moment = require('moment'),
   esDestClient = new es.Client({
     host: 'localhost:9200',
     requestTimeout: 600000,
-    log: 'error'
+    log: 'trace'
   }),
   Giver = require('./giver'),
   giver = new Giver(esSourceClient, esSourceIndex, esSourceType),
@@ -26,26 +26,22 @@ module.exports = {
 };
 
 function run() {
-  // TODO: rm delete() in prod
-  esDestClient.indices.delete({index:esDestIndex}, function(err,res){
-    esDestClient.indices.create({index:esDestIndex}, function(err,res){
-      if(!err) {
-        esDestClient.indices.putMapping({
-          index: esDestIndex,
-          type: esDestType,
-          body: eventMapping
-        }, function(err, res) {
-          if(err){
-            console.log('error adding mapping: ' + JSON.stringify(err));
-            return;
-          }
-          loadEvents();
-        });
-      } else {
-        loadEvents();
-      }
+  esDestClient.indices.exists({index: esDestIndex})
+  .then(exists => {
+    // TODO: rm delete() in prod
+    // delete if exists
+    return (exists ? esDestClient.indices.delete({index: esDestIndex}) : exists);
+  })
+  .then(() => esDestClient.indices.create({index: esDestIndex}))
+  .then(() => {
+    return esDestClient.indices.putMapping({
+      index: esDestIndex,
+      type: esDestType,
+      body: eventMapping
     });
-  });
+  })
+  .then(loadEvents)
+  .catch(console.error);
 }
 
 function loadEvents() {
@@ -57,6 +53,9 @@ function loadEvents() {
 }
 
 function summarizeEvents(data){
+  if (data.events == null || data.events.length == 0)
+    throw new Error('Expected to find sandbox events');
+
   console.log('summarizing event data');
   data.events.forEach(function(event){
     giver.show_ned(event.id, function(data) {
