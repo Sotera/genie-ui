@@ -20,14 +20,14 @@ angular.module('genie.eventsMap')
         }
       }
     );
-
   }
 
   function showImages(args) {
     var images = args.images,
-      el = args.elem;
+      el = args.elem,
+      container = $(el.children()[0]);
 
-    el.empty(); // clean slate
+    container.empty(); // clean slate
 
     if (images.length) {
       var frag = $window.document.createDocumentFragment(), // reduces page reflows
@@ -42,13 +42,14 @@ angular.module('genie.eventsMap')
           function() { $window.open(image.url); });
         frag.appendChild(img);
       });
-      el.append(frag);
+      container.append(frag);
     }
   }
 
   return {
     restrict: 'E',
     link: link,
+    template: '<div style="padding-bottom:15px;height:100%;overflow:auto"></div>',
     controller: ['$scope', 'ImageManagerService',
       function($scope, ImageManagerService) {
         $scope.clearImages = function(type) {

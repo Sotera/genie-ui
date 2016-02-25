@@ -31,7 +31,8 @@
     "json3": "~3.3.2",
     "moment": "~2.10.6",
     "angular-google-maps": "~2.2.1",
-    "angular-gridster": "~0.13.5"
+    "angular-gridster": "~0.13.5",
+    "spin.js": "~2.3.2"
   },
   "devDependencies": {},
   "overrides": {

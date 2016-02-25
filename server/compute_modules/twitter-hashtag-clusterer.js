@@ -12,7 +12,11 @@ var Random = require('random-js');
 var ensureStringArray = require('../util/ensure-string-array');
 
 var twitterKeyFilename = require('path').join(__dirname, '../../.twitter-keys.json');
-var twitterKeys = JSON.parse(require('fs').readFileSync(twitterKeyFilename, 'utf8'));
+try {
+  var twitterKeys = JSON.parse(require('fs').readFileSync(twitterKeyFilename, 'utf8'));
+} catch (e) {
+  console.warn('Missing %s. Twitter scrapes will fail.', twitterKeyFilename);
+}
 var twitterKeyIdx = 0;
 var inUseTwitterStreams = {};
 

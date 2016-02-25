@@ -8,7 +8,9 @@ const app = require('../server/server'),
   log = require('debug')('task:chart:events'),
   moment = require('moment'),
   settings = require('../server/util/get-settings'),
-  time = require('../server/util/time');
+  time = require('../server/util/time'),
+  collections = require('../server/util/collections'),
+  _ = require('lodash');
 
 
 settings(['map:maxZoom', 'zoomLevels:endDate'], findZoomLevel);
@@ -31,15 +33,22 @@ function createChart(settings) {
       return;
     }
 
-    let endDate = moment(settings['zoomLevels:endDate'] || moment());
+    var endDate = moment(settings['zoomLevels:endDate'] || moment());
 
-    let rows = zoomLevels.map(zoomLevel => {
+    var firstPeriod = zoomLevels[0].minutes_ago,
+      lastPeriod = zoomLevels[zoomLevels.length - 1].minutes_ago,
+      interval = 1440; // TODO: should be a setting
+
+    var rows = [];
+    
+    for (var mins of collections.range(firstPeriod, lastPeriod, interval)) {
       // moments are mutable
-      let date = endDate.clone().subtract(zoomLevel.minutes_ago, 'minutes');
-      return [date.format('YYYY-MM-DD'), zoomLevel.clusters.length];
-    });
-
-    let chartData = {
+      var date = endDate.clone().subtract(mins, 'minutes');
+      var zoom = _.detect(zoomLevels, zoom => zoom.minutes_ago === mins);
+      var clusterLength = zoom ? zoom.clusters.length : 0;
+      rows.push([date.format('YYYY-MM-DD'), clusterLength]);
+    }
+    var chartData = {
       rows: rows,
       columns: [
         {"type": "date", "label": "Date"},

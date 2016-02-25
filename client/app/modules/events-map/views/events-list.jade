@@ -1,4 +1,4 @@
-.list-group( ng-show='events.length' )
+.list-group( ng-show='events.length' style='padding-left:20px' )
   a.list-group-item( ng-repeat='event in events track by event.event_id'
     ng-click='showEvent(event)' )
     span.badge( title='event weight (# of posts or users)') {{ event.weight }}

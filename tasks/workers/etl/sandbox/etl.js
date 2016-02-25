@@ -2,7 +2,7 @@
 
 const moment = require('moment'),
   es = require('elasticsearch'),
-  esSourceType = 'hajj',
+  esSourceType = 'greenville',
   esSourceIndex = 'instagram_remap',
   esDestIndex = 'sandbox',
   esDestType = 'event',
@@ -39,21 +39,21 @@ function run() {
             console.log('error adding mapping: ' + JSON.stringify(err));
             return;
           }
-          loadEventSourceData();
+          loadEvents();
         });
       } else {
-        loadEventSourceData();
+        loadEvents();
       }
     });
   });
 }
 
-function loadEventSourceData(){
+function loadEvents() {
   console.log("loading events");
   console.log("You might want to go get some coffee or something.");
-  giver.load_ned(null,null,function(data){
-    summarizeEvents(data);
-  })
+  giver.load_ned()
+  .then(summarizeEvents)
+  .catch(console.error);
 }
 
 function summarizeEvents(data){
@@ -66,9 +66,9 @@ function summarizeEvents(data){
 }
 
 function getUrlFromNodeId(node){
-  return new Promise(function(resolve,reject){
-    giver.url_from_id(node.id,function(url){
-      resolve({"nodeId":node.id,"url":url})
+  return new Promise(function(resolve,reject) {
+    giver.url_from_id(node.id,function(url) {
+      resolve({nodeId: node.id, url: url});
     });
   });
 }
@@ -87,7 +87,8 @@ function convertEvent(sourceEvent, data){
   };
 
   console.log("getting node image urls");
-  Promise.all(data.detail.nodes.map(getUrlFromNodeId)).then(function(nodes){
+  Promise.all(data.detail.nodes.map(getUrlFromNodeId))
+  .then(function(nodes){
 
     destEvent.node_to_url = nodes;
 
@@ -103,6 +104,7 @@ function convertEvent(sourceEvent, data){
       }
       console.log("added event to ES")
     });
-  });
+  })
+  .catch(console.error);
 }
 

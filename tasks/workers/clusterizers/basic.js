@@ -1,5 +1,13 @@
+//////////////
+//////////////
+//////////////
+//////////////
+// Obsolete - Use node-red flows
+//////////////
+//////////////
+//////////////
+//////////////
 'use strict';
-
 const loopback = require('loopback'),
   _ = require('lodash'),
   async = require('async'),

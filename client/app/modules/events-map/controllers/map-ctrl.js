@@ -30,16 +30,30 @@ angular.module('genie.eventsMap')
   }
 
   function updateMap(zoomLevelObj) {
+    var map = $scope.map;
+
     if (!zoomLevelObj.clusters.length) {
       CoreService.toastInfo('No Events Found',
         'hint: change the date to search for events');
     }
     // manual flag: true when no data has been set (init load)
-    if ($scope.map.empty) {
-      // default to Austin, if no events
-      var center = zoomLevelObj.centerPoint || {lat: 30.25, lng: -97.75};
-      $scope.map.setCenter(center);
-      $scope.map.empty = false;
+    if (map.empty) {
+      if (zoomLevelObj.center_lat) {
+        map.setCenter({
+          lat: zoomLevelObj.center_lat,
+          lng: zoomLevelObj.center_lng
+        });
+      } else {
+        // default to Austin if no events
+        map.setCenter({lat: 30.25, lng: -97.75});
+      }
+      map.empty = false;
+
+      ///////
+      // Greenville
+      map.setCenter({lat: 34.84, lng: -82.38});
+      setTimeout(function() {map.setZoom(13);}, 0);
+      ///////
     }
     $scope.zoomLevelObj = zoomLevelObj;
   }

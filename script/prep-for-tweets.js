@@ -14,5 +14,5 @@ GeoTweetHashtagIndex.destroyAll({}, console.log);
 HashtagEventsSource.destroyAll({}, console.log);
 ZoomLevel.destroyAll({}, console.log);
 
-Setting.updateAll({key: 'zoomLevels:startDate'}, {value: '2016-02-09'}, console.log);
-Setting.updateAll({key: 'zoomLevels:endDate'}, {value: '2016-02-11'}, console.log);
+Setting.updateAll({key: 'zoomLevels:startDate'}, {value: '2016-02-21'}, console.log);
+Setting.updateAll({key: 'zoomLevels:endDate'}, {value: '2016-02-24'}, console.log);

@@ -1,10 +1,11 @@
-image-grid.map-overlay.truncate.hide( image-type='unselected' style='top:45px;left:0'
-  map-overlay overlay-action='hide' )
+spinner( show='showSpinner' ) //- boolean scope property to toggle spinner
+
+image-grid.map-overlay.truncate.hide.col-md-10( image-type='unselected'
+  map-overlay overlay-action='hide' style='top:45px;left:0' )
 
 .container-fluid
   .row( dynamic-cols='events'
-    before='["col-md-12", "gone"]'
-    after='["col-md-10", "col-md-2"]' )
+    before='["col-md-12", "gone"]' after='["col-md-10", "col-md-2"]' )
 
     div( style='padding:15px 0' class='{{colClasses[0]}}' )
       .events-map( events-map heat-map network-graph zoom='5' )
@@ -12,11 +13,11 @@ image-grid.map-overlay.truncate.hide( image-type='unselected' style='top:45px;le
     div( style='padding-left:0' class='{{colClasses[1]}}' )
       events-list( network-graph )
 
-image-grid.map-overlay.truncate.hide( image-type='selected'
-  style='bottom:200px;left:0;height:100px;' map-overlay overlay-action='hide'
-  after-action='clearImages("selected")' )
+image-grid.map-overlay.truncate.hide.col-md-10( image-type='selected'
+  map-overlay overlay-action='hide' after-action='clearImages("selected")'
+  style='bottom:200px;left:0;height:128px' )
 
-.map-overlay( style='bottom:0;left:0' map-overlay overlay-action='shrink' )
+.map-overlay.col-md-12( style='bottom:0;left:0' map-overlay overlay-action='shrink' )
   .col-md-4
     time-series( chart_name='time-series' )
   .col-md-4

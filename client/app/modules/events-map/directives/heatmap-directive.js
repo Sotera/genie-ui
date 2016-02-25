@@ -18,7 +18,6 @@ angular.module('genie.eventsMap')
     );
 
     function reheat() {
-      markers = [];
       var clusters = scope.zoomLevelObj.clusters;
       heatmapLayer.setMap(scope.map);
       heatmapLayer.setData(clusters);

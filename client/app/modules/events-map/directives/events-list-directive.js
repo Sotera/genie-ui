@@ -1,26 +1,20 @@
 'use strict';
 angular.module('genie.eventsMap')
 .directive('eventsList', ['$timeout', 'sourceIconFilter', '$window',
-  'ImageManagerService',
-  function($timeout, sourceIconFilter, $window, ImageManagerService) {
+  function($timeout, sourceIconFilter, $window) {
 
   function link(scope, elem, attrs, netGraphCtrl) {
     resize(elem);
 
     scope.showEvent = function(event) {
+      animateMarker(event);
+      scope.showSpinner = true;
       var source = event.event_source;
       if (source === 'sandbox') {
-        netGraphCtrl.createNetGraph(event, selectImage);
+        netGraphCtrl.createNetGraph(event);
       } else if (event.eventSource === 'hashtag') {
         console.info('TODO');
       }
-      animateMarker(event);
-    }
-
-    function selectImage(node) {
-      console.log('node:: ', node.id);
-      ImageManagerService.markSelected(node.id);
-      scope.$apply();
     }
 
     function animateMarker(event) {

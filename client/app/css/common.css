@@ -28,7 +28,7 @@ div.time-series .border {
   border-top: solid 2px black;
   border-bottom: solid 2px black;
   position: fixed;
-  width: 100%;
+  /*width: 100%;*/
   z-index: 100;
 }
 
