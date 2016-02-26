@@ -51,12 +51,15 @@ Giver.prototype.load_ned = function(start_date, end_date) {
     body  : query
   })
   .then(scroll)
-  .then(() => { return { events: _this.ned.summarize() } })
+  .then(summarize.bind(_this))
   .catch(console.error);
 
+  function summarize() {
+    return { events: this.ned.summarize() };
+  }
 
   function scroll(res) {
-    console.log('scrolling...');
+    console.log('scrolling...', countDocs, 'documents');
     var src,
       hits = res.hits.hits;
     hits.forEach(hit => {
