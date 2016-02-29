@@ -51,8 +51,8 @@ angular.module('genie.eventsMap')
 
       ///////
       // Greenville
-      map.setCenter({lat: 34.84, lng: -82.38});
-      setTimeout(function() {map.setZoom(13);}, 0);
+      // map.setCenter({lat: 34.84, lng: -82.38});
+      // setTimeout(function() {map.setZoom(13);}, 0);
       ///////
     }
     $scope.zoomLevelObj = zoomLevelObj;

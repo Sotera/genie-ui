@@ -13,7 +13,7 @@ const app = require('../server/server'),
   _ = require('lodash');
 
 
-settings(['map:maxZoom', 'zoomLevels:endDate'], findZoomLevel);
+settings(['map:maxZoom', 'zoomLevels:endDate', 'zoomLevels:intervalMins'], findZoomLevel);
 
 function findZoomLevel(settings) {
   // Sample minutes_ago from any zoom (all zooms have same time periods)
@@ -33,11 +33,11 @@ function createChart(settings) {
       return;
     }
 
+    var interval = settings['zoomLevels:intervalMins'] || 1440; // mins
     var endDate = moment(settings['zoomLevels:endDate'] || moment());
 
-    var firstPeriod = zoomLevels[0].minutes_ago,
-      lastPeriod = zoomLevels[zoomLevels.length - 1].minutes_ago,
-      interval = 1440; // TODO: should be a setting
+    var firstPeriod = interval,
+      lastPeriod = zoomLevels[zoomLevels.length - 1].minutes_ago;
 
     var rows = [];
 

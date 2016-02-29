@@ -73,6 +73,10 @@ module.exports = function (app, cb) {
     value: '2016-01-16'
   }, {
     type: 'int',
+    key: 'zoomLevels:intervalMins',
+    value: 1440
+  }, {
+    type: 'int',
     key: 'map:minZoom',
     value: 0
   }, {

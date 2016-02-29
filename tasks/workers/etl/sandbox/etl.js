@@ -53,7 +53,7 @@ function loadEvents() {
 }
 
 function summarizeEvents(data){
-  if (data.events == null || data.events.length == 0)
+  if (!data.events || data.events.length == 0)
     throw new Error('Expected to find sandbox events');
 
   console.log('summarizing event data');
@@ -78,9 +78,9 @@ function convertEvent(sourceEvent, data){
     event_id: sourceEvent.id,
     event_source: esDestIndex,
     indexed_date: created,
-    post_date: created,
-    lat:sourceEvent.location.lat.min,
-    lng:sourceEvent.location.lon.min,
+    post_date: new Date(sourceEvent.created_time.min * 1000),
+    lat: sourceEvent.location.lat.min,
+    lng: sourceEvent.location.lon.min,
     network_graph: data.detail,
     num_posts: sourceEvent.count
   };
