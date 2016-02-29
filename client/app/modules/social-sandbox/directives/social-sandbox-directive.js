@@ -12,7 +12,7 @@ angular.module('genie.socialSandbox')
     var $iframe = $(elem.children()[0]);
     var doResize = function() {
       var winHeight = $win.height();
-      $iframe.height(winHeight * 0.8);
+      $iframe.height(winHeight * 0.91);
     };
 
     $win.bind('resize', _.throttle(doResize, 33.33)).resize();
