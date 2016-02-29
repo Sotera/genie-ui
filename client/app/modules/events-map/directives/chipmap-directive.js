@@ -17,10 +17,14 @@ angular.module('genie.eventsMap')
 
     mapService
     .getZoomLevel({zoom_level: 18, minutes_ago: 1440})
-    .then(function(zoomLevelObj) {
-      scope.zoomLevelObj = zoomLevelObj;
-      scope.map.setCenter({lat: zoomLevelObj.center_lat,
-        lng: zoomLevelObj.center_lng});
+    .then(function(doc) {
+      if (doc && doc.id) { // found a matching doc
+        scope.zoomLevelObj = doc;
+        scope.map.setCenter({lat: doc.center_lat,
+          lng: doc.center_lng});
+      } else {
+        scope.map.setCenter({lat: 30.25, lng: -97.75}); // default Austin
+      }
     });
   }
 
