@@ -8,7 +8,7 @@ angular.module('genie.eventsMap')
 
     scope.showEvent = function(event) {
       scope.selectedEvent = event;
-      animateMarker(event);
+      showMarker(event, {autoHide: true});
       scope.showSpinner = true;
       var source = event.event_source;
       if (source === 'sandbox') {
@@ -18,7 +18,7 @@ angular.module('genie.eventsMap')
       }
     }
 
-    function animateMarker(event) {
+    function showMarker(event, options) {
       var iconPath = sourceIconFilter(event.event_source);
       var marker = new google.maps.Marker({
         map: scope.map,
@@ -27,10 +27,16 @@ angular.module('genie.eventsMap')
         position: {lat: event.lat, lng: event.lng}
       });
 
-      $timeout(function() {
-        marker.setMap(null);
-        marker = null;
-      }, 1000);
+      marker.addListener('click', function() {
+        scope.showEvent(event);
+      });
+
+      if (options.autoHide) {
+        $timeout(function() {
+          marker.setMap(null);
+          marker = null;
+        }, 2000);
+      }
     }
 
     function resize(elem) {
@@ -43,6 +49,13 @@ angular.module('genie.eventsMap')
 
       $win.bind('resize', _.throttle(doResize, 33.33)).resize();
     }
+
+    elem.find('#show-all').click(function(e) {
+      e.preventDefault();
+      scope.events.forEach(function(evt) {
+        showMarker(evt, {autoHide: false});
+      })
+    });
   }
 
   return {
