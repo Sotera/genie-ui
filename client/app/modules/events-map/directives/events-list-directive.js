@@ -7,6 +7,7 @@ angular.module('genie.eventsMap')
     resize(elem);
 
     scope.showEvent = function(event) {
+      scope.selectedEvent = event;
       animateMarker(event);
       scope.showSpinner = true;
       var source = event.event_source;
@@ -48,6 +49,12 @@ angular.module('genie.eventsMap')
     restrict: 'E',
     require: 'networkGraph',
     link: link,
-    templateUrl: '/modules/events-map/views/events-list'
+    templateUrl: '/modules/events-map/views/events-list',
+    controller: ['$scope', function($scope) {
+      $scope.isSelected = function(event) {
+        if ($scope.selectedEvent && $scope.selectedEvent.event_id == event.event_id)
+          return 'selected';
+      }
+    }]
   };
 }]);
