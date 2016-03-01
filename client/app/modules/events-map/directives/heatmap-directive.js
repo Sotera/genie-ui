@@ -9,6 +9,8 @@ angular.module('genie.eventsMap')
       {
         radius: attrs.radius || 24
       });
+    var defaultIcon = '//www.googlemapsmarkers.com/v1/ccc/';
+    var clickedIcon = '//www.googlemapsmarkers.com/v1/00ff00/';
 
     scope.$watchCollection(
       function(scope) {
@@ -36,17 +38,26 @@ angular.module('genie.eventsMap')
       markers = [];
     }
 
+    function resetIcons() {
+      for(var i=0; i<markers.length; i++) {
+        markers[i].setIcon(defaultIcon);
+      }
+    }
+
     function addMarkers(clusters, map) {
       clusters.forEach(function addMarker(cluster) {
         var marker = new google.maps.Marker({
           position: cluster.location,
+          icon: defaultIcon,
           map: map,
-          opacity: 0.3
+          opacity: 0.7
         });
 
         markers.push(marker);
 
         marker.addListener('click', function() {
+          resetIcons();
+          marker.setIcon(clickedIcon);
           Genie.worker.run({
             worker: 'eventsList',
             method: 'prepare',
