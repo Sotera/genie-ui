@@ -1,7 +1,7 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('heatMap', ['sourceIconFilter',
-  function(sourceIconFilter) {
+.directive('heatMap', ['sourceIconFilter', 'ImageManagerService',
+  function(sourceIconFilter, ImageManagerService) {
 
   function link(scope, elem, attrs) {
     var markers = []; // needed to remove markers on input change
@@ -56,6 +56,7 @@ angular.module('genie.eventsMap')
         markers.push(marker);
 
         marker.addListener('click', function() {
+          ImageManagerService.clear();
           resetIcons();
           marker.setIcon(clickedIcon);
           Genie.worker.run({

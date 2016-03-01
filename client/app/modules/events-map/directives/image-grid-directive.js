@@ -17,17 +17,29 @@ angular.module('genie.eventsMap')
             images: images,
             elem: elem
           });
+        } else {
+          reset(elem);
         }
       }
     );
   }
 
+  function getContainer(elem) {
+    return $(elem.children()[0]);
+  }
+
+  function reset(elem) {
+    var container = getContainer(elem);
+    container.empty(); // clean slate
+    elem.addClass('hide'); // hide element
+  }
+
   function showImages(args) {
     var images = args.images,
       el = args.elem,
-      container = $(el.children()[0]);
+      container = getContainer(el);
 
-    container.empty(); // clean slate
+    reset(el);
 
     if (images.length) {
       var frag = $window.document.createDocumentFragment(), // reduces page reflows
