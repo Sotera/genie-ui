@@ -9,13 +9,15 @@ angular.module('genie.eventsMap')
       return image.nodeId == nodeId;
     });
     selected.selected = true;
+    selected.sort = Date.now()
   }
 
   // get images by selected, unselected, or all (null)
   function getImages(type) {
     switch(type) {
       case 'selected':
-        return _.filter(images, 'selected');
+        // sort selected items
+        return _(images).filter('selected').sortByOrder('sort', 'desc').value();
         break;
       case 'unselected':
         return _.reject(images, 'selected');
@@ -27,7 +29,10 @@ angular.module('genie.eventsMap')
 
   // nodes from network graph
   function setImages(nodes) {
-    images = nodes; // for now, uses unaltered nodes
+    images = nodes.map(function(node) {
+      node.sort = Date.now(); // add sorting attr to all nodes
+      return node;
+    });
   }
 
   function clear(type) {
