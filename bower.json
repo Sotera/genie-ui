@@ -4,7 +4,7 @@
   "dependencies": {
     "angular": "1.4.8",
     "angular-animate": "1.4.8",
-    "angular-bootstrap": "0.14.3",
+    "angular-bootstrap": "1.2.2",
     "angular-cookies": "1.4.8",
     "angular-formly": "~7.3.4",
     "angular-formly-templates-bootstrap": "~6.1.7",
