@@ -10,6 +10,7 @@ angular.module('genie.eventsMap')
     };
 
     scope.map = new google.maps.Map(elem[0], mapOptions);
+    scope.features = {heatmap: true};
 
     var zoomLevelObj = new ZoomLevel();
     zoomLevelObj.clusters = [];
