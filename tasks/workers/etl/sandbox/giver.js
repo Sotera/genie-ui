@@ -106,7 +106,7 @@ Giver.prototype.show_ned = function(cluster_id, cb) {
     _this.ned.set_detail(_.pluck(response.hits.hits, '_source'));
 
     cb({
-      'detail' : _this.ned.make_graph(response.hits.hits)
+      'detail' : _this.ned.make_graph()
     });
   });
 

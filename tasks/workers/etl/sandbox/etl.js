@@ -14,7 +14,7 @@ const moment = require('moment'),
   esDestClient = new es.Client({
     host: 'localhost:9200',
     requestTimeout: 600000,
-    log: 'trace'
+    log: 'error'
   }),
   Giver = require('./giver'),
   giver = new Giver(esSourceClient, esSourceIndex, esSourceType),
@@ -74,13 +74,24 @@ function getUrlFromNodeId(node){
 
 function convertEvent(sourceEvent, data){
   var created = moment(sourceEvent.created_time).format('YYYY-MM-DD');
+  var location = sourceEvent.location;
   var destEvent = {
     event_id: sourceEvent.id,
     event_source: esDestIndex,
     indexed_date: created,
     post_date: new Date(sourceEvent.created_time.min * 1000),
-    lat: sourceEvent.location.lat.min,
-    lng: sourceEvent.location.lon.min,
+    lat: location.lat.min,
+    lng: location.lon.min,
+    bounding_box: {
+      sw: {
+        lat: location.lat.min,
+        lng: location.lon.min
+      },
+      ne: {
+        lat: location.lat.max,
+        lng: location.lon.max
+      }
+    },
     network_graph: data.detail,
     num_posts: sourceEvent.count
   };

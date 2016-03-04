@@ -13,6 +13,7 @@ angular.module('genie.eventsMap')
   var zoomLevelObj = new ZoomLevel();
   zoomLevelObj.clusters = [];
   $scope.zoomLevelObj = zoomLevelObj;
+  $scope.features = {heatmap: true, boxes: false};
 
   // Watch user inputs and fetch zoomlevel object
   $scope.$watchCollection(
@@ -51,11 +52,37 @@ angular.module('genie.eventsMap')
 
       ///////
       // Greenville
-      // map.setCenter({lat: 34.84, lng: -82.38});
-      // setTimeout(function() {map.setZoom(13);}, 0);
+      map.setCenter({lat: 34.84, lng: -82.38});
+      setTimeout(function() {map.setZoom(13);}, 0);
       ///////
     }
     $scope.zoomLevelObj = zoomLevelObj;
+    $scope.getEventsInBounds();
   }
 
+  $scope.getEventsInBounds = _.debounce(function() {
+    var bounds = $scope.map.getBounds();
+    if (!bounds) return;
+    console.log(bounds, 'bounds changed');
+    /// TODO: mv to worker and replace bounds.contains()
+    var clusters = _.filter($scope.zoomLevelObj.clusters, function(cluster) {
+      var latlng = new google.maps.LatLng({
+        lat: cluster.location.lat(),
+        lng: cluster.location.lng()
+      });
+      return bounds.contains(latlng);
+    });
+
+    var events = _(clusters).map('events').flatten().value();
+    ////
+    Genie.worker.run({
+      worker: 'eventsList',
+      method: 'prepare',
+      args: { events: events }
+    },
+    function(e) {
+      $scope.events = e.data.events;
+      $scope.$apply();
+    });
+  }, 333);
 }]);

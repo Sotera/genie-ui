@@ -14,7 +14,10 @@ angular.module('genie.eventsMap')
               }
             };
 
-            SandboxEventsSource.find(query, graphEvents);
+            SandboxEventsSource.find(query)
+            .$promise
+            .then(graphEvents)
+            .catch(console.error);
           }
 
           function graphEvents(sources) {

@@ -222,6 +222,7 @@ module.exports = class {
                 post_date: ces[i].post_date,
                 lat: ces[i].lat,
                 lng: ces[i].lng,
+                bounding_box: ces[i].bounding_box,
                 event_id: ces[i].event_id,
                 event_source: ces[i].event_source,
                 weight: ces[i].num_posts
@@ -277,6 +278,7 @@ module.exports = class {
           events.push({
             lat: vectorToCluster[idx].lat,
             lng: vectorToCluster[idx].lng,
+            bounding_box: vectorToCluster[idx].bounding_box,
             event_id: vectorToCluster[idx].event_id,
             weight: vectorToCluster[idx].weight,
             event_source: vectorToCluster[idx].event_source

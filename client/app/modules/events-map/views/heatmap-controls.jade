@@ -1,0 +1,13 @@
+.btn-group
+  label.btn( ng-model='features.heatmap'
+    ng-class='{"btn-info": features.heatmap, "btn-default": !features.heatmap}'
+    uib-btn-checkbox )
+    | Heatmap&nbsp;
+    span( ng-show='features.heatmap' ) On
+    span( ng-show='!features.heatmap' ) Off
+  label.btn( ng-model='features.boxes'
+    ng-class='{"btn-info": features.boxes, "btn-default": !features.boxes}'
+    uib-btn-checkbox )
+    | Boxes&nbsp;
+    span( ng-show='features.boxes' ) On
+    span( ng-show='!features.boxes' ) Off

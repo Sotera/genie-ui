@@ -33,6 +33,9 @@
     "lng": {
       "type": "number",
       "required": true
+    },
+    "bounding_box": {
+      "type": "object"
     }
   },
   "validations": [],
