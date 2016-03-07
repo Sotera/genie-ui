@@ -9,7 +9,7 @@ angular.module('genie.eventsMap')
       return image.nodeId == nodeId;
     });
     selected.selected = true;
-    selected.sort = Date.now()
+    selected.sort = Date.now();
   }
 
   // get images by selected, unselected, or all (null)

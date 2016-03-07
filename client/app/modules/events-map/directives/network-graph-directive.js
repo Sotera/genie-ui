@@ -23,12 +23,12 @@ angular.module('genie.eventsMap')
 
           function graphEvents(sources) {
             var source = sources[0];
-            if (source) {
-              showImages({
-                nodes: source.network_graph.nodes,
-                urls: source.node_to_url
-              });
 
+            if (source) {
+              // retain nodes lat-lng. render_graph mutates its input.
+              var sourceNodes = source.network_graph.nodes.map(function(node) {
+                return {id: node.id, lat: node.lat, lng: node.lon};
+              });
               render_graph(
                 format_graph(source.network_graph),
                 {
@@ -36,6 +36,7 @@ angular.module('genie.eventsMap')
                     console.log('node:: ', node.id);
                     ImageManagerService.markSelected(node.id);
                     $scope.$apply();
+                    showImageOnMap(node.id, sourceNodes, source.node_to_url);
                   }
                 }
               );
@@ -44,40 +45,27 @@ angular.module('genie.eventsMap')
             }
           }
 
-          // combine netgraph nodes and urls to add image markers on map
-          // args: urls {}, nodes {}
-          function showImages(options) {
-            if (!(options.urls && options.urls.length)) return;
-            var markers = options.urls.map(function(url) {
-              var netNode = _.detect(options.nodes,
-                function(node) { return node.id == url.nodeId });
-              var image = {
-                url: url.url,
-                size: new google.maps.Size(60, 60)
-              };
-              return new google.maps.Marker({
-                position: { lat: netNode.lat, lng: netNode.lon },
-                icon: image
-              });
+          // TODO: simplify once the server returns combined graph nodes and urls
+          //
+          function showImageOnMap(nodeId, nodes, urls) {
+            var url = _.detect(urls,
+              function(url) { return nodeId == url.nodeId });
+            var node = _.detect(nodes,
+              function(node) { return nodeId == node.id });
+            var image = {
+              url: url.url,
+              size: new google.maps.Size(60, 60)
+            };
+            var marker = new google.maps.Marker({
+              position: { lat: node.lat, lng: node.lng },
+              icon: image,
+              map: $scope.map
             });
 
-            var i = 0, nextMarker;
-            // recursively show marker to present a brief time delay
-            function showMarker(marker) {
-              marker.setMap($scope.map);
-              setTimeout(function() {
-                marker.setMap(null);
-                marker = null;
-              }, 1000);
-              nextMarker = markers[i++];
-              if (nextMarker && i < 25) { // be polite to ur browser
-                setTimeout(function() {
-                  showMarker(nextMarker);
-                }, 50);
-              }
-            }
-
-            showMarker(markers[0]);
+            setTimeout(function() {
+              marker.setMap(null);
+              marker = null;
+            }, 1000);
           }
       }]
     };
