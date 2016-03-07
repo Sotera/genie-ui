@@ -15,7 +15,8 @@ angular.module('genie.eventsMap')
       scope.showSpinner = true;
       var source = event.event_source;
       if (source === 'sandbox') {
-        netGraphCtrl.createNetGraph(event);
+        netGraphCtrl.createNetGraph(event,
+          function() {scope.showSpinner = false;});
       } else if (event.eventSource === 'hashtag') {
         console.info('TODO');
       }
