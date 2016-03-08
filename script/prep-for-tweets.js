@@ -15,4 +15,4 @@ const app = require('../server/server'),
 ZoomLevel.destroyAll({}, console.log);
 
 Setting.updateAll({key: 'zoomLevels:startDate'}, {value: '2016-02-19'}, console.log);
-Setting.updateAll({key: 'zoomLevels:endDate'}, {value: '2016-02-24'}, console.log);
+Setting.updateAll({key: 'zoomLevels:endDate'}, {value: '2016-02-22'}, console.log);
