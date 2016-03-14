@@ -1,0 +1,68 @@
+'use strict';
+
+const moment = require('moment'),
+  _ = require('lodash'),
+  es = require('elasticsearch'),
+  request = require('request-json'),
+  sourcePath = 'http://localhost:3001/api/parsedevents',
+  sourceClient = request.createClient(sourcePath),
+  app = require('../../../../server/server'),
+  //// if ES connector can create a mapping, we can remove es.Client
+  EntityExtractSource = app.models.EntityExtractSource,
+  esDestClient = new es.Client({
+    host: 'localhost:9200',
+    requestTimeout: 600000,
+    log: 'error'
+  }),
+  esDestIndex = 'entity-extract',
+  esDestType = 'event',
+  ////
+  dataMapping = require('../../../../server/util/data-mapping'),
+  eventMapping = dataMapping.getEventTypeMapping();
+  ;
+
+module.exports = {
+  run: run
+};
+
+function run() {
+  dataMapping.createIndexWithMapping({
+    client: esDestClient,
+    mapping: eventMapping,
+    index: esDestIndex,
+    type: esDestType
+  })
+  .then(loadEvents)
+  .then(() => console.log('done'))
+  .catch(console.error);
+}
+
+function loadEvents() {
+  console.log("loading events");
+  return new Promise((resolve, reject) => {
+    var filter = '?filter[where][geocoded]=true';
+    sourceClient.get(sourcePath + filter,
+      function(err, res, events) {
+        console.log('count:', events.length);
+        if (err) reject(err);
+
+        function invalidEvent(event) {
+          return _.isEmpty(event.dates);
+        }
+
+        var createEvents = _.reject(events, invalidEvent).map(event => {
+          return EntityExtractSource.create({
+            event_id: event.id,
+            num_posts: 1,
+            event_source: 'entity-extract',
+            indexed_date: new Date(),
+            post_date: event.dates[0],
+            lat: event.lat,
+            lng: event.lng
+          });
+        });
+
+        Promise.all(createEvents).then(resolve);
+      });
+  });
+}

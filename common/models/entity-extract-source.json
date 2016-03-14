@@ -1,0 +1,10 @@
+{
+  "name": "EntityExtractSource",
+  "base": "EventsSourceBase",
+  "strict": "throw",
+  "properties": {},
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

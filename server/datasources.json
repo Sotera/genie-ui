@@ -39,5 +39,22 @@
     "defaultSize": 50,
     "index": "sandbox",
     "type": "event"
+  },
+  "es-entity-extract": {
+    "name": "es-entity-extract",
+    "connector": "es",
+    "hosts": [
+      {
+        "protocol": "http",
+        "host": "localhost",
+        "port": 9200
+      }
+    ],
+    "apiVersion": "2.0",
+    "requestTimeout": 5000,
+    "log": "error",
+    "defaultSize": 50,
+    "index": "entity-extract",
+    "type": "event"
   }
 }

@@ -26,19 +26,11 @@ module.exports = {
 };
 
 function run() {
-  esDestClient.indices.exists({index: esDestIndex})
-  .then(exists => {
-    // TODO: rm delete() in prod
-    // delete if exists
-    return (exists ? esDestClient.indices.delete({index: esDestIndex}) : exists);
-  })
-  .then(() => esDestClient.indices.create({index: esDestIndex}))
-  .then(() => {
-    return esDestClient.indices.putMapping({
-      index: esDestIndex,
-      type: esDestType,
-      body: eventMapping
-    });
+  dataMapping.createIndexWithMapping({
+    client: esDestClient,
+    mapping: eventMapping,
+    index: esDestIndex,
+    type: esDestType
   })
   .then(loadEvents)
   .catch(console.error);
