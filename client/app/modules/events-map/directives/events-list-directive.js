@@ -19,6 +19,9 @@ angular.module('genie.eventsMap')
           function() {scope.showSpinner = false;});
       } else if (event.eventSource === 'hashtag') {
         console.info('TODO');
+        scope.showSpinner = false;
+      } else { // no eventSource
+        scope.showSpinner = false;
       }
     };
 
