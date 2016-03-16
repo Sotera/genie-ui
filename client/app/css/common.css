@@ -6,6 +6,11 @@ div.time-series {
   padding-left: 0px;
 }
 
+div.legend {
+  color: #fff !important;
+  font-size: 14px !important;
+}
+
 /* override google chart styles */
 div.time-series .border {
   background-color: #181818
