@@ -7,18 +7,19 @@ var request = require('request-json');
 var client = request.createClient('http://localhost:3001/api/geocoder/');
 var _ = require('lodash');
 var GeoTweet = app.models.GeoTweet;
+var syncPromises = require('../../../server/util/generator-promises');
 
 var docs = data.docs;
 
 function requestPromise(loc, defaults /*i.e. {latitude: 0, longitude: 0}*/ ) {
   return new Promise((resolve, reject) => {
     client.post('forward-geo/', { address: loc }, (err, _, body) => {
-      // console.log(body)
       if (err) {
-        console.log(err);
+        console.error(err);
         // return reject(err);
       }
       if (!body.length) {
+        console.log(body)
         return resolve([defaults]); // echo back defaults if no results
       }
       resolve(body);
@@ -26,25 +27,29 @@ function requestPromise(loc, defaults /*i.e. {latitude: 0, longitude: 0}*/ ) {
   });
 }
 
-// geocode all locations in doc
-function geocode(doc) {
+// geocode all locations in doc. saves multiple docs to db: copies of original with
+// a geocoded location for each name in locationName.
+function geocodeAndSave(doc) {
   var locationNames = doc.locationName;
   var latLngs = doc.latLon; // array of strings matching order of location names
 
-  var geocodePromises = locationNames.map((loc,i) => {
-    var latlng = latLngs[i].split(','),
-      lat = latlng[0],
-      lng = latlng[1];
+  locationNames.forEach((loc, i) => {
+    syncPromises(function* () {
+      var latlng = latLngs[i].split(','),
+        lat = latlng[0],
+        lng = latlng[1];
 
-    // use the first result. TODO: use confidence score if available?
-    return requestPromise(loc, {latitude: lat, longitude: lng})
-    .then(results => {
+      // use the first result. TODO: use confidence score if available?
+      var results = yield requestPromise(loc, {latitude: lat, longitude: lng});
       doc.geo = results[0]; // add geo result to original doc
-      return doc;
+      createGeoTweet(doc);
+    })(doc)
+    .catch(err => {
+      console.error(err);
+      console.error('Removing geotweets records');
+      GeoTweet.destroyAll();
     });
   });
-
-  return Promise.all(geocodePromises);
 }
 
 function createGeoTweet(doc) {
@@ -58,24 +63,10 @@ function createGeoTweet(doc) {
       .flatten().compact().uniq().value(),
     lat: geo.latitude,
     lng: geo.longitude
-  });
+  })
+  .then(doc => console.log('geotweet created: ', doc.tweet_id))
+  .catch(console.error);
 }
 
-function tweetify(docs) {
-  // create geotweet record for each location (dupes tweet text)
-  docs.forEach(createGeoTweet);
-}
-
-// collect all geocode-to-geotweet promises
-var processDocs = docs.map(doc => {
-  return geocode(doc)
-  .then(tweetify);
-});
-
-Promise.all(processDocs)
-.then(() => console.log('done'))
-.catch(err => {
-  console.error(err);
-  GeoTweet.destroyAll();
-  console.error('Removing geotweets records');
-});
+// geocode, then save each doc to db
+docs.forEach(geocodeAndSave);
