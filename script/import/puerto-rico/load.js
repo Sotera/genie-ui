@@ -43,7 +43,7 @@ function geocodeAndSave(doc) {
       var results = yield requestPromise(loc, {latitude: lat, longitude: lng});
       doc.geo = results[0]; // add geo result to original doc
       createGeoTweet(doc);
-    })(doc)
+    })()
     .catch(err => {
       console.error(err);
       console.error('Removing geotweets records');

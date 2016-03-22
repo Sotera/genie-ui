@@ -9,10 +9,10 @@ const app = require('../server/server'),
   Setting = app.models.Setting
 ;
 
-// GeoTweet.destroyAll({}, console.log);
+GeoTweet.destroyAll({}, console.log);
 // GeoTweetHashtagIndex.destroyAll({}, console.log);
 // HashtagEventsSource.destroyAll({}, console.log);
-ZoomLevel.destroyAll({}, console.log);
+// ZoomLevel.destroyAll({}, console.log);
 
-Setting.updateAll({key: 'zoomLevels:startDate'}, {value: '2016-02-19'}, console.log);
-Setting.updateAll({key: 'zoomLevels:endDate'}, {value: '2016-02-22'}, console.log);
+// Setting.updateAll({key: 'zoomLevels:startDate'}, {value: '2016-02-19'}, console.log);
+// Setting.updateAll({key: 'zoomLevels:endDate'}, {value: '2016-02-22'}, console.log);

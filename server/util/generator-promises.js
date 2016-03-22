@@ -1,9 +1,9 @@
 'use strict';
 // def: use promise values within ES6 generators.
 // see https://www.promisejs.org/generators/
-module.exports = function generatorPromises(makeGenerator) {
+module.exports = function generatorPromises(generatorFunc) {
   return function() {
-    var generator = makeGenerator.apply(this, arguments);
+    var generator = generatorFunc.apply(this, arguments);
 
     function handle(result) {
       // result => { done: [Boolean], value: [Object] }
@@ -22,5 +22,5 @@ module.exports = function generatorPromises(makeGenerator) {
     } catch(ex) {
       return Promise.reject(ex);
     }
-  }
-}
+  };
+};
