@@ -38,28 +38,37 @@ function run() {
 }
 
 function loadEvents() {
-  console.log("loading events");
   return new Promise((resolve, reject) => {
     var filter = '?filter[where][geocoded]=true';
     sourceClient.get(sourcePath + filter,
       function(err, res, events) {
-        console.log('count:', events.length);
         if (err) reject(err);
 
         function invalidEvent(event) {
           return _.isEmpty(event.dates);
         }
 
-        var createEvents = _.reject(events, invalidEvent).map(event => {
-          return EntityExtractSource.create({
-            event_id: event.id,
-            num_posts: 1,
-            event_source: 'entity-extract',
-            indexed_date: new Date(),
-            post_date: event.dates[0],
-            lat: event.lat,
-            lng: event.lng
-          });
+        var validEvents = _.reject(events, invalidEvent);
+        console.log('loading', validEvents.length, 'events');
+
+        var createEvents = validEvents.map(event => {
+          return EntityExtractSource.find(
+            { where: { event_id: event.id } }
+          )
+          .then(src => {
+            if (src && src.length) return console.log('event exists', event.id);
+
+            return EntityExtractSource.create({
+              event_id: event.id,
+              num_posts: 1,
+              event_source: 'entity-extract',
+              indexed_date: new Date(),
+              post_date: event.dates[0],
+              lat: event.lat,
+              lng: event.lng
+            })
+            .then(src => console.log('created event', src.event_id));
+          })
         });
 
         Promise.all(createEvents).then(resolve);
