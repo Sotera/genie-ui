@@ -3,6 +3,22 @@
   "base": "PersistedModel",
   "strict": "throw",
   "idInjection": true,
+  "indexes": {
+    "event_id_unique": {
+      "keys": {
+        "event_id": 1,
+        "event_source": 1
+      },
+      "options": {
+        "unique": true
+      }
+    },
+    "post_date_idx": {
+      "keys": {
+        "post_date": 1
+      }
+    }
+  },
   "options": {
     "validateUpsert": true
   },
