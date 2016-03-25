@@ -4,6 +4,7 @@ var extend = require('deep-extend');
 var ClassMethodsToRestPosts = require('../util/class-methods-to-rest-posts');
 var TwitterHashtagClusterer = require('../compute_modules/twitter-hashtag-clusterer');
 var ZoomLevelEventClusterer = require('../compute_modules/zoom-level-event-clusterer');
+var ETL = require('../compute_modules/etl');
 var baseOptions = {
   postPrefix: 'post_'
   , getPrefix: 'get_'
@@ -18,7 +19,10 @@ module.exports = function (app, cb) {
   //ZoomLevelEventClusterer
   options = {apiName: 'ZoomLevelEventClusterer'};
   extend(options, baseOptions);
-  new ClassMethodsToRestPosts(app, ZoomLevelEventClusterer, options);
+  //ETL
+  options = {apiName: 'ETL'};
+  extend(options, baseOptions);
+  new ClassMethodsToRestPosts(app, ETL, options);
   cb();
 }
 

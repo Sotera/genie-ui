@@ -4,14 +4,14 @@ const moment = require('moment'),
   _ = require('lodash'),
   es = require('elasticsearch'),
   request = require('request-json'),
-  sourcePath = 'http://localhost:3001/api/parsedevents',
+  sourcePath = 'http://54.174.131.124:3003/api/parsedevents',
   sourceClient = request.createClient(sourcePath),
   app = require('../../../../server/server'),
   //// if ES connector can create a mapping, we can remove es.Client
   EntityExtractSource = app.models.EntityExtractSource,
   esDestClient = new es.Client({
-    host: 'localhost:9200',
-    requestTimeout: 600000,
+    host: 'elasticsearch:9200',
+    requestTimeout: 60000,
     log: 'error'
   }),
   esDestIndex = 'entity-extract',
@@ -26,20 +26,22 @@ module.exports = {
 };
 
 function run() {
-  dataMapping.createIndexWithMapping({
-    client: esDestClient,
-    mapping: eventMapping,
-    index: esDestIndex,
-    type: esDestType
-  })
-  .then(loadEvents)
+  // dataMapping.createIndexWithMapping({
+  //   client: esDestClient,
+  //   mapping: eventMapping,
+  //   index: esDestIndex,
+  //   type: esDestType
+  // })
+  // .then(loadEvents)
+  loadEvents()
   .then(() => console.log('done'))
   .catch(console.error);
 }
 
 function loadEvents() {
   return new Promise((resolve, reject) => {
-    var filter = '?filter[where][geocoded]=true';
+    var startDate = moment().subtract(1, 'day').toISOString(); //just recent events
+    var filter = '?filter[where][geocoded]=true&filter[where][created][gt]=' + startDate;
     sourceClient.get(sourcePath + filter,
       function(err, res, events) {
         if (err) reject(err);
