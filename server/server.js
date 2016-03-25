@@ -22,7 +22,8 @@ var config = boot.ConfigLoader.loadAppConfig(__dirname, process.env.NODE_ENV);
 //EXPERIMENTAL -- Here we are going to try to bring up a master process that only hosts NodeRED &
 //some process control routes. The 'master' app will not be a loopback app. It will just be a vanilla
 //Express4 app. Later we may add loopback for access to in memory database to manage the cluster.
-if (config.clusterOn && cluster.isMaster) {
+// if (config.clusterOn && cluster.isMaster) {
+if (cluster.isMaster) {
   master(config, cluster);
 } else {
   //EXPERIMENTAL -- If we aren't the master process of the cluster then start up like regular loopback app
