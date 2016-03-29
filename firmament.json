@@ -60,8 +60,7 @@
       }
     },
     "Env": [
-      "NODE_ENV=production",
-      "CLUSTER_ON=1"
+      "NODE_ENV=production"
     ],
     "HostConfig": {
       "Links": [
