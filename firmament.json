@@ -56,9 +56,7 @@
       "8888\/tcp": {}
     },
     "Env": [
-      "NODE_ENV=production",
-      "USE_NODERED_CLUSTERING=FALSE",
-      "RUN_AS_NODERED=TRUE"
+      "NODE_ENV=production"
     ],
     "HostConfig": {
       "Links": [
@@ -126,17 +124,7 @@
               "ctl",
               "env-set",
               "GenieUI",
-              "RUN_AS_NODERED=TRUE"
-
-            ]
-          },
-          {
-            "RelativeWorkingDir": ".",
-            "Command": "slc",
-            "Args": [
-              "ctl",
-              "env-set",
-              "GenieUI",
+              "RUN_AS_NODERED=FALSE",
               "USE_NODERED_CLUSTERING=FALSE"
 
             ]
