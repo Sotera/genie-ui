@@ -86,10 +86,11 @@
     "ExpressApps": [
       {
         "GitUrl": "git@github.com:sotera\/genie-ui",
-        "GitSrcBranchName": "master",
+        "GitSrcBranchName": "56-run-as-nodered",
         "StrongLoopBranchName": "deploy",
         "StrongLoopServerUrl": "http:\/\/localhost:8701",
         "ServiceName": "GenieUI",
+
         "Scripts": [
           {
             "RelativeWorkingDir": ".",
@@ -105,6 +106,39 @@
             "Args": [
               "server\/config.json.template",
               "server\/config.json"
+            ]
+          },
+          {
+            "RelativeWorkingDir": ".",
+            "Command": "slc",
+            "Args": [
+              "ctl",
+              "-C",
+              "http://localhost:8701",
+              "create",
+              "GenieUI"
+            ]
+          },
+          {
+            "RelativeWorkingDir": ".",
+            "Command": "slc",
+            "Args": [
+              "ctl",
+              "env-set",
+              "GenieUI",
+              "RUN_AS_NODERED=TRUE"
+
+            ]
+          },
+          {
+            "RelativeWorkingDir": ".",
+            "Command": "slc",
+            "Args": [
+              "ctl",
+              "env-set",
+              "GenieUI",
+              "USE_NODERED_CLUSTERING=FALSE"
+
             ]
           }
         ]
