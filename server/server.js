@@ -13,8 +13,8 @@ var LoopbackModelHelper = require('./util/loopback-model-helper');
   access_token_key: process.env.ACCESS_TOKEN,
   access_token_secret: process.env.ACCESS_TOKEN_SECRET
 };*/
-var cluster = require('cluster');
 var boot = require('loopback-boot');
+var cluster = require('cluster');
 var master = require('./master-red');
 //Hijack loopback boot to read config file. Honors NODE_ENV.
 var config = boot.ConfigLoader.loadAppConfig(__dirname, process.env.NODE_ENV);
@@ -23,8 +23,8 @@ var config = boot.ConfigLoader.loadAppConfig(__dirname, process.env.NODE_ENV);
 //some process control routes. The 'master' app will not be a loopback app. It will just be a vanilla
 //Express4 app. Later we may add loopback for access to in memory database to manage the cluster.
 // if (config.clusterOn && cluster.isMaster) {
-if (cluster.isMaster) {
-  master(config, cluster);
+if (process.env.RUN_AS_NODERED == "TRUE" && cluster.isMaster) {
+  master(config);
 } else {
   //EXPERIMENTAL -- If we aren't the master process of the cluster then start up like regular loopback app
   var loopback = require('loopback');

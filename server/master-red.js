@@ -7,17 +7,10 @@ var RED = require('node-red');
 var app = express();
 // to enable these logs set `DEBUG=server:master` or `DEBUG=server:*`
 var log = require('debug')('server:master');
+var cluster = null;
 
 module.exports = function(config, cluster) {
-  cluster.on('online', function (worker) {
-    log('Worker ' + worker.process.pid + ' is online');
-  });
 
-  cluster.on('exit', function (worker, code, signal) {
-    log('Worker ' + worker.process.pid + ' died with code: ' + code + ', and signal: ' + signal);
-    log('Starting a new worker');
-    cluster.fork();
-  });
 
   var server = http.createServer(app);
 
@@ -30,6 +23,22 @@ module.exports = function(config, cluster) {
   server.listen(config.REDsettings.port);
   //Start the runtime
   RED.start();
+
+  if(process.env.USE_NODERED_CLUSTERING == "FALSE"){
+    return;
+  }
+
+  cluster = require('cluster');
+
+  cluster.on('online', function (worker) {
+    log('Worker ' + worker.process.pid + ' is online');
+  });
+
+  cluster.on('exit', function (worker, code, signal) {
+    log('Worker ' + worker.process.pid + ' died with code: ' + code + ', and signal: ' + signal);
+    log('Starting a new worker');
+    cluster.fork();
+  });
 
   //Fire up the workers!
   var numWorkers = config.numberOfWorkers;

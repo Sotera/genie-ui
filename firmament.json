@@ -47,20 +47,18 @@
     }
   },
   {
-    "name": "genie-strongloop",
+    "name": "genie-strongloop-red",
     "Image": "lukewendling\/strong-pm:1",
     "DockerFilePath": "",
-    "Hostname": "genie-strongloop",
+    "Hostname": "genie-strongloop-red",
     "ExposedPorts": {
-      "3001\/tcp": {
-
-      },
-      "8888\/tcp": {
-
-      }
+      "3001\/tcp": {},
+      "8888\/tcp": {}
     },
     "Env": [
-      "NODE_ENV=production"
+      "NODE_ENV=production",
+      "USE_NODERED_CLUSTERING=FALSE",
+      "RUN_AS_NODERED=TRUE"
     ],
     "HostConfig": {
       "Links": [
