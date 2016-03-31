@@ -15,7 +15,8 @@
     "port": 8888,
     "functionGlobalContext": {
       "importDir": "./import",
-      "port": 3000
+      "port": 3000,
+      "host":"http://localhost"
     }
   }
 }

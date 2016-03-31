@@ -14,6 +14,10 @@ module.exports = function(config, cluster) {
 
   var server = http.createServer(app);
 
+  if(process.env.GENIE_HOST){
+    config.REDsettings.functionGlobalContext.host = process.env.GENIE_HOST;
+  }
+
   //Initialise the runtime with a server and settings
   RED.init(server, config.REDsettings);
   //Serve the editor UI from /red

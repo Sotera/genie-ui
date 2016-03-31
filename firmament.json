@@ -47,13 +47,12 @@
     }
   },
   {
-    "name": "genie-strongloop-red",
+    "name": "genie-strongloop",
     "Image": "lukewendling\/strong-pm:1",
     "DockerFilePath": "",
-    "Hostname": "genie-strongloop-red",
+    "Hostname": "genie-strongloop",
     "ExposedPorts": {
-      "3001\/tcp": {},
-      "8888\/tcp": {}
+      "3001\/tcp": {}
     },
     "Env": [
       "NODE_ENV=production"
@@ -69,11 +68,6 @@
             "HostPort": "80"
           }
         ],
-        "8888\/tcp": [
-          {
-            "HostPort": "8888"
-          }
-        ],
         "8701\/tcp": [
           {
             "HostPort": "8701"
@@ -84,11 +78,10 @@
     "ExpressApps": [
       {
         "GitUrl": "git@github.com:sotera\/genie-ui",
-        "GitSrcBranchName": "master",
+        "GitSrcBranchName": "multiple_Containers",
         "StrongLoopBranchName": "deploy",
         "StrongLoopServerUrl": "http:\/\/localhost:8701",
         "ServiceName": "GenieUI",
-
         "Scripts": [
           {
             "RelativeWorkingDir": ".",
@@ -126,7 +119,98 @@
               "GenieUI",
               "RUN_AS_NODERED=FALSE",
               "USE_NODERED_CLUSTERING=FALSE"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "genie-strongloop-red",
+    "Image": "lukewendling\/strong-pm:1",
+    "DockerFilePath": "",
+    "Hostname": "genie-strongloop-red",
+    "ExposedPorts": {
+      "8888\/tcp": {}
+    },
+    "Env": [
+      "NODE_ENV=production"
+    ],
+    "HostConfig": {
+      "Links": [
+        "mongo:mongo",
+        "elasticsearch:elasticsearch",
+        "genie-strongloop:genie-strongloop"
+      ],
+      "PortBindings": {
+        "8888\/tcp": [
+          {
+            "HostPort": "8888"
+          }
+        ],
+        "8701\/tcp": [
+          {
+            "HostPort": "8702"
+          }
+        ]
+      }
+    },
+    "ExpressApps": [
+      {
+        "GitUrl": "git@github.com:sotera\/genie-ui",
+        "GitSrcBranchName": "multiple_Containers",
+        "StrongLoopBranchName": "deploy",
+        "StrongLoopServerUrl": "http:\/\/localhost:8702",
+        "ServiceName": "NodeRed",
 
+        "Scripts": [
+          {
+            "RelativeWorkingDir": ".",
+            "Command": "bower",
+            "Args": [
+              "install",
+              "--config.interactive=false"
+            ]
+          },
+          {
+            "RelativeWorkingDir": ".",
+            "Command": "cp",
+            "Args": [
+              "server\/config.json.template",
+              "server\/config.json"
+            ]
+          },
+          {
+            "RelativeWorkingDir": ".",
+            "Command": "slc",
+            "Args": [
+              "ctl",
+              "-C",
+              "http://localhost:8702",
+              "create",
+              "NodeRed"
+            ]
+          },
+          {
+            "RelativeWorkingDir": ".",
+            "Command": "slc",
+            "Args": [
+              "ctl",
+              "set-size",
+              "NodeRed",
+              "1"
+            ]
+          },
+          {
+            "RelativeWorkingDir": ".",
+            "Command": "slc",
+            "Args": [
+              "ctl",
+              "env-set",
+              "NodeRed",
+              "RUN_AS_NODERED=TRUE",
+              "USE_NODERED_CLUSTERING=FALSE",
+              "GENIE_HOST=http://genie-strongloop"
             ]
           }
         ]
