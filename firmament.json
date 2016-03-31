@@ -78,7 +78,7 @@
     "ExpressApps": [
       {
         "GitUrl": "git@github.com:sotera\/genie-ui",
-        "GitSrcBranchName": "multiple_Containers",
+        "GitSrcBranchName": "master",
         "StrongLoopBranchName": "deploy",
         "StrongLoopServerUrl": "http:\/\/localhost:8701",
         "ServiceName": "GenieUI",
@@ -158,7 +158,7 @@
     "ExpressApps": [
       {
         "GitUrl": "git@github.com:sotera\/genie-ui",
-        "GitSrcBranchName": "multiple_Containers",
+        "GitSrcBranchName": "master",
         "StrongLoopBranchName": "deploy",
         "StrongLoopServerUrl": "http:\/\/localhost:8702",
         "ServiceName": "NodeRed",
