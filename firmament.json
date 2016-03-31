@@ -196,6 +196,8 @@
             "Command": "slc",
             "Args": [
               "ctl",
+              "-C",
+              "http://localhost:8702",
               "set-size",
               "NodeRed",
               "1"
@@ -206,6 +208,8 @@
             "Command": "slc",
             "Args": [
               "ctl",
+              "-C",
+              "http://localhost:8702",
               "env-set",
               "NodeRed",
               "RUN_AS_NODERED=TRUE",
