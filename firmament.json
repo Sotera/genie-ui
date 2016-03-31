@@ -84,7 +84,7 @@
     "ExpressApps": [
       {
         "GitUrl": "git@github.com:sotera\/genie-ui",
-        "GitSrcBranchName": "56-run-as-nodered",
+        "GitSrcBranchName": "master",
         "StrongLoopBranchName": "deploy",
         "StrongLoopServerUrl": "http:\/\/localhost:8701",
         "ServiceName": "GenieUI",
