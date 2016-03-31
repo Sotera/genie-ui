@@ -55,7 +55,6 @@
       "3001\/tcp": {}
     },
     "Env": [
-      "NODE_ENV=production"
     ],
     "HostConfig": {
       "Links": [
@@ -117,8 +116,9 @@
               "ctl",
               "env-set",
               "GenieUI",
-              "RUN_AS_NODERED=FALSE",
-              "USE_NODERED_CLUSTERING=FALSE"
+              "RUN_AS_NODERED=0",
+              "USE_NODERED_CLUSTERING=0",
+              "NODE_ENV=production"
             ]
           }
         ]
@@ -212,9 +212,10 @@
               "http://localhost:8702",
               "env-set",
               "NodeRed",
-              "RUN_AS_NODERED=TRUE",
-              "USE_NODERED_CLUSTERING=FALSE",
-              "GENIE_HOST=http://genie-strongloop"
+              "RUN_AS_NODERED=1",
+              "USE_NODERED_CLUSTERING=0",
+              "GENIE_HOST=http://genie-strongloop",
+              "NODE_ENV=production"
             ]
           }
         ]

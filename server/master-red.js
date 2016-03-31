@@ -28,7 +28,7 @@ module.exports = function(config, cluster) {
   //Start the runtime
   RED.start();
 
-  if(process.env.USE_NODERED_CLUSTERING == "FALSE"){
+  if(!+process.env.USE_NODERED_CLUSTERING){
     return;
   }
 

@@ -11,12 +11,11 @@
     "httpNodeRoot": "/api",
     "userDir": "./server/node-red",
     "nodesDir": "./server/node-red/nodes",
-    "flowFile": "genie-ui-flows.json",
+    "flowFile": "zoom-clustering.json",
     "port": 8888,
     "functionGlobalContext": {
       "importDir": "./import",
-      "port": 3000,
-      "host":"http://localhost"
+      "host":"http://genie-strongloop"
     }
   }
 }
