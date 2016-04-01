@@ -1,8 +1,12 @@
-.list-group( ng-show='events.length' style='padding-left:20px' )
-  a.list-group-item(ng-click='showAllMarkers()' style='color:#fff')
+.list-group( ng-show='clusters.length' style='padding-left:20px' )
+  //
+    a.list-group-item(ng-click='showAllMarkers()' style='color:#fff')
+      i.fa.fa-fw.fa-map-marker
+      | &nbsp;Show exact locations
+  a.list-group-item(style='color:#fff')
     i.fa.fa-fw.fa-map-marker
-    | &nbsp;Show exact locations
-  a.list-group-item( ng-repeat='event in events track by event.event_id'
-    ng-click='showEvent(event)' ng-class='isSelected(event)' )
-    span.badge( title='event weight (# of posts or users)') {{ event.weight }}
-    img( ng-src='{{ event.event_source | sourceIcon }}' )
+    | &nbsp;Click item to highlight an event
+  a.list-group-item( ng-repeat='cluster in clusters'
+    ng-click='highlightCluster(cluster)' ng-class='isSelected(cluster)' )
+    span.badge( title='event weight (# of posts or users)') {{ cluster.weight }}
+    img( ng-src='{{ cluster.events[0].event_source | sourceIcon }}' )
