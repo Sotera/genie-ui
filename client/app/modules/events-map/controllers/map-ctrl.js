@@ -10,6 +10,7 @@ angular.module('genie.eventsMap')
   $scope.inputs = {zoom_level: 18, minutes_ago: DAY * PERIOD};
   $scope.map = {};
   $scope.events = [];
+  $scope.clusters = [];
   var zoomLevelObj = new ZoomLevel();
   zoomLevelObj.clusters = [];
   $scope.zoomLevelObj = zoomLevelObj;
@@ -72,6 +73,9 @@ angular.module('genie.eventsMap')
       });
       return bounds.contains(latlng);
     });
+
+    // TODO: sorted in mapService. mv to worker?
+    $scope.clusters = clusters;
 
     var events = _(clusters).map('events').flatten().value();
     ////
