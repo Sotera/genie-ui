@@ -80,12 +80,12 @@ angular.module('genie.eventsMap')
           <blockquote><%= text %></blockquote> \
           <ul> \
             <li><a href='<%= url %>' target='_blank'> \
-              <%= screen_name %> \
+              <%= author %> \
             </a></li> \
           </ul> \
           ")({
             text: tweet.text,
-            screen_name: tweet.screen_name,
+            author: tweet.author,
             url: tweet.url
           })
       });
