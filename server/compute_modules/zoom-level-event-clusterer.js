@@ -1,13 +1,15 @@
 'use strict';
 var log = require('debug')('compute_modules:zoom-level-event-clusterer');
-var ClustererKMeans = require('../compute_modules/clusterer-kmeans');
+//var ClustererKMeans = require('../compute_modules/clusterer-kmeans');
+var ClustererDBScan = require('../compute_modules/clusterer-dbscan');
 var LoopbackModelHelper = require('../util/loopback-model-helper');
 var Random = require('random-js');
 var moment = require('moment');
 var async = require('async');
 var ensureStringArray = require('../util/ensure-string-array');
 
-const clustererKMeans = new ClustererKMeans();
+//const clusterer = new ClustererKMeans();
+const clusterer = new ClustererDBScan();
 
 const randomishTwitterTags = ['indicter', 'abacisci', 'anastrophe', 'pentatomic', 'hyaluronidase', 'canalatura',
   'schizopod', 'undervicar', 'aeciospore', 'iodization', 'newmanism', 'inhibition', 'favelvellae', 'sackbut'];
@@ -26,7 +28,7 @@ module.exports = class {
 
   post_createZoomLevels(options, cb) {
     var self = this;
-    var modelNames = options.modelNames || ['HashtagEventSource', 'SandboxEventSource'];
+    var modelNames = options.modelNames || ['HashtagEventSource', 'SandboxEventSource', 'EntityExtractSource'];
     var endDate = options.endDate || (new Date()).toISOString();
     var intervalDurationMinutes = options.intervalDurationMinutes || (24 * 60);
     var totalIntervals = options.totalIntervals || 4;
@@ -69,7 +71,7 @@ module.exports = class {
         }
         functionArray = [];
         results.forEach(function (result) {
-          if(!result.clusters.length){
+          if (!result.clusters.length) {
             return;
           }
           var updateZoomLevelOptions = {
@@ -117,6 +119,8 @@ module.exports = class {
           });
         },
         function (results, cb) {
+          cb(null, results);
+          return;
           self.post_createZoomLevels(options, function (err, results) {
             cb(err, results);
           });
@@ -243,6 +247,8 @@ module.exports = class {
     var vectorToCluster = options.vectorToCluster || [];
     var zoomLevel = options.zoomLevel || 8;
     var clusterCount = options.clusterCount || 20;
+    var epsilonMeters = options.epsilonMeters || 2000;
+    var minMembersInCluster = options.minMembersInCluster || 1;
     var minutesAgo = options.minutesAgo || 2;
     var endDate = options.endDate || (new Date()).toISOString();
     if (!(vectorToCluster instanceof Array) || !vectorToCluster.length) {
@@ -262,19 +268,20 @@ module.exports = class {
     clusterCount = vectorToCluster.length < clusterCount
       ? vectorToCluster.length
       : clusterCount;
-    clustererKMeans.geoCluster(vectorToCluster, clusterCount, function (err, kmeanClusters) {
+    //clusterer.geoCluster(vectorToCluster, {clusterCount}, function (err, clusters) {
+    clusterer.geoCluster(vectorToCluster, {epsilonMeters, minMembersInCluster}, function (err, geoClusters) {
       if (err) {
         cb(err);
         return;
       }
       var clusters = [];
-      kmeanClusters.forEach(function (kmeanCluster) {
-        if(!kmeanCluster.clusterInd.length){
+      geoClusters.forEach(function (cluster) {
+        if (!cluster.clusterInd.length) {
           return;
         }
         var events = [];
         var weight = 0;
-        kmeanCluster.clusterInd.forEach(function (idx) {
+        cluster.clusterInd.forEach(function (idx) {
           events.push({
             lat: vectorToCluster[idx].lat,
             lng: vectorToCluster[idx].lng,
@@ -286,8 +293,8 @@ module.exports = class {
           weight += vectorToCluster[idx].weight;
         });
         clusters.push({
-          lat: kmeanCluster.centroid[0],
-          lng: kmeanCluster.centroid[1],
+          lat: cluster.centroid[0],
+          lng: cluster.centroid[1],
           weight,
           events
         });
@@ -298,7 +305,7 @@ module.exports = class {
         minutesAgo,
         clusters
       });
-    })
+    });
   }
 
   post_updateZoomLevel(options, cb) {
