@@ -16,11 +16,12 @@ module.exports = class {
     return new Promise(function(resolve,reject){
       if(!id){
         resolve(null);
+        return;
       }
       context.geoTweetHelper.findOne({"where":{"tweet_id":id}},function(err,source){
-        console.log(source);
         if(!source){
           resolve(null);
+          return;
         }
         var tweet = JSON.parse(source.full_tweet);
 
@@ -41,12 +42,16 @@ module.exports = class {
   getEventSourceData(eventInfo){
     var context = this;
     return new Promise(function(resolve,reject){
-      if(!eventInfo){
+      if(!eventInfo || eventInfo.event_source != "hashtag"){
         resolve(null);
+        return;
       }
       context.hashtagEventsSourceHelper.findOne({"where":{"event_id":eventInfo.event_id}},function(err,eventSource){
-        console.log(eventSource);
-        var source_data = eventSource.source_data || ["675586245276254208","675586549531074561","675586293708021760"];
+        if(err || !eventSource){
+          resolve(null);
+          return;
+        }
+        var source_data = eventSource.source_data;
         Promise.all(source_data.map(context.getSourceDataById.bind(context))).then(function(result){
           resolve(result);
         })
@@ -57,16 +62,21 @@ module.exports = class {
   post_sourceData(options, cb) {
 
     options = options || {};
-    var events = options.events || {
-        "events":[
-          {"event_id":"e517cdf8-fbae-4fba-93d2-493de623c947",
-            "event_source":"hashtag"
-          }
-        ]
-      };
+    var events = options.events;
 
     Promise.all(events.map(this.getEventSourceData.bind(this))).then(function(result){
-      cb(result);
+      if(!result || result.length == 0){
+        cb([]);
+        return;
+      }
+      result = result.filter(function(n){ return n != null });
+      var retval = [];
+
+      result.forEach(function(dataSet){
+        retval = retval.concat(dataSet);
+      });
+
+      cb(null,retval);
     })
 
   }

@@ -30,6 +30,11 @@
     "num_posts": {
       "type": "number"
     },
+    "source_data": {
+      "type": [
+        "string"
+      ]
+    },
     "event_source": {
       "type": "string",
       "required": true

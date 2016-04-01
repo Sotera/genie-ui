@@ -174,20 +174,25 @@ module.exports = class {
             eventSourceCluster.clustersOfTweets.forEach(function (clusterOfTweets) {
               var numPosts = clusterOfTweets.length;
               var reduceResult = clusterOfTweets.reduce(function (prev, curr, idx) {
+                var source_data = prev.source_data;
+                source_data.push(curr.tweet_id);
                 return {
                   lat: prev.lat + curr.lat,
                   lng: prev.lng + curr.lng,
-                  post_date: prev.post_date + curr.post_date.getTime()
+                  post_date: prev.post_date + curr.post_date.getTime(),
+                  source_data:source_data
                 };
-              }, {lat: 0, lng: 0, post_date: 0});
+              }, {lat: 0, lng: 0, post_date: 0,source_data:[]});
               var lat = reduceResult.lat / numPosts;
               var lng = reduceResult.lng / numPosts;
               var post_date = reduceResult.post_date / numPosts;
+              var source_data = reduceResult.source_data;
               //Construct EventsSource object to write to collection
               var newHashtagEventsSource = {
                 event_id: random.uuid4().toString(),
                 unique_user_count: clusterOfTweets.uniqueUserCount,
                 num_posts: numPosts,
+                source_data:source_data,
                 event_source: 'hashtag',
                 post_date: new Date(post_date),
                 indexed_date: new Date(),
