@@ -26,7 +26,7 @@ var config = boot.ConfigLoader.loadAppConfig(__dirname, process.env.NODE_ENV);
 //some process control routes. The 'master' app will not be a loopback app. It will just be a vanilla
 //Express4 app. Later we may add loopback for access to in memory database to manage the cluster.
 // if (config.clusterOn && cluster.isMaster) {
-if (+process.env.RUN_AS_NODERED && (cluster.isMaster || (cluster.isWorker && cluster.worker.id == '1'))) {
+if (+process.env.RUN_AS_NODERED && (cluster.isMaster || (process.env.NODE_ENV && cluster.isWorker && cluster.worker.id == '1'))) {
   master(config);
 }else{
   //EXPERIMENTAL -- If we aren't the master process of the cluster then start up like regular loopback app
