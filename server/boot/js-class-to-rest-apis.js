@@ -20,7 +20,6 @@ module.exports = function (app, cb) {
   //ZoomLevelEventClusterer
   options = {apiName: 'ZoomLevelEventClusterer'};
   extend(options, baseOptions);
-  new ClassMethodsToRestPosts(app, ZoomLevelEventClusterer, options);
   //ETL
   options = {apiName: 'ETL'};
   extend(options, baseOptions);
