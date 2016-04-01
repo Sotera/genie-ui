@@ -12,7 +12,7 @@ const moment = require('moment'),
     log: 'error'
   }),
   esDestClient = new es.Client({
-    host: 'localhost:9200',
+    host: 'elasticsearch:9200',
     requestTimeout: 600000,
     log: 'error'
   }),

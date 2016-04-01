@@ -14,12 +14,18 @@ angular.module('genie.eventsMap')
     .$promise;
   }
 
+  function getClusterSources(params) {
+    return $http.post('/clusters/getsources', params)
+    .then(function(res) { return res.data; });
+  }
+
   function getZoomLevel(options) {
     return findZoomLevel(options)
     .then(function(zoomLevels) {
       var zoomLevel = zoomLevels[0];
       if (zoomLevel) {
-        zoomLevel.clusters = mapifyClusters(zoomLevel.clusters);
+        var clusters = _.sortByOrder(zoomLevel.clusters, 'weight', 'desc');
+        zoomLevel.clusters = mapifyClusters(clusters);
         return zoomLevel;
       } else {
         zoomLevel = new ZoomLevel();
@@ -32,6 +38,8 @@ angular.module('genie.eventsMap')
       return _.map(clusters,
         function(cluster) {
           return {
+            // artificial id for UI convenience
+            id: cluster.lat.toString() + '-' + cluster.lng.toString(),
             location: new google.maps.LatLng(cluster.lat, cluster.lng),
             weight: cluster.weight,
             events: cluster.events
@@ -41,7 +49,8 @@ angular.module('genie.eventsMap')
   }
 
   return {
-    getZoomLevel: getZoomLevel
+    getZoomLevel: getZoomLevel,
+    getClusterSources: getClusterSources
   };
 
 }]);

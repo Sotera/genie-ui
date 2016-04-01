@@ -12,7 +12,7 @@ angular.module('genie.eventsMap')
 
     scope.$watchCollection(
       function(scope) {
-        return scope.zoomLevelObj;
+        return scope.clusters;
       },
       reheat
     );
@@ -21,7 +21,7 @@ angular.module('genie.eventsMap')
 
     function reheat() {
       if (scope.features.heatmap) {
-        var clusters = scope.zoomLevelObj.clusters;
+        var clusters = scope.clusters;
         heatmapLayer.setMap(scope.map);
         heatmapLayer.setData(clusters);
         // optionally bypass map markers (default: on)
