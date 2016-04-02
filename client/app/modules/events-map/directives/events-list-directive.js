@@ -77,6 +77,9 @@ angular.module('genie.eventsMap')
       return new google.maps.InfoWindow({
         maxWidth: 200,
         content: _.template(" \
+          <p> \
+            <img width='100px' src='<%= image_url %>' /> \
+          </p> \
           <blockquote><%= text %></blockquote> \
           <ul> \
             <li><a href='<%= url %>' target='_blank'> \
@@ -86,7 +89,8 @@ angular.module('genie.eventsMap')
           ")({
             text: tweet.text,
             author: tweet.author,
-            url: tweet.url
+            url: tweet.url,
+            image_url: tweet.image_url
           })
       });
     }
@@ -130,8 +134,8 @@ angular.module('genie.eventsMap')
       };
       if (!bb || _.isEmpty(bb)) return;
       // if (bb.sw.lat === bb.ne.lat) { // if a single point, make just large enough to see
-        bb.sw.lat = bb.ne.lat - 0.1;
-        bb.sw.lng = bb.ne.lng - 0.1;
+        bb.sw.lat = bb.ne.lat - 0.05;
+        bb.sw.lng = bb.ne.lng - 0.05;
       // }
       var box = new google.maps.Rectangle({
         strokeColor: '#FF0000',

@@ -23,16 +23,18 @@ module.exports = class {
           resolve(null);
           return;
         }
-        var tweet = JSON.parse(source.full_tweet);
+
+        //TODO: uncomment when accessing a real tweet
+        // var tweet = JSON.parse(source.full_tweet);
 
         var data = {
-          text: tweet.text,
-          id:tweet.id,
-          url: 'https://twitter.com/' + tweet.user.screen_name + '/status/' + tweet.id_str,
+          text: source.full_tweet, //tweet.text,
+          id: source.id, //tweet.id,
+          url: 'http://healthmap.org', //'https://twitter.com/' + tweet.user.screen_name + '/status/' + tweet.id_str,
           lat: source.lat,
           lng: source.lng,
           author: source.username,
-          image_url: tweet.user.profile_image_url
+          image_url: 'https://2rdnmg1qbg403gumla1v9i2h-wpengine.netdna-ssl.com/wp-content/uploads/sites/3/2016/01/iStock_000075246937_Small-350x350.jpg'//tweet.user.profile_image_url
         }
         resolve(data);
       })
@@ -64,9 +66,10 @@ module.exports = class {
     options = options || {};
     var events = options.events;
 
-    Promise.all(events.map(this.getEventSourceData.bind(this))).then(function(result){
+    Promise.all(events.map(this.getEventSourceData.bind(this)))
+    .then(function(result){
       if(!result || result.length == 0){
-        cb([]);
+        cb(null,[]);
         return;
       }
       result = result.filter(function(n){ return n != null });
@@ -77,6 +80,10 @@ module.exports = class {
       });
 
       cb(null,retval);
+    })
+    .catch(function(err) {
+      console.error(err);
+      cb(err);
     })
 
   }
