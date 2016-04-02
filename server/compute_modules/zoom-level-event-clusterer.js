@@ -352,6 +352,10 @@ module.exports = class {
       });
   }
 
+  post_buildTimeSeriesChart(options, cb) {
+    require('../../tasks/build-time-series-chart').run(cb);
+  }
+
   post_createFakeEvents(options, cb) {
     var self = this;
     options = options || {};
