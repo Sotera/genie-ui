@@ -5,7 +5,6 @@ var ClassMethodsToRestPosts = require('../util/class-methods-to-rest-posts');
 var TwitterHashtagClusterer = require('../compute_modules/twitter-hashtag-clusterer');
 var ZoomLevelEventClusterer = require('../compute_modules/zoom-level-event-clusterer');
 var ETL = require('../compute_modules/etl');
-var ClustersHelper = require('../compute_modules/clusters');
 var SourceDataAccess = require('../compute_modules/source-data-access');
 var baseOptions = {
   postPrefix: 'post_'
@@ -26,10 +25,6 @@ module.exports = function (app, cb) {
   options = {apiName: 'ETL'};
   extend(options, baseOptions);
   new ClassMethodsToRestPosts(app, ETL, options);
-  //tmp
-  options = {apiName: 'clusters'};
-  extend(options, baseOptions);
-  new ClassMethodsToRestPosts(app, ClustersHelper, options);
   //source data access
   options = {apiName: 'SourceDataAccess'};
   extend(options, baseOptions);
