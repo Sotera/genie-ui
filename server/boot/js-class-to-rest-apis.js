@@ -6,6 +6,7 @@ var TwitterHashtagClusterer = require('../compute_modules/twitter-hashtag-cluste
 var ZoomLevelEventClusterer = require('../compute_modules/zoom-level-event-clusterer');
 var ETL = require('../compute_modules/etl');
 var SourceDataAccess = require('../compute_modules/source-data-access');
+var Dev = require('../compute_modules/dev');
 var baseOptions = {
   postPrefix: 'post_'
   , getPrefix: 'get_'
@@ -29,6 +30,10 @@ module.exports = function (app, cb) {
   options = {apiName: 'SourceDataAccess'};
   extend(options, baseOptions);
   new ClassMethodsToRestPosts(app, SourceDataAccess, options);
+  //dev
+  options = {apiName: 'Dev'};
+  extend(options, baseOptions);
+  new ClassMethodsToRestPosts(app, Dev, options);
 
   cb();
 };
