@@ -213,7 +213,7 @@
               "NodeRed",
               "RUN_AS_NODERED=1",
               "USE_NODERED_CLUSTERING=0",
-              "GENIE_HOST=http://genie-strongloop",
+              "GENIE_HOST=http://genie-strongloop:3001",
               "NODE_ENV=production"
             ]
           }

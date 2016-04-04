@@ -15,7 +15,7 @@ angular.module('genie.eventsMap')
   }
 
   function getClusterSources(params) {
-    return $http.post('/clusters/getsources', params)
+    return $http.post('/sourcedataaccess/sourcedata', {events: params})
     .then(function(res) { return res.data; });
   }
 

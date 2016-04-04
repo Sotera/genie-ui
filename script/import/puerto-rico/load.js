@@ -56,7 +56,7 @@ function createGeoTweet(doc) {
   var geo = doc.geo;
   GeoTweet.create({
     username: doc.feedName,
-    tweet_id: doc.guid,
+    tweet_id: Date.now().toString(), //doc.guid - tweet text duped for locations
     full_tweet: doc.originalTitle,
     post_date: doc.datePublished,
     hashtags: _([doc.feedSource, doc.storySource, doc.all_KeyTag, doc.goWord, doc.locationName])

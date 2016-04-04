@@ -5,7 +5,6 @@ const app = require('../server/server'),
   LoopbackModelHelper = require('../server/util/loopback-model-helper'),
   Chart = new LoopbackModelHelper('Chart'),
   ZoomLevel = new LoopbackModelHelper('ZoomLevel'),
-  log = require('debug')('task:chart:events'),
   moment = require('moment'),
   settings = require('../server/util/get-settings'),
   time = require('../server/util/time'),
@@ -13,7 +12,17 @@ const app = require('../server/server'),
   _ = require('lodash');
 
 
-settings(['map:maxZoom', 'zoomLevels:endDate', 'zoomLevels:intervalMins'], findZoomLevel);
+const task = module.exports = {
+  run(cb) {
+    if (cb) cb(); // fire and forget
+    settings(['map:maxZoom', 'zoomLevels:endDate', 'zoomLevels:intervalMins'], findZoomLevel);
+  }
+};
+
+// start immediately if run as script
+if (require.main === module) {
+  task.run();
+}
 
 function findZoomLevel(settings) {
   // Sample minutes_ago from any zoom (all zooms have same time periods)
