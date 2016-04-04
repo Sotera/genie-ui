@@ -80,7 +80,7 @@ angular.module('genie.eventsMap')
           <p> \
             <img width='100px' src='<%= image_url %>' /> \
           </p> \
-          <blockquote><%= text %></blockquote> \
+          <p><%= text %></p> \
           <ul> \
             <li><a href='<%= url %>' target='_blank'> \
               <%= author %> \
