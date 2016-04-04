@@ -3,6 +3,16 @@
   "base": "PersistedModel",
   "idInjection": true,
   "options": {},
+  "indexes": {
+    "geo_tweet_unique": {
+      "keys": {
+        "tweet_id": 1
+      },
+      "options": {
+        "unique": true
+      }
+    }
+  },
   "properties": {
     "hashtag_indexed": {
       "type": "boolean",
