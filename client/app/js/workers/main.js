@@ -14,6 +14,27 @@ var workers = {
       var events = _.sortByOrder(args.events, 'weight', 'desc');
       postMessage({events: events});
     }
+  },
+  mapUtil: {
+    // locations: objects with lat,lng props.
+    // returns object with NE, SW lat,lng props.
+    getBoundingBox: function(args) {
+      var locations = args.locations,
+        len = locations.length,
+        sortByLat = _.sortBy(locations, 'lat'),
+        sortByLng = _.sortBy(locations, 'lng'),
+        minLat = sortByLat[0].lat,
+        maxLat = sortByLat[len-1].lat,
+        minLng = sortByLng[0].lng,
+        maxLng = sortByLng[len-1].lng;
+
+      postMessage({
+        bb: {
+          ne: { lat: maxLat, lng: maxLng },
+          sw: { lat: minLat, lng: minLng }
+        }
+      });
+    }
   }
 };
 

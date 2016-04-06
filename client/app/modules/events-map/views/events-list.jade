@@ -7,6 +7,6 @@
     i.fa.fa-fw.fa-map-marker
     | &nbsp;Click item to highlight an event
   a.list-group-item( ng-repeat='cluster in clusters'
-    ng-click='highlightCluster(cluster)' ng-class='isSelected(cluster)' )
+    ng-click='selectCluster(cluster)' ng-class='isSelected(cluster)' )
     span.badge( title='event weight (# of posts or users)') {{ cluster.weight }}
     img( ng-src='{{ cluster.events[0].event_source | sourceIcon }}' )

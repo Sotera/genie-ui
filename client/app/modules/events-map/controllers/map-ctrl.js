@@ -14,7 +14,7 @@ angular.module('genie.eventsMap')
   var zoomLevelObj = new ZoomLevel();
   zoomLevelObj.clusters = [];
   $scope.zoomLevelObj = zoomLevelObj;
-  $scope.features = {heatmap: true, boxes: false};
+  $scope.features = {heatmap: true, sources: false};
 
   // Watch user inputs and fetch zoomlevel object
   $scope.$watchCollection(
@@ -52,9 +52,9 @@ angular.module('genie.eventsMap')
       map.empty = false;
 
       ///////
-      // Greenville
-      // map.setCenter({lat: 34.84, lng: -82.38});
-      // setTimeout(function() {map.setZoom(13);}, 0);
+      // Debug
+      // map.setCenter({lat: 39.1, lng: -84.5});
+      // setTimeout(function() {map.setZoom(15);}, 0);
       ///////
     }
     $scope.zoomLevelObj = zoomLevelObj;
