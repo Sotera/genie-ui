@@ -62,6 +62,20 @@ module.exports = class {
     return [x / f, y / f];
   };
 
+  vectorAverage(vector) {
+    if (Object.prototype.toString.call(vector) !== '[object Array]' || !vector.length) {
+      return 0;
+    }
+    var len = vector.length;
+    var x = 0;
+    var y = 0;
+    vector.forEach(component=> {
+      x += component.x;
+      y += component.y;
+    });
+    return [x / len, y / len];
+  }
+
   geoCluster(locsToCluster, options, cb) {
     const epsilonMeters = options.epsilonMeters || dbscanGeoEpsilonMeters;
     const minMembersInCluster = options.minMembersInCluster || dbscanGeoMinMembersInCluster;
@@ -100,6 +114,9 @@ module.exports = class {
           return {x: vectorToCluster[idx][0], y: vectorToCluster[idx][1]};
         });
         var centroid = this.centroid(points);
+        if (isNaN(centroid[0]) || isNaN(centroid[1])) {
+          centroid = this.vectorAverage(points);
+        }
         return {
           clusterInd: geoCluster,
           centroid
