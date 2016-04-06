@@ -40,19 +40,6 @@ angular.module('genie.eventsMap')
       CoreService.toastInfo('No Events Found',
         'hint: change the date to search for events');
     }
-    // manual flag: true when no data has been set (init load)
-    if (map.empty) {
-      if (zoomLevelObj.center_lat) {
-        map.setCenter({
-          lat: zoomLevelObj.center_lat,
-          lng: zoomLevelObj.center_lng
-        });
-      } else {
-        // default to Austin if no events
-        map.setCenter({lat: 30.25, lng: -97.75});
-      }
-      map.empty = false;
-    }
     $scope.zoomLevelObj = zoomLevelObj;
     $scope.getEventsInBounds();
   }
@@ -61,9 +48,11 @@ angular.module('genie.eventsMap')
     var bounds = $scope.map.getBounds();
 
     // update url
-    $state.go('app.events-map.show',
-      {center: $scope.map.getCenter()},
-      {notify: false});
+    if ($scope.map.getCenter()) {
+      $state.go('app.events-map.show',
+        {center: $scope.map.getCenter().toUrlValue()},
+        {notify: false});
+    }
 
     if (!bounds) return;
     console.log(bounds, 'bounds changed');

@@ -15,8 +15,13 @@ angular.module('genie.eventsMap')
     };
 
     var map = new google.maps.Map(elem[0], mapOptions);
-    map.empty = true; // flag for other directives to know that map is empty
-    // map.setCenter({lat: 30.25, lng: -97.75}); // default: Austin
+
+    if ($stateParams.center) {
+      var center = $stateParams.center.split(',');
+      map.setCenter({lat: +center[0], lng: +center[1]}); // from url
+    } else {
+      map.setCenter({lat: 30.25, lng: -97.75}); // default: Austin
+    }
     scope.inputs.zoom_level = mapOptions.zoom;
     scope.map = map;
 
@@ -30,7 +35,6 @@ angular.module('genie.eventsMap')
     });
 
     map.addListener('bounds_changed', scope.getEventsInBounds);
-    // scope.boundsChanged();
 
     resizeMap(map, elem);
   }
