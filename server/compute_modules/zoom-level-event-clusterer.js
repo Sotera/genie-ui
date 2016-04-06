@@ -6,6 +6,7 @@ var LoopbackModelHelper = require('../util/loopback-model-helper');
 var Random = require('random-js');
 var moment = require('moment');
 var async = require('async');
+var _ = require('lodash');
 var ensureStringArray = require('../util/ensure-string-array');
 
 //const clusterer = new ClustererKMeans();
@@ -296,7 +297,9 @@ module.exports = class {
           lat: cluster.centroid[0],
           lng: cluster.centroid[1],
           weight,
-          events
+          events,
+          start_time: _.min(vectorToCluster, e => e.post_date).post_date,
+          end_time: _.max(vectorToCluster, e => e.post_date).post_date
         });
       });
       cb(err, {

@@ -92,7 +92,7 @@ angular.module('genie.eventsMap')
             </tr> \
             <tr> \
               <td style='color:black' colspan='2'> \
-                Posted: <%= post_date %> \
+                Posted: <%= moment(post_date).format('MM-DD hh:mm a') %> \
               </td> \
             </tr> \
           </table> \

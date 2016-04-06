@@ -42,7 +42,9 @@ angular.module('genie.eventsMap')
             id: cluster.lat.toString() + '-' + cluster.lng.toString(),
             location: new google.maps.LatLng(cluster.lat, cluster.lng),
             weight: cluster.weight,
-            events: cluster.events
+            events: cluster.events,
+            start_time: moment(cluster.start_time).format('MM-DD hh:mm a'),
+            end_time: moment(cluster.end_time).format('MM-DD hh:mm a')
           };
         })
     }
