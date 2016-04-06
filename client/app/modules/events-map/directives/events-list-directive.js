@@ -70,17 +70,29 @@ angular.module('genie.eventsMap')
 
     function createInfoWindow(tweet) {
       return new google.maps.InfoWindow({
-        maxWidth: 200,
+        maxWidth: 240,
         content: _.template(" \
-          <p> \
-            <img width='100px' src='<%= image_url %>' /> \
-          </p> \
-          <p><%= text %></p> \
-          <ul> \
-            <li><a href='<%= url %>' target='_blank'> \
-              <%= author %> \
-            </a></li> \
-          </ul> \
+          <table> \
+            <tr> \
+              <td> \
+                <img width='60px' src='<%= image_url %>' /> \
+              </td> \
+              <td> \
+                <a style='color:black' href='<%= url %>' target='_blank'> \
+                  <%= text %> \
+                </a> \
+              </td> \
+            </tr> \
+            <tr> \
+              <td> \
+                <a href='<%= url %>' target='_blank'> \
+                  @<%= author %> \
+                </a> \
+              </td> \
+              <td> \
+              </td> \
+            </tr> \
+          </table> \
           ")({
             text: tweet.text,
             author: tweet.author,
