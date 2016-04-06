@@ -25,7 +25,6 @@ angular.module('loopbackApp', [
     'ngResource',
     'ngRoute',
     'ngSanitize',
-    'ngTouch',
     'ngWebsocket',
     'ngCookies',
     'ui.bootstrap',
