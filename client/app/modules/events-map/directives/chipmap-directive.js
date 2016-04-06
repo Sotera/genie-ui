@@ -11,16 +11,13 @@ angular.module('genie.eventsMap')
 
     scope.map = new google.maps.Map(elem[0], mapOptions);
     scope.features = {heatmap: true};
-
-    var zoomLevelObj = new ZoomLevel();
-    zoomLevelObj.clusters = [];
-    scope.zoomLevelObj = zoomLevelObj;
+    scope.clusters = [];
 
     mapService
     .getZoomLevel({zoom_level: 18, minutes_ago: 1440})
     .then(function(doc) {
       if (doc && doc.id) { // found a matching doc
-        scope.zoomLevelObj = doc;
+        scope.clusters = doc.clusters;
         scope.map.setCenter({lat: doc.center_lat,
           lng: doc.center_lng});
       } else {
