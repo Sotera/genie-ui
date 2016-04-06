@@ -1,13 +1,14 @@
 'use strict';
 angular.module('genie.eventsMap')
 .controller('EventsMapCtrl', ['$scope', 'mapService', 'ZoomLevel',
-  'CoreService',
-  function($scope, mapService, ZoomLevel, CoreService) {
+  'CoreService', '$stateParams', '$state',
+  function($scope, mapService, ZoomLevel, CoreService, $stateParams, $state) {
+  console.log($stateParams.zoom)
 
   var PERIOD = CoreService.env.period; // days
   var DAY = CoreService.env.day; // mins
   // Set init values
-  $scope.inputs = {zoom_level: 18, minutes_ago: DAY * PERIOD};
+  $scope.inputs = {zoom_level: null, minutes_ago: DAY * PERIOD};
   $scope.map = {};
   $scope.events = [];
   $scope.clusters = [];
@@ -32,6 +33,7 @@ angular.module('genie.eventsMap')
   }
 
   function updateMap(zoomLevelObj) {
+    if (!$scope.map) return;
     var map = $scope.map;
 
     if (!zoomLevelObj.clusters.length) {
@@ -50,12 +52,6 @@ angular.module('genie.eventsMap')
         map.setCenter({lat: 30.25, lng: -97.75});
       }
       map.empty = false;
-
-      ///////
-      // Debug
-      // map.setCenter({lat: 39.1, lng: -84.5});
-      // setTimeout(function() {map.setZoom(15);}, 0);
-      ///////
     }
     $scope.zoomLevelObj = zoomLevelObj;
     $scope.getEventsInBounds();
@@ -63,6 +59,12 @@ angular.module('genie.eventsMap')
 
   $scope.getEventsInBounds = _.debounce(function() {
     var bounds = $scope.map.getBounds();
+
+    // update url
+    $state.go('app.events-map.show',
+      {center: $scope.map.getCenter()},
+      {notify: false});
+
     if (!bounds) return;
     console.log(bounds, 'bounds changed');
     /// TODO: mv to worker and replace bounds.contains()

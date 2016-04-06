@@ -8,8 +8,9 @@ angular.module('genie.eventsMap')
       templateUrl: 'modules/events-map/views/main'
     })
     .state('app.events-map.show', {
-      url: '',
+      url: '/z/:zoom/c/:center',
       templateUrl: 'modules/events-map/views/map',
       controller: 'EventsMapCtrl'
-    });
+    })
+  ;
 });
