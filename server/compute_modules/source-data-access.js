@@ -33,7 +33,8 @@ module.exports = class {
           lat: source.lat,
           lng: source.lng,
           author: source.username,
-          image_url: tweet.user.profile_image_url
+          image_url: tweet.user.profile_image_url,
+          post_date: source.post_date
         }
         resolve(data);
       })

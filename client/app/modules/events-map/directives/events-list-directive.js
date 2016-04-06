@@ -84,12 +84,15 @@ angular.module('genie.eventsMap')
               </td> \
             </tr> \
             <tr> \
-              <td> \
+              <td style='color:black' colspan='2'> \
                 <a href='<%= url %>' target='_blank'> \
-                  @<%= author %> \
+                  By: @<%= author %> \
                 </a> \
               </td> \
-              <td> \
+            </tr> \
+            <tr> \
+              <td style='color:black' colspan='2'> \
+                Posted: <%= post_date %> \
               </td> \
             </tr> \
           </table> \
@@ -97,7 +100,8 @@ angular.module('genie.eventsMap')
             text: tweet.text,
             author: tweet.author,
             url: tweet.url,
-            image_url: tweet.image_url
+            image_url: tweet.image_url,
+            post_date: new Date(tweet.post_date).toGMTString()
           })
       });
     }
@@ -118,8 +122,8 @@ angular.module('genie.eventsMap')
       function(e) {
         var bb = e.data.bb;
         if (bb.sw.lat === bb.ne.lat) { // if a single point, make just large enough to see
-          bb.sw.lat = bb.ne.lat - 0.02;
-          bb.sw.lng = bb.ne.lng - 0.02;
+          bb.ne.lat = bb.sw.lat + 0.003;
+          bb.ne.lng = bb.sw.lng + 0.003;
         }
         var box = new google.maps.Rectangle({
           strokeColor: '#FF0000',
