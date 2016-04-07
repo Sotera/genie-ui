@@ -4,7 +4,7 @@ angular.module('genie.eventsMap')
   function(ImageManagerService, $window) {
 
   function link(scope, elem, attrs) {
-    var imageType = attrs.imageType;
+    var imageType = attrs.imageType; // selected / unselected
 
     scope.$watchCollection(
       function() {
@@ -22,6 +22,10 @@ angular.module('genie.eventsMap')
         }
       }
     );
+
+    scope.$watch('inputs.minutes_ago', function() {
+      ImageManagerService.clear(imageType);
+    });
   }
 
   function getContainer(elem) {

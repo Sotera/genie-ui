@@ -9,8 +9,10 @@ angular.module('genie.eventsMap')
     var boxes = [], markers = [], infowindows = [];
 
     scope.$watch('features.sources', showAllSources);
+    scope.$watch('inputs.minutes_ago', removeArtifacts);
 
-    function reset() {
+    function removeArtifacts() {
+      netGraphCtrl.removeNetGraph();
       clearMarkers();
       clearBoxes();
       clearInfoWindows();
@@ -41,7 +43,7 @@ angular.module('genie.eventsMap')
     }
 
     scope.selectCluster = function(cluster) {
-      reset();
+      removeArtifacts();
       scope.selectedCluster = cluster;
       showSources(cluster);
     }
@@ -143,7 +145,7 @@ angular.module('genie.eventsMap')
     }
 
     function showAllSources() {
-      reset();
+      removeArtifacts();
       if (scope.features.sources) {
         angular.forEach(scope.clusters, showSources);
       }

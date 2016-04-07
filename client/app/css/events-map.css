@@ -7,6 +7,11 @@ img.grid-image {
   width: 50px;
 }
 
+canvas.netgraph {
+  height:180px;
+  width:100%;
+}
+
 /*
 img.muted {
   -moz-filter: grayscale(100%);

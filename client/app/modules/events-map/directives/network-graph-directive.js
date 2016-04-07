@@ -6,6 +6,7 @@ angular.module('genie.eventsMap')
       controller: ['$scope', 'ImageManagerService', 'SandboxEventsSource',
         function($scope, ImageManagerService, SandboxEventsSource) {
           this.createNetGraph = createNetGraph;
+          this.removeNetGraph = removeNetGraph;
 
           function createNetGraph(event, callback) {
             var query = {
@@ -19,6 +20,15 @@ angular.module('genie.eventsMap')
             .then(graphEvents)
             .then(callback || angular.noop)
             .catch(console.error);
+          }
+
+          function removeNetGraph() {
+            // HACK
+            var canvas = $('#graph');
+            canvas.replaceWith('<canvas id="graph" class="netgraph">');
+            // TODO: clearRect() doesn't seem to work?
+            // var ctx = canvas.getContext('2d');
+            // ctx.clearRect(0, 0, canvas.width, canvas.height);
           }
 
           function graphEvents(sources) {
