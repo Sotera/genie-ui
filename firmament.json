@@ -165,14 +165,6 @@
         "Scripts": [
           {
             "RelativeWorkingDir": ".",
-            "Command": "bower",
-            "Args": [
-              "install",
-              "--config.interactive=false"
-            ]
-          },
-          {
-            "RelativeWorkingDir": ".",
             "Command": "cp",
             "Args": [
               "server\/config.json.template",
