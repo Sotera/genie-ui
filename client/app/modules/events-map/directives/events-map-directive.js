@@ -16,7 +16,7 @@ angular.module('genie.eventsMap')
 
     var map = new google.maps.Map(elem[0], mapOptions);
 
-    if ($stateParams.center) {
+    if ($stateParams.center && $stateParams.center.length) {
       var center = $stateParams.center.split(',');
       map.setCenter({lat: +center[0], lng: +center[1]}); // from url
     } else {
@@ -31,7 +31,10 @@ angular.module('genie.eventsMap')
       scope.inputs.zoom_level = newZoom;
       scope.$apply();
       // update url
-      $state.go('app.events-map.show', {zoom: newZoom}, {notify: false});
+      $state.go('app.events-map.show',
+        { zoom: newZoom, center: scope.map.getCenter().toUrlValue() },
+        { notify: false }
+      );
     });
 
     map.addListener('bounds_changed', scope.getEventsInBounds);

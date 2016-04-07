@@ -47,15 +47,16 @@ angular.module('genie.eventsMap')
   $scope.getEventsInBounds = _.debounce(function() {
     var bounds = $scope.map.getBounds();
 
-    // update url
-    if ($scope.map.getCenter()) {
-      $state.go('app.events-map.show',
-        {center: $scope.map.getCenter().toUrlValue()},
-        {notify: false});
-    }
-
-    if (!bounds) return;
     console.log(bounds, 'bounds changed');
+    if (!bounds) return;
+
+    // update url
+    // if ($scope.map.getCenter()) {
+    //   $state.go('app.events-map.show',
+    //     {center: $scope.map.getCenter().toUrlValue()},
+    //     {notify: false});
+    // }
+
     /// TODO: mv to worker and replace bounds.contains()
     var clusters = _.filter($scope.zoomLevelObj.clusters, function(cluster) {
       var latlng = new google.maps.LatLng({
