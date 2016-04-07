@@ -13,17 +13,15 @@ angular.module('genie.eventsMap')
     function reset() {
       clearMarkers();
       clearBoxes();
+      clearInfoWindows();
     }
 
     function clearMarkers() {
       for(var i=0; i<markers.length; i++) {
         markers[i].setMap(null);
         markers[i] = null;
-        infowindows[i].setMap(null);
-        infowindows[i] = null;
       }
       markers = [];
-      infowindows = [];
     }
 
     function clearBoxes() {
@@ -34,13 +32,29 @@ angular.module('genie.eventsMap')
       boxes = [];
     }
 
+    function clearInfoWindows() {
+      for(var i=0; i<infowindows.length; i++) {
+        infowindows[i].setMap(null);
+        infowindows[i] = null;
+      }
+      infowindows = [];
+    }
+
     scope.selectCluster = function(cluster) {
       reset();
       scope.selectedCluster = cluster;
-      showSources(cluster)
+      showSources(cluster);
     }
 
     function showSources(cluster) {
+      if (cluster.events[0].event_source == 'hashtag') {
+        showHashtagSources(cluster);
+      } else {
+        showSandboxSources(cluster);
+      }
+    }
+
+    function showHashtagSources(cluster) {
       scope.showSpinner = true;
 
       var params = cluster.events.map(function(event) {
@@ -66,7 +80,27 @@ angular.module('genie.eventsMap')
         });
         scope.showSpinner = false;
       });
-    };
+    }
+
+    function showSandboxSources(cluster) {
+      drawBox(cluster.events);
+      cluster.events.forEach(function(event) {
+        var marker = new google.maps.Marker({
+          map: scope.map,
+          animation: google.maps.Animation.DROP,
+          position: {lat: event.lat, lng: event.lng}
+        });
+
+        // var infowindow = createInfoWindow(event);
+        marker.addListener('click', function() {
+          scope.showSpinner = true;
+          netGraphCtrl.createNetGraph(event,
+            function() {scope.showSpinner = false;});
+        });
+        markers.push(marker);
+        // infowindows.push(infowindow);
+      });
+    }
 
     function createInfoWindow(tweet) {
       return new google.maps.InfoWindow({
@@ -114,6 +148,7 @@ angular.module('genie.eventsMap')
     };
 
     function drawBox(sources) {
+      if (!(sources && sources.length)) return;
       Genie.worker.run({
         worker: 'mapUtil',
         method: 'getBoundingBox',
