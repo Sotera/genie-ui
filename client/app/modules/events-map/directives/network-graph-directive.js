@@ -34,8 +34,8 @@ angular.module('genie.eventsMap')
                 {
                   onHover: function(node) {
                     console.log('node:: ', node.id);
-                    ImageManagerService.markSelected(node.id);
-                    $scope.$apply();
+                    // ImageManagerService.markSelected(node.id);
+                    // $scope.$apply();
                     showImageOnMap(node.id, sourceNodes, source.node_to_url);
                   }
                 }
@@ -65,7 +65,7 @@ angular.module('genie.eventsMap')
             setTimeout(function() {
               marker.setMap(null);
               marker = null;
-            }, 1000);
+            }, 3000);
           }
       }]
     };

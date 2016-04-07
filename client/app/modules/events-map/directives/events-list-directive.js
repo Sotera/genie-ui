@@ -67,6 +67,7 @@ angular.module('genie.eventsMap')
         sources.forEach(function(src) {
           var marker = new google.maps.Marker({
             map: scope.map,
+            icon: 'images/hashtag.gif',
             animation: google.maps.Animation.DROP,
             position: {lat: src.lat, lng: src.lng}
           });
@@ -87,6 +88,7 @@ angular.module('genie.eventsMap')
       cluster.events.forEach(function(event) {
         var marker = new google.maps.Marker({
           map: scope.map,
+          icon: 'images/sandbox.gif',
           animation: google.maps.Animation.DROP,
           position: {lat: event.lat, lng: event.lng}
         });
@@ -179,26 +181,6 @@ angular.module('genie.eventsMap')
         // });
         boxes.push(box);
       });
-    }
-
-    function showMarker(cluster, options) {
-      // var iconPath = sourceIconFilter(event.event_source);
-      var marker = new google.maps.Marker({
-        map: scope.map,
-        animation: google.maps.Animation.DROP,
-        position: cluster.location
-      });
-
-      marker.addListener('click', function() {
-        scope.highlightCluster(cluster);
-      });
-
-      if (options.autoHide) {
-        $timeout(function() {
-          marker.setMap(null);
-          marker = null;
-        }, 2000);
-      }
     }
 
     function resize(elem) {
