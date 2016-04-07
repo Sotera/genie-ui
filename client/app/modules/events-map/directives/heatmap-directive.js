@@ -5,10 +5,9 @@ angular.module('genie.eventsMap')
 
   function link(scope, elem, attrs) {
     var markers = []; // needed to remove markers on input change
-    var heatmapLayer = new google.maps.visualization.HeatmapLayer(
-      {
-        radius: attrs.radius || 24
-      });
+    var heatmapLayer = new google.maps.visualization.HeatmapLayer({
+      radius: attrs.radius || 24
+    });
 
     scope.$watchCollection(
       function(scope) {
@@ -24,11 +23,8 @@ angular.module('genie.eventsMap')
         var clusters = scope.clusters;
         heatmapLayer.setMap(scope.map);
         heatmapLayer.setData(clusters);
-        // optionally bypass map markers (default: on)
-        if (attrs.markers !== 'off') {
-          resetMarkers();
-          addMarkers(clusters, scope.map);
-        }
+        resetMarkers();
+        addMarkers(clusters, scope.map);
       } else {
         heatmapLayer.setMap(null);
         resetMarkers();
