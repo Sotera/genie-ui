@@ -37,15 +37,14 @@ angular.module('genie.eventsMap')
     function mapifyClusters(clusters) {
       return _.map(clusters,
         function(cluster) {
-          return {
+          var uiFriendly = {
             // artificial id for UI convenience
             id: cluster.lat.toString() + '-' + cluster.lng.toString(),
             location: new google.maps.LatLng(cluster.lat, cluster.lng),
-            weight: cluster.weight,
-            events: cluster.events,
             start_time: moment(cluster.start_time).format('MM-DD hh:mm a'),
             end_time: moment(cluster.end_time).format('MM-DD hh:mm a')
           };
+          return angular.extend(cluster, uiFriendly);
         })
     }
   }
