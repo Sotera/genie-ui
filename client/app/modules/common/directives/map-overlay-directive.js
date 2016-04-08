@@ -13,9 +13,9 @@ angular.module('genie.common')
       } else if (action === 'shrink') {
         var height = elem.height();
         if (scope.shrunk) {
-          elem.height( height * 4 );
+          elem.height( height * 5 );
         } else {
-          elem.height( height / 4 );
+          elem.height( height / 5 );
         }
         scope.shrunk = !scope.shrunk;
       }

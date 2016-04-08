@@ -1,7 +1,7 @@
 spinner( show='showSpinner' ) //- boolean scope property to toggle spinner
 
 image-grid.map-overlay.truncate.hide.col-md-10( image-type='unselected'
-  map-overlay overlay-action='hide' style='top:45px;left:0;height:128px' )
+  map-overlay overlay-action='shrink' style='top:45px;left:0;height:128px' )
 
 .container-fluid
   .row( dynamic-cols='clusters'
@@ -24,5 +24,7 @@ image-grid.map-overlay.truncate.hide.col-md-10( image-type='selected'
   .col-md-4
     canvas#graph( class='netgraph' )
   .col-md-4
+    .inst.
+      hint: dbl-click to toggle
     jqcloud( tag-cloud words='tags' delay='10' steps='7' class='events-cloud'
       font-size='{from:0.08, to:0.02}' )

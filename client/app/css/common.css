@@ -37,6 +37,13 @@ div.time-series .border {
   z-index: 100;
 }
 
+.map-overlay .inst {
+  font-size: 0.8em;
+  color: #fff;
+  margin-top: -15px;
+  text-align: right;
+}
+
 .truncate {
   overflow: auto;
 }
