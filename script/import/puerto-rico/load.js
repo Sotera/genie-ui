@@ -54,10 +54,15 @@ function geocodeAndSave(doc) {
 
 function createGeoTweet(doc) {
   var geo = doc.geo;
+  var now = Date.now();
   GeoTweet.create({
     username: doc.feedName,
     tweet_id: Date.now().toString(), //doc.guid - tweet text duped for locations
-    full_tweet: doc.originalTitle,
+    full_tweet: JSON.stringify({
+      id: now, id_str: now, text: doc.originalTitle, user: {
+        profile_image_url: 'http://www.hacer.org/latam/wp-content/uploads/2016/02/Aedesaegypt.jpg'
+      }
+    }), // for source-data-access conformity
     post_date: doc.datePublished,
     hashtags: _([doc.feedSource, doc.storySource, doc.all_KeyTag, doc.goWord, doc.locationName])
       .flatten().compact().uniq().value(),

@@ -29,7 +29,7 @@ module.exports = class {
         var data = {
           text: tweet.text,
           id: tweet.id,
-          url: 'https://twitter.com/' + tweet.user.screen_name + '/status/' + tweet.id_str,
+          url: 'https://twitter.com/' + source.username + '/status/' + tweet.id_str,
           lat: source.lat,
           lng: source.lng,
           author: source.username,

@@ -637,9 +637,9 @@ module.exports = class {
   }
 
   get_resetGeoTweetHashtagIndexed(options, cb) {
-    var self = this;
-    self.geoTweetHelper.updateAll({hashtag_indexed: false}, function (err, result) {
-      cb(null, 'Reset hashtag_indexed');
+    this.geoTweetHelper.updateAll({hashtag_indexed: false}, function (err, result) {
+      if (err) return cb(err);
+      cb(null, result);
     });
   }
 
