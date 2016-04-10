@@ -7,6 +7,11 @@ img.grid-image {
   width: 50px;
 }
 
+img.grid-image-hover {
+  height: 150px;
+  width: 150px;
+}
+
 canvas.netgraph {
   height:180px;
   width:100%;

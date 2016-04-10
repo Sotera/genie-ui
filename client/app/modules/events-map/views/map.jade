@@ -1,6 +1,7 @@
 spinner( show='showSpinner' ) //- boolean scope property to toggle spinner
 
-image-grid.map-overlay.truncate.hide.col-md-10( image-type='unselected'
+image-grid.map-overlay.truncate.hide.col-md-10(
+  image-type='unselected' hover-dir='1bottom-right'
   map-overlay overlay-action='shrink' style='top:45px;left:0;height:128px' )
 
 .container-fluid
@@ -14,10 +15,6 @@ image-grid.map-overlay.truncate.hide.col-md-10( image-type='unselected'
     div( style='padding-left:0' class='{{colClasses[1]}}' )
       events-list( network-graph )
 
-image-grid.map-overlay.truncate.hide.col-md-10( image-type='selected'
-  map-overlay overlay-action='hide' after-action='clearImages("selected")'
-  style='bottom:200px;left:0;height:128px' )
-
 .map-overlay.col-md-12( style='bottom:0;left:0' map-overlay overlay-action='shrink' )
   .col-md-4
     time-series( chart_name='time-series' )
@@ -28,3 +25,8 @@ image-grid.map-overlay.truncate.hide.col-md-10( image-type='selected'
       hint: dbl-click to toggle
     jqcloud( tag-cloud words='tags' delay='10' steps='7' class='events-cloud'
       font-size='{from:0.08, to:0.02}' )
+
+image-grid.map-overlay.truncate.hide.col-md-4(
+  image-type='selected' hover-dir='top-left'
+  map-overlay overlay-action='hide' after-action='clearImages("selected")'
+  style='bottom:0;right:0;z-index:100' )

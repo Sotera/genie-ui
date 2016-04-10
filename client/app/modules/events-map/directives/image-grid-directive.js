@@ -3,8 +3,13 @@ angular.module('genie.eventsMap')
 .directive('imageGrid', ['ImageManagerService', '$window',
   function(ImageManagerService, $window) {
 
+  var $body = $('body');
+
   function link(scope, elem, attrs) {
-    var imageType = attrs.imageType; // selected / unselected
+    // selected or unselected
+    var imageType = attrs.imageType;
+    // image hover orientation: top-left or bottom-right
+    var hoverDir = attrs.hoverDir || 'top-left';
 
     scope.$watchCollection(
       function() {
@@ -15,7 +20,8 @@ angular.module('genie.eventsMap')
         if (images.length) {
           showImages({
             images: images,
-            elem: elem
+            elem: elem,
+            hoverDir: hoverDir
           });
         } else {
           reset(elem);
@@ -41,7 +47,8 @@ angular.module('genie.eventsMap')
   function showImages(args) {
     var images = args.images,
       el = args.elem,
-      container = getContainer(el);
+      container = getContainer(el),
+      hoverDir = args.hoverDir;
 
     reset(el);
 
@@ -54,11 +61,31 @@ angular.module('genie.eventsMap')
         img.className = 'grid-image';
         img.id = image.nodeId;
         img.src = image.url;
-        img.addEventListener('click',
-          function() { $window.open(image.url); });
+        $(img).hover(
+          _.debounce(mouseOnImage, 333),
+          _.debounce(mouseOffImage, 333)
+        );
         frag.appendChild(img);
       });
       container.append(frag);
+    }
+
+    function mouseOffImage(evt) {
+      $body.find('.grid-image-selected').remove();
+    }
+
+    function mouseOnImage(evt) {
+      var css = {position: 'absolute', zIndex: 100};
+      if (hoverDir === 'top-left') {
+        angular.extend(css, {top: evt.clientY - 150, left: evt.clientX - 150});
+      } else { // bottom-right
+        angular.extend(css, {top: evt.clientY, left: evt.clientX});
+      }
+      var $dupe = $(this.cloneNode(true))
+      .removeClass('grid-image')
+      .addClass('grid-image-hover')
+      .css(css);
+      $body.append($dupe);
     }
   }
 
@@ -71,7 +98,7 @@ angular.module('genie.eventsMap')
         $scope.clearImages = function(type) {
           ImageManagerService.clear(type);
           $scope.$apply();
-        }
+        };
     }]
   };
 }]);
