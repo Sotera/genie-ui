@@ -71,7 +71,7 @@ angular.module('genie.eventsMap')
     }
 
     function mouseOffImage(evt) {
-      $body.find('.grid-image-selected').remove();
+      $body.find('.grid-image-hover').remove();
     }
 
     function mouseOnImage(evt) {
