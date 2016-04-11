@@ -54,14 +54,14 @@ angular.module('genie.eventsMap')
 
     if (images.length) {
       var frag = $window.document.createDocumentFragment(); // reduces page reflows
-      var templ, content;
+      var markup, compiled;
       el.removeClass('hide');
 
       images.forEach(function(image) {
-        templ = "<img hover-image class='grid-image' src='" + image.url +
+        markup = "<img hover-image class='grid-image' src='" + image.url +
           "' id='" + image.nodeId + "' hover-dir='" + hoverDir + "'>";
-        content = $compile(templ)(scope);
-        frag.appendChild($(content)[0]);
+        compiled = $compile(angular.element(markup))(scope);
+        frag.appendChild(compiled[0]);
       });
       container.append(frag);
     }

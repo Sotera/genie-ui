@@ -23,9 +23,9 @@ angular.module('genie.common')
     function mouseOnImage(evt) {
       var css = { position: 'absolute', zIndex: 100 };
       if (hoverDir === 'top-left') {
-        angular.extend(css, { top: evt.clientY - 150, left: evt.clientX - 150 });
+        angular.extend(css, { top: evt.clientY - 175, left: evt.clientX - 175 });
       } else { // bottom-right
-        angular.extend(css, { top: evt.clientY, left: evt.clientX });
+        angular.extend(css, { top: evt.clientY + 50, left: evt.clientX + 50 });
       }
       var $dupe = $(this.cloneNode(true))
       .removeClass(origClass)
