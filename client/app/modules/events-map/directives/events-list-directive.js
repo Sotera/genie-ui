@@ -1,7 +1,8 @@
 'use strict';
 angular.module('genie.eventsMap')
 .directive('eventsList', ['$timeout', 'sourceIconFilter', '$window', 'mapService',
-  function($timeout, sourceIconFilter, $window, mapService) {
+  'ImageManagerService',
+  function($timeout, sourceIconFilter, $window, mapService, ImageManagerService) {
 
   function link(scope, elem, attrs, netGraphCtrl) {
     resize(elem);
@@ -44,6 +45,7 @@ angular.module('genie.eventsMap')
 
     scope.selectCluster = function(cluster) {
       removeArtifacts();
+      ImageManagerService.clear();
       scope.selectedCluster = cluster;
       showSources(cluster);
     }
