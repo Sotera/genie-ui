@@ -29,6 +29,14 @@ angular.module('genie.eventsMap')
       var newZoom = map.getZoom();
       console.log(newZoom, 'zoom');
       scope.inputs.zoom_level = newZoom;
+      var TRIGGER = 11;
+      // when zoomed in, auto-hide heatmap & show sources
+      if (newZoom >= TRIGGER) {
+        scope.features.heatmap = false;
+        scope.features.sources = true;
+      } else if (newZoom < TRIGGER) {
+        scope.features.heatmap = true;
+      }
       scope.$apply();
       // update url
       $state.go('app.events-map.show',
