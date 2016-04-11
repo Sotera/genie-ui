@@ -1,9 +1,7 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('imageGrid', ['ImageManagerService', '$window',
-  function(ImageManagerService, $window) {
-
-  var $body = $('body');
+.directive('imageGrid', ['ImageManagerService', '$window', '$compile',
+  function(ImageManagerService, $window, $compile) {
 
   function link(scope, elem, attrs) {
     // selected or unselected
@@ -21,7 +19,8 @@ angular.module('genie.eventsMap')
           showImages({
             images: images,
             elem: elem,
-            hoverDir: hoverDir
+            hoverDir: hoverDir,
+            scope: scope
           });
         } else {
           reset(elem);
@@ -48,44 +47,23 @@ angular.module('genie.eventsMap')
     var images = args.images,
       el = args.elem,
       container = getContainer(el),
-      hoverDir = args.hoverDir;
+      hoverDir = args.hoverDir,
+      scope = args.scope;
 
     reset(el);
 
     if (images.length) {
-      var frag = $window.document.createDocumentFragment(), // reduces page reflows
-        img;
+      var frag = $window.document.createDocumentFragment(); // reduces page reflows
+      var templ, content;
       el.removeClass('hide');
+
       images.forEach(function(image) {
-        img = $window.document.createElement('img');
-        img.className = 'grid-image';
-        img.id = image.nodeId;
-        img.src = image.url;
-        $(img).hover(
-          _.debounce(mouseOnImage, 333),
-          _.debounce(mouseOffImage, 333)
-        );
-        frag.appendChild(img);
+        templ = "<img hover-image class='grid-image' src='" + image.url +
+          "' id='" + image.nodeId + "' hover-dir='" + hoverDir + "'>";
+        content = $compile(templ)(scope);
+        frag.appendChild($(content)[0]);
       });
       container.append(frag);
-    }
-
-    function mouseOffImage(evt) {
-      $body.find('.grid-image-hover').remove();
-    }
-
-    function mouseOnImage(evt) {
-      var css = {position: 'absolute', zIndex: 100};
-      if (hoverDir === 'top-left') {
-        angular.extend(css, {top: evt.clientY - 150, left: evt.clientX - 150});
-      } else { // bottom-right
-        angular.extend(css, {top: evt.clientY, left: evt.clientX});
-      }
-      var $dupe = $(this.cloneNode(true))
-      .removeClass('grid-image')
-      .addClass('grid-image-hover')
-      .css(css);
-      $body.append($dupe);
     }
   }
 
