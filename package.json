@@ -1,6 +1,5 @@
 {
   "name": "genie-ui",
-  "subdomain": "genie-ui",
   "description": "GENIE User Interface",
   "version": "0.1.0",
   "private": true,
