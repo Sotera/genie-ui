@@ -2,7 +2,7 @@
 
 ## Dependencies
 
-1. Node 4.2
+1. Node 4.4
 1. Strongloop
 1. Bower
 1. Elasticsearch 2.0+
