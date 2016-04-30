@@ -36,17 +36,17 @@ angular.module('genie.eventsMap')
 
             if (source) {
               // retain nodes lat-lng. render_graph mutates its input.
-              var sourceNodes = source.network_graph.nodes.map(function(node) {
-                return {id: node.id, lat: node.lat, lng: node.lon};
-              });
+              // var sourceNodes = source.network_graph.nodes.map(function(node) {
+              //   return {id: node.id, lat: node.lat, lng: node.lon};
+              // });
               render_graph(
                 format_graph(source.network_graph),
                 {
                   onHover: function(node) {
                     console.log('node:: ', node.id);
-                    ImageManagerService.markSelected(node.id);
-                    $scope.$apply();
-                    showImageOnMap(node.id, sourceNodes, source.node_to_url);
+                    // ImageManagerService.markSelected(node.id);
+                    // $scope.$apply();
+                    // showImageOnMap(node.id, sourceNodes, source.node_to_url);
                   }
                 }
               );
