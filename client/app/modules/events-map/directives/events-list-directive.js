@@ -1,30 +1,22 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('eventsList', ['$timeout', 'sourceIconFilter', '$window', 'mapService',
-  'ImageManagerService',
-  function($timeout, sourceIconFilter, $window, mapService, ImageManagerService) {
+.directive('eventsList', ['$window', 'mapService',
+  'ImageManagerService', 'SandboxEventsSource', 'MarkersService',
+  function($window, mapService, ImageManagerService,
+    SandboxEventsSource, MarkersService) {
 
   function link(scope, elem, attrs, netGraphCtrl) {
     resize(elem);
 
-    var boxes = [], markers = [], infowindows = [];
+    var boxes = [];
 
     scope.$watch('features.sources', showAllSources);
     scope.$watch('inputs.minutes_ago', removeArtifacts);
 
     function removeArtifacts() {
       netGraphCtrl.removeNetGraph();
-      clearMarkers();
       clearBoxes();
-      clearInfoWindows();
-    }
-
-    function clearMarkers() {
-      for(var i=0; i<markers.length; i++) {
-        markers[i].setMap(null);
-        markers[i] = null;
-      }
-      markers = [];
+      MarkersService.clearAll();
     }
 
     function clearBoxes() {
@@ -33,14 +25,6 @@ angular.module('genie.eventsMap')
         boxes[i] = null;
       }
       boxes = [];
-    }
-
-    function clearInfoWindows() {
-      for(var i=0; i<infowindows.length; i++) {
-        infowindows[i].setMap(null);
-        infowindows[i] = null;
-      }
-      infowindows = [];
     }
 
     scope.selectCluster = function(cluster) {
@@ -73,15 +57,23 @@ angular.module('genie.eventsMap')
             map: scope.map,
             icon: 'images/hashtag.gif',
             animation: google.maps.Animation.DROP,
-            position: {lat: src.lat, lng: src.lng}
+            position: { lat: src.lat, lng: src.lng }
           });
 
-          var infowindow = createInfoWindow(src);
+          var infowindow = createTweetInfoWindow(src);
           marker.addListener('click', function() {
             infowindow.open(scope.map, marker);
           });
-          markers.push(marker);
-          infowindows.push(infowindow);
+          MarkersService.addItem({
+            artifact: 'markers',
+            type: 'sources',
+            obj: marker
+          });
+          MarkersService.addItem({
+            artifact: 'infowindows',
+            type: 'sources',
+            obj: infowindow
+          });
         });
         scope.showSpinner = false;
       });
@@ -94,21 +86,85 @@ angular.module('genie.eventsMap')
           map: scope.map,
           icon: 'images/sandbox.gif',
           animation: google.maps.Animation.DROP,
-          position: {lat: event.lat, lng: event.lng}
+          position: { lat: event.lat, lng: event.lng }
         });
 
-        // var infowindow = createInfoWindow(event);
         marker.addListener('click', function() {
+          // clear image markers artifacts
+          MarkersService.clear({ artifact: 'markers', type: 'sources'});
+          MarkersService.clear({ artifact: 'infowindows', type: 'sources'});
+          if (marker.__expanded) { // has been clicked to show stuff?
+            marker.__expanded = false;
+            return;
+          }
+          marker.__expanded = true;
           scope.showSpinner = true;
-          netGraphCtrl.createNetGraph(event,
-            function() {scope.showSpinner = false;});
+          showImageMarkers(event);
+          netGraphCtrl.createNetGraph(
+            event,
+            function() {scope.showSpinner = false;}
+          );
         });
-        markers.push(marker);
-        // infowindows.push(infowindow);
+        MarkersService.addItem({
+          artifact: 'markers',
+          type: 'events',
+          obj: marker
+        });
       });
     }
 
-    function createInfoWindow(tweet) {
+    function showImageMarkers(event) {
+      var query = {
+        filter: {
+          where: { event_id: event.event_id }
+        }
+      };
+
+      SandboxEventsSource.find(query)
+      .$promise
+      .then(addMarkers)
+      .catch(console.error);
+
+      function addMarkers(sources) {
+        var source = sources[0];
+        if (!source) return;
+
+        // retain nodes lat-lng. render_graph mutates its input.
+        var sourceNodes = source.network_graph.nodes.map(function(node) {
+          return {id: node.id, lat: node.lat, lng: node.lon};
+        });
+        sourceNodes.forEach(function(node) {
+          var marker = new google.maps.Marker({
+            position: { lat: node.lat, lng: node.lng },
+            map: scope.map
+          });
+          marker.addListener('click', function() {
+            //clear other infowindows
+            MarkersService.clear({ artifact: 'infowindows', type: 'sources'});
+            var url = _.detect(source.node_to_url,
+              function(url) { return node.id == url.nodeId });
+
+            var infowindow = new google.maps.InfoWindow({
+              maxWidth: 160,
+              content: "<img width='160px' src='" + url.url + "'>"
+            });
+            infowindow.open(scope.map, marker);
+            MarkersService.addItem({
+              artifact: 'infowindows',
+              type: 'sources',
+              obj: infowindow
+            });
+          });
+          MarkersService.addItem({
+            artifact: 'markers',
+            type: 'sources',
+            obj: marker
+          });
+        });
+      }
+    }
+
+    function createTweetInfoWindow(tweet) {
       return new google.maps.InfoWindow({
         maxWidth: 240,
         content: _.template(" \
@@ -173,11 +229,11 @@ angular.module('genie.eventsMap')
           fillColor: '#FF0000',
           fillOpacity: 0.35,
           map: scope.map,
-          bounds: {
-            north: bb.ne.lat,
-            east: bb.ne.lng,
-            south: bb.sw.lat,
-            west: bb.sw.lng
+          bounds: { // with some extra padding
+            north: bb.ne.lat + 0.002,
+            east: bb.ne.lng + 0.002,
+            south: bb.sw.lat - 0.002,
+            west: bb.sw.lng - 0.002
           }
         });
         // box.addListener('click', function() {
