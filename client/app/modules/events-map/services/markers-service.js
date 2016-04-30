@@ -2,7 +2,7 @@
 angular.module('genie.eventsMap')
 .factory('MarkersService', [function() {
 
-  window.artifacts = {
+  var artifacts = {
     markers: { sources: [], events: [] },
     infowindows: { sources: [], events: [] }
   };

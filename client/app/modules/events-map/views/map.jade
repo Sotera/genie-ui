@@ -1,8 +1,9 @@
 spinner( show='showSpinner' ) //- boolean scope property to toggle spinner
 
-image-grid.map-overlay.truncate.hide.col-md-10(
-  image-type='unselected' hover-dir='bottom-right'
-  map-overlay overlay-action='shrink' style='top:45px;left:0;height:128px' )
+//
+  image-grid.map-overlay.truncate.hide.col-md-10(
+    image-type='unselected' hover-dir='bottom-right'
+    map-overlay overlay-action='shrink' style='top:45px;left:0;height:128px' )
 
 .container-fluid
   .row( dynamic-cols='clusters'
@@ -27,6 +28,10 @@ image-grid.map-overlay.truncate.hide.col-md-10(
       font-size='{from:0.08, to:0.02}' )
 
 image-grid.map-overlay.truncate.hide.col-md-4(
-  image-type='selected' hover-dir='top-left'
-  map-overlay overlay-action='hide' after-action='clearImages("selected")'
-  style='bottom:0;right:0;z-index:100' )
+  image-type='unselected' hover-dir='top-left' map-overlay
+  overlay-action='hide' style='bottom:0;right:0;z-index:100' )
+//
+  image-grid.map-overlay.truncate.hide.col-md-4(
+    image-type='selected' hover-dir='top-left'
+    map-overlay overlay-action='hide' after-action='clearImages("selected")'
+    style='bottom:0;right:0;z-index:100' )
