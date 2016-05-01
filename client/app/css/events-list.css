@@ -14,7 +14,5 @@ div.list-group {
 }
 
 a.list-group-item.selected {
-  border-left: 3px solid green;
-  border-right: 3px solid green;
   background-color: #333;
 }

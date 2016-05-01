@@ -1,16 +1,35 @@
-.list-group( ng-show='clusters.length' style='padding-left:20px' )
-  //
-    a.list-group-item(ng-click='showAllMarkers()' style='color:#fff')
+//
+  .list-group( ng-show='clusters.length' style='padding-left:20px' )
+    //
+      a.list-group-item(ng-click='showAllMarkers()' style='color:#fff')
+        i.fa.fa-fw.fa-map-marker
+        | &nbsp;Show exact locations
+    a.list-group-item(style='color:#fff')
       i.fa.fa-fw.fa-map-marker
-      | &nbsp;Show exact locations
-  a.list-group-item(style='color:#fff')
-    i.fa.fa-fw.fa-map-marker
-    | &nbsp;Click item to highlight an event
-  a.list-group-item( ng-repeat='cluster in clusters'
-    ng-click='selectCluster(cluster)' ng-class='isSelected(cluster)' )
-    span.badge( title='event weight (# of posts or users)') {{ cluster.weight }}
-    img( ng-src='{{ cluster.events[0].event_source | sourceIcon }}' )
-    span( style='color:#fff;font-size:0.7em' ).
-      {{ cluster.start_time }}
-      to
-      {{ cluster.end_time }}
+      | &nbsp;Click item to highlight an event
+    a.list-group-item( ng-repeat='cluster in clusters'
+      ng-click='selectCluster(cluster)' ng-class='isSelected(cluster)' )
+      span.badge( title='event weight (# of posts or users)') {{ cluster.weight }}
+      img( ng-src='{{ cluster.events[0].event_source | sourceIcon }}' )
+      span( style='color:#fff;font-size:0.7em' ).
+        {{ cluster.start_time }}
+        to
+        {{ cluster.end_time }}
+
+#clusters-list.panel-group( role='tablist' ng-show='clusters.length' )
+  .panel.panel-default( ng-repeat='cluster in clusters' style='margin-left:20px' )
+    .panel-heading( style='background-color:#000;color:#fff' role='tab' )
+      .panel-title
+        i.fa.fa-chevron-down
+        | &nbsp;
+        a( ng-click='selectCluster(cluster)' role='button' data-toggle='collapse' data-parent='#clusters-list' data-target="{{'#tab' + $index}}" ).
+          See all
+          {{ cluster.weight }}
+          items
+    .panel-collapse.collapse( id="{{'tab' + $index}}" ng-class='isClusterSelected(cluster)' role='tabpanel' )
+      .list-group
+        a.list-group-item( ng-repeat='event in cluster.events track by event.event_id'
+          ng-click='selectEvent(event)' ng-class='isEventSelected(event)' )
+          span.badge( title='event weight (# of posts)') {{ event.weight }} posts
+          img( ng-src='{{ event.event_source | sourceIcon }}' )
+

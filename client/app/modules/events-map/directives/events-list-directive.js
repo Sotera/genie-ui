@@ -31,24 +31,67 @@ angular.module('genie.eventsMap')
       removeArtifacts();
       ImageManagerService.clear();
       scope.selectedCluster = cluster;
-      showSources(cluster);
+      showCluster(cluster);
     }
 
-    function showSources(cluster) {
-      if (cluster.events[0].event_source == 'hashtag') {
-        showHashtagSources(cluster);
+    scope.selectEvent = function(event) {
+      // removeArtifacts();
+      ImageManagerService.clear();
+      scope.selectedEvent = event;
+      showEvent(event);
+    }
+
+    function showEvent(event) {
+      if (event.event_source == 'hashtag') {
+        var params = [_.pick(event, ['event_id', 'event_source'])];
+        showTweetMarkers(params);
       } else {
-        showSandboxSources(cluster);
+        showSandboxImages(event);
       }
     }
 
-    function showHashtagSources(cluster) {
-      scope.showSpinner = true;
+    function showCluster(cluster) {
+      if (cluster.events[0].event_source == 'hashtag') {
+        showHashtagCluster(cluster);
+      } else {
+        showSandboxCluster(cluster);
+      }
+    }
 
+    function showHashtagCluster(cluster) {
       var params = cluster.events.map(function(event) {
         return _.pick(event, ['event_id', 'event_source']);
       });
 
+      showTweetMarkers(params);
+    }
+
+    function showSandboxCluster(cluster) {
+      drawBox(cluster.events);
+      cluster.events.forEach(addSandboxEventMarker);
+    }
+
+    function addSandboxEventMarker(event) {
+      var marker = new google.maps.Marker({
+        map: scope.map,
+        icon: 'images/sandbox.gif',
+        animation: google.maps.Animation.DROP,
+        position: { lat: event.lat, lng: event.lng }
+      });
+
+      marker.addListener('click', function() {
+        showSandboxImages(event);
+      });
+
+      MarkersService.addItem({
+        artifact: 'markers',
+        type: 'events',
+        obj: marker
+      });
+    }
+
+    function showTweetMarkers(params) {
+      scope.showSpinner = true;
       return mapService.getClusterSources(params)
       .then(function(sources) {
         drawBox(sources);
@@ -79,38 +122,21 @@ angular.module('genie.eventsMap')
       });
     }
 
-    function showSandboxSources(cluster) {
-      drawBox(cluster.events);
-      cluster.events.forEach(function(event) {
-        var marker = new google.maps.Marker({
-          map: scope.map,
-          icon: 'images/sandbox.gif',
-          animation: google.maps.Animation.DROP,
-          position: { lat: event.lat, lng: event.lng }
-        });
-
-        marker.addListener('click', function() {
-          // clear image markers artifacts
-          MarkersService.clear({ artifact: 'markers', type: 'sources'});
-          MarkersService.clear({ artifact: 'infowindows', type: 'sources'});
-          if (marker.__expanded) { // has been clicked to show stuff?
-            marker.__expanded = false;
-            return;
-          }
-          marker.__expanded = true;
-          scope.showSpinner = true;
-          showImageMarkers(event);
-          netGraphCtrl.createNetGraph(
-            event,
-            function() {scope.showSpinner = false;}
-          );
-        });
-        MarkersService.addItem({
-          artifact: 'markers',
-          type: 'events',
-          obj: marker
-        });
-      });
+    function showSandboxImages(event) {
+      // clear image markers artifacts
+      MarkersService.clear({ artifact: 'markers', type: 'sources'});
+      MarkersService.clear({ artifact: 'infowindows', type: 'sources'});
+      // if (marker.__expanded) { // has been clicked to show stuff?
+      //   marker.__expanded = false;
+      //   return;
+      // }
+      // marker.__expanded = true;
+      scope.showSpinner = true;
+      showImageMarkers(event);
+      netGraphCtrl.createNetGraph(
+        event,
+        function() {scope.showSpinner = false;}
+      );
     }
 
     function showImageMarkers(event) {
@@ -205,7 +231,7 @@ angular.module('genie.eventsMap')
     function showAllSources() {
       removeArtifacts();
       if (scope.features.sources) {
-        angular.forEach(scope.clusters, showSources);
+        angular.forEach(scope.clusters, showCluster);
       }
     };
 
@@ -261,10 +287,15 @@ angular.module('genie.eventsMap')
     link: link,
     templateUrl: '/modules/events-map/views/events-list',
     controller: ['$scope', function($scope) {
-      $scope.isSelected = function(cluster) {
-        if ($scope.selectedCluster && $scope.selectedCluster.id == cluster.id)
+      $scope.isEventSelected = function(event) {
+        if ($scope.selectedEvent && $scope.selectedEvent.event_id == event.event_id)
           return 'selected';
-      }
+      };
+
+      $scope.isClusterSelected = function(cluster) {
+        if ($scope.selectedCluster && $scope.selectedCluster.id == cluster.id)
+          return 'in';
+      };
     }]
   };
 }]);
