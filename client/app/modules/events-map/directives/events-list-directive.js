@@ -31,6 +31,7 @@ angular.module('genie.eventsMap')
       removeArtifacts();
       ImageManagerService.clear();
       scope.selectedCluster = cluster;
+      scope.selectedEvent = null; // reset
       showCluster(cluster);
     }
 
@@ -68,10 +69,10 @@ angular.module('genie.eventsMap')
 
     function showSandboxCluster(cluster) {
       drawBox(cluster.events);
-      cluster.events.forEach(addSandboxEventMarker);
+      cluster.events.forEach(showSandboxEventMarker);
     }
 
-    function addSandboxEventMarker(event) {
+    function showSandboxEventMarker(event) {
       var marker = new google.maps.Marker({
         map: scope.map,
         icon: 'images/sandbox.gif',
@@ -80,6 +81,7 @@ angular.module('genie.eventsMap')
       });
 
       marker.addListener('click', function() {
+        scope.selectedEvent = event;
         showSandboxImages(event);
       });
 
