@@ -58,7 +58,7 @@ angular.module('genie.eventsMap')
       el.removeClass('hide');
 
       images.forEach(function(image) {
-        markup = "<img hover-image class='grid-image' src='" + image.url +
+        markup = "<img hover-image animate-marker class='grid-image' src='" + image.url +
           "' id='" + image.nodeId + "' hover-dir='" + hoverDir + "'>";
         compiled = $compile(angular.element(markup))(scope);
         frag.appendChild(compiled[0]);

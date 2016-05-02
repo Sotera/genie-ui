@@ -7,6 +7,7 @@ angular.module('genie.eventsMap')
     infowindows: { sources: [], events: [] }
   };
 
+  // options: artifact, type, obj
   function addItem(options) {
     var artifactType = artifacts[options.artifact];
     if (!(artifactType && artifactType[options.type]))
@@ -15,12 +16,21 @@ angular.module('genie.eventsMap')
     artifactType[options.type].push(options.obj)
   }
 
+  // options: artifact, type, customId
+  function getItem(options) {
+    return _.detect(
+      artifacts[options.artifact][options.type],
+      function(item) { return item.customId == options.customId; }
+    );
+  }
+
   function clearAll() {
     Object.keys(artifacts).forEach(function(k) {
       _clearArtifactType(k);
     });
   }
 
+  // options: artifact, type
   function clear(options) {
     var artifactType = artifacts[options.artifact];
     if (!(artifactType && artifactType[options.type]))
@@ -61,7 +71,8 @@ angular.module('genie.eventsMap')
   return {
     clear: clear,
     clearAll: clearAll,
-    addItem: addItem
+    addItem: addItem,
+    getItem: getItem
   };
 
 }]);

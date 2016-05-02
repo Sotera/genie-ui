@@ -166,6 +166,9 @@ angular.module('genie.eventsMap')
             position: { lat: node.lat, lng: node.lng },
             map: scope.map
           });
+
+          marker.customId = node.id; // so we can find it later
+
           marker.addListener('click', function() {
             //clear other infowindows
             MarkersService.clear({ artifact: 'infowindows', type: 'sources'});
