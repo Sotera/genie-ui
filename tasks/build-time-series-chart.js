@@ -54,11 +54,11 @@ function createChart(settings) {
       // moments are mutable
       var date = endDate.clone().subtract(mins, 'minutes');
       var zoom = _(zoomLevels).detect(zoom => zoom.minutes_ago === mins);
-      var clusterLength = 0;
+      var itemCount = 0;
       if (zoom) {
-        clusterLength = _(zoom.clusters).sum('events.length');
+        itemCount = _(zoom.clusters).map('events').flatten().sum('weight');
       }
-      rows.push([date.format('YYYY-MM-DD'), clusterLength]);
+      rows.push([date.format('YYYY-MM-DD'), itemCount]);
     }
     var chartData = {
       rows: rows,
