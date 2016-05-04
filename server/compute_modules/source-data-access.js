@@ -1,5 +1,5 @@
 'use strict';
-var log = require('debug')('compute_modules:twitter-hashtag-clusterer');
+var log = require('debug')('compute_modules:source-data-access');
 var loopback = require('loopback');
 var LoopbackModelHelper = require('../util/loopback-model-helper');
 
@@ -48,13 +48,15 @@ module.exports = class {
         resolve(null);
         return;
       }
-      context.hashtagEventsSourceHelper.findOne({where:{event_id:eventInfo.event_id}},function(err,eventSource){
+      context.hashtagEventsSourceHelper
+      .findOne({where:{event_id:eventInfo.event_id}}, function(err,eventSource){
         if(err || !eventSource){
           resolve(null);
           return;
         }
         var source_data = eventSource.source_data;
-        Promise.all(source_data.map(context.getSourceDataById.bind(context))).then(function(result){
+        Promise.all(source_data.map(context.getSourceDataById.bind(context)))
+        .then(function(result){
           resolve(result);
         })
       })
