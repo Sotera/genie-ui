@@ -1,9 +1,9 @@
 'use strict';
 angular.module('genie.eventsMap')
-.directive('eventsList', ['$window', 'mapService',
-  'ImageManagerService', 'SandboxEventsSource', 'MarkersService',
+.directive('eventsList', ['$window', 'mapService', 'ImageManagerService',
+  'SandboxEventsSource', 'MarkersService', 'sourceIconFilter',
   function($window, mapService, ImageManagerService,
-    SandboxEventsSource, MarkersService) {
+    SandboxEventsSource, MarkersService, sourceIcon) {
 
   function link(scope, elem, attrs, netGraphCtrl) {
     resize(elem);
@@ -57,32 +57,30 @@ angular.module('genie.eventsMap')
       } else {
         showSandboxCluster(cluster);
       }
+
+      drawBox(cluster.events);
     }
 
+    // TODO: consolidate show*Cluster methods once we're off zika dataset
     function showHashtagCluster(cluster) {
-      var params = cluster.events.map(function(event) {
-        return _.pick(event, ['event_id', 'event_source']);
-      });
-
-      showTweetMarkers(params);
+      cluster.events.forEach(showEventMarker);
     }
 
     function showSandboxCluster(cluster) {
-      drawBox(cluster.events);
-      cluster.events.forEach(showSandboxEventMarker);
+      cluster.events.forEach(showEventMarker);
     }
 
-    function showSandboxEventMarker(event) {
+    function showEventMarker(event) {
       var marker = new google.maps.Marker({
         map: scope.map,
-        icon: 'images/sandbox.gif',
+        icon: sourceIcon(event.event_source),
         animation: google.maps.Animation.DROP,
         position: { lat: event.lat, lng: event.lng }
       });
 
       marker.addListener('click', function() {
         scope.selectedEvent = event;
-        showSandboxImages(event);
+        showEvent(event);
       });
 
       MarkersService.addItem({
@@ -94,13 +92,13 @@ angular.module('genie.eventsMap')
 
     function showTweetMarkers(params) {
       scope.showSpinner = true;
+      clearBoxes();
       return mapService.getClusterSources(params)
       .then(function(sources) {
         drawBox(sources);
         sources.forEach(function(src) {
           var marker = new google.maps.Marker({
             map: scope.map,
-            icon: 'images/hashtag.gif',
             animation: google.maps.Animation.DROP,
             position: { lat: src.lat, lng: src.lng }
           });
@@ -240,12 +238,12 @@ angular.module('genie.eventsMap')
       }
     };
 
-    function drawBox(sources) {
-      if (!(sources && sources.length)) return;
+    function drawBox(events) {
+      if (!(events && events.length)) return;
       Genie.worker.run({
         worker: 'mapUtil',
         method: 'getBoundingBox',
-        args: { locations: sources }
+        args: { locations: events }
       },
       function(e) {
         var bb = e.data.bb;
