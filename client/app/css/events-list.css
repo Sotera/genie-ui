@@ -1,4 +1,5 @@
-div.events-list {
+.events-list .panel {
+  margin-left: 20px;
 }
 
 a.list-group-item {

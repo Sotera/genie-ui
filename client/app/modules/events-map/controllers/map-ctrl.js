@@ -10,6 +10,7 @@ angular.module('genie.eventsMap')
   // Set init values
   $scope.inputs = {zoom_level: null, minutes_ago: DAY * PERIOD};
   $scope.map = {};
+  $scope.timeSeries = {};
   $scope.events = [];
   $scope.clusters = [];
   var zoomLevelObj = new ZoomLevel();

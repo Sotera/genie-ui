@@ -1,8 +1,7 @@
 'use strict';
 angular.module('genie.common')
-.directive('timeSeries', ['$window', 'ChartService', 'StylesService',
-  'CoreService',
-  function ($window, ChartService, StylesService, CoreService) {
+.directive('timeSeries', ['ChartService', 'StylesService', 'CoreService',
+  function (ChartService, StylesService, CoreService) {
 
   function link(scope, elem, attrs) {
     var chart = new google.visualization.AnnotationChart(elem[0]);
@@ -17,11 +16,12 @@ angular.module('genie.common')
     function selectionChange() {
       var selection = chart.getSelection()[0];
       if (selection) {
-        var selectedVal = data.getValue(selection.row, 0);
+        //var selectedVal = data.getValue(selection.row, 0);
         // check for external handler and invoke it
-        scope.timeChanged && scope.timeChanged(selectedVal);
+        //scope.timeChanged && scope.timeChanged(selectedVal);
         scope.$apply(function() {
           scope.inputs.minutes_ago = (selection.row+1) * DAY * PERIOD;
+          scope.timeSeries.selectedDate = scope.timeSeries.rows[selection.row][0];
         });
       }
     }
@@ -56,12 +56,17 @@ angular.module('genie.common')
     ChartService.getData(attrs.chartName)
       .then(function(chartData) {
         var rows = chartData.rows;
+        scope.timeSeries.selectedDate = rows[0][0];
+        // can access data from graph once its in so store for later
+        scope.timeSeries.rows = rows;
         if (rows.length) {
           chartData.columns.forEach(function(col) {
             data.addColumn(col);
           });
           data.addRows(rows);
           chart.draw(data, options);
+          // show the line dot (doesn't show tooltips, wtf?)
+          chart.setSelection([{row: 0, column: null}]);
         } else {
           CoreService.alertInfo('Missing Data',
             'No time-series data: check system settings for start, end dates');

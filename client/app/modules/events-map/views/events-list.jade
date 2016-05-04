@@ -17,13 +17,16 @@
         {{ cluster.end_time }}
 
 #clusters-list.panel-group( role='tablist' ng-show='clusters.length' )
-  .panel.panel-default( ng-repeat='cluster in clusters' style='margin-left:20px' )
+  .panel.panel-info
+    .panel-heading.
+      Events for {{ timeSeries.selectedDate | date }}
+  .panel.panel-default( ng-repeat='cluster in clusters' )
     .panel-heading( style='background-color:#000;color:#fff' role='tab' )
       .panel-title
         i.fa.fa-chevron-down
         | &nbsp;
         a( ng-click='selectCluster(cluster)' role='button' data-toggle='collapse' data-parent='#clusters-list' data-target="{{'#tab' + $index}}" ).
-          See all
+          See
           {{ cluster.weight }}
           items
     .panel-collapse.collapse( id="{{'tab' + $index}}" ng-class='isClusterSelected(cluster)' role='tabpanel' )
