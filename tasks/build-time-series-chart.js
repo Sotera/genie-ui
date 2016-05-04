@@ -42,29 +42,36 @@ function createChart(settings) {
       return;
     }
 
-    var interval = settings['zoomLevels:intervalMins'] || 1440; // mins
-    var endDate = moment(settings['zoomLevels:endDate'] || moment());
+    let interval = settings['zoomLevels:intervalMins'] || 1440, // mins
+      endDate = moment(settings['zoomLevels:endDate'] || moment()),
+      firstPeriod = interval,
+      lastPeriod = zoomLevels[zoomLevels.length - 1].minutes_ago,
+      rows = [];
 
-    var firstPeriod = interval,
-      lastPeriod = zoomLevels[zoomLevels.length - 1].minutes_ago;
-
-    var rows = [];
-
-    for (var mins of collections.range(firstPeriod, lastPeriod, interval)) {
+    for (let mins of collections.range(firstPeriod, lastPeriod, interval)) {
       // moments are mutable
-      var date = endDate.clone().subtract(mins, 'minutes');
-      var zoom = _(zoomLevels).detect(zoom => zoom.minutes_ago === mins);
-      var itemCount = 0;
+      let date = endDate.clone().subtract(mins, 'minutes'),
+        zoom = _(zoomLevels).detect(zoom => zoom.minutes_ago === mins),
+        sandboxPostsCount = 0,
+        hashtagPostsCount = 0;
+
       if (zoom) {
-        itemCount = _(zoom.clusters).map('events').flatten().sum('weight');
+        let events = _(zoom.clusters).map('events').flatten();
+        hashtagPostsCount = _(events)
+          .filter(evt => evt.event_source == 'hashtag')
+          .sum('weight');
+        sandboxPostsCount = _(events)
+          .filter(evt => evt.event_source == 'sandbox')
+          .sum('weight');
       }
-      rows.push([date.format('YYYY-MM-DD'), itemCount]);
+      rows.push([date.format('YYYY-MM-DD'), hashtagPostsCount, sandboxPostsCount]);
     }
-    var chartData = {
+    let chartData = {
       rows: rows,
       columns: [
         {"type": "date", "label": "Date"},
-        {"type": "number", "label": "Events"}
+        {"type": "number", "label": "Tweets"},
+        {"type": "number", "label": "Pics"}
       ]
     };
 

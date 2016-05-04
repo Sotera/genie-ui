@@ -15,7 +15,7 @@ angular.module('genie.common')
     .then(function(chart) {
       var data = {};
       data.rows = _.map(chart.data.rows, function(row) {
-        return [new Date(row[0]), row[1]];
+        return [new Date(row[0]), row[1], row[2]];
       });
       data.columns = chart.data.columns;
       return data;
