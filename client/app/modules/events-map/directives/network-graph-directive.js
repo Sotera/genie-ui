@@ -5,10 +5,10 @@ angular.module('genie.eventsMap')
     return {
       controller: ['$scope', 'ImageManagerService', 'SandboxEventsSource',
         function($scope, ImageManagerService, SandboxEventsSource) {
-          this.createNetGraph = createNetGraph;
-          this.removeNetGraph = removeNetGraph;
+          this.create = create;
+          this.clear = clear;
 
-          function createNetGraph(event, callback) {
+          function create(event, callback) {
             var query = {
               filter: {
                 where: { event_id: event.event_id }
@@ -22,7 +22,7 @@ angular.module('genie.eventsMap')
             .catch(console.error);
           }
 
-          function removeNetGraph() {
+          function clear() {
             // HACK
             var canvas = $('#graph');
             canvas.replaceWith('<canvas id="graph" class="netgraph">');

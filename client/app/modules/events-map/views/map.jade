@@ -10,11 +10,11 @@ spinner( show='showSpinner' ) //- boolean scope property to toggle spinner
     before='["col-md-12", "gone"]' after='["col-md-10", "col-md-2"]' )
 
     div( style='padding:15px 0' class='{{colClasses[0]}}' )
-      .events-map( events-map heat-map network-graph zoom='4' )
+      .events-map( events-map heat-map zoom='4' )
         geocode-controls
         heatmap-controls
     div( style='padding-left:0' class='{{colClasses[1]}}' )
-      events-list.events-list( network-graph )
+      events-list.events-list( network-graph tag-cloud )
 
 .map-overlay.col-md-12( style='bottom:0;left:0' map-overlay overlay-action='shrink' )
   .col-md-4
@@ -24,7 +24,7 @@ spinner( show='showSpinner' ) //- boolean scope property to toggle spinner
   .col-md-4
     .inst.
       hint: dbl-click to toggle
-    jqcloud( tag-cloud words='tags' delay='10' steps='7' class='events-cloud'
+    jqcloud( words='tags' delay='10' steps='7' class='events-cloud'
       font-size='{from:0.08, to:0.02}' )
 
 image-grid.map-overlay.truncate.hide.col-md-4(

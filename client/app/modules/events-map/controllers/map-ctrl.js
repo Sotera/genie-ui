@@ -13,6 +13,8 @@ angular.module('genie.eventsMap')
   $scope.timeSeries = {};
   $scope.events = [];
   $scope.clusters = [];
+  $scope.selectedCluster = null;
+  $scope.selectedEvent = null;
   var zoomLevelObj = new ZoomLevel();
   zoomLevelObj.clusters = [];
   $scope.zoomLevelObj = zoomLevelObj;

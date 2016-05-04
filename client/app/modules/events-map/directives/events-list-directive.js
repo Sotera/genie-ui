@@ -5,16 +5,19 @@ angular.module('genie.eventsMap')
   function($window, mapService, ImageManagerService,
     SandboxEventsSource, MarkersService, sourceIcon) {
 
-  function link(scope, elem, attrs, netGraphCtrl) {
+  function link(scope, elem, attrs, ctrls) {
     resize(elem);
 
     var boxes = [];
+    var netGraphCtrl = ctrls[0],
+      tagCloudCtrl = ctrls[1];
 
     scope.$watch('features.sources', showAllSources);
     scope.$watch('inputs.minutes_ago', removeArtifacts);
 
     function removeArtifacts() {
-      netGraphCtrl.removeNetGraph();
+      netGraphCtrl.clear();
+      tagCloudCtrl.clear();
       clearBoxes();
       MarkersService.clearAll();
     }
@@ -46,6 +49,7 @@ angular.module('genie.eventsMap')
       if (event.event_source == 'hashtag') {
         var params = [_.pick(event, ['event_id', 'event_source'])];
         showTweetMarkers(params);
+        tagCloudCtrl.update([event]);
       } else {
         showSandboxImages(event);
       }
@@ -63,6 +67,7 @@ angular.module('genie.eventsMap')
 
     // TODO: consolidate show*Cluster methods once we're off zika dataset
     function showHashtagCluster(cluster) {
+      tagCloudCtrl.update(cluster.events);
       cluster.events.forEach(showEventMarker);
     }
 
@@ -133,7 +138,7 @@ angular.module('genie.eventsMap')
       // marker.__expanded = true;
       scope.showSpinner = true;
       showImageMarkers(event);
-      netGraphCtrl.createNetGraph(
+      netGraphCtrl.create(
         event,
         function() {scope.showSpinner = false;}
       );
@@ -286,7 +291,7 @@ angular.module('genie.eventsMap')
 
   return {
     restrict: 'E',
-    require: 'networkGraph',
+    require: ['networkGraph', 'tagCloud'],
     link: link,
     templateUrl: '/modules/events-map/views/events-list',
     controller: ['$scope', function($scope) {
