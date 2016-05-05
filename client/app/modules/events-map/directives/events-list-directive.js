@@ -15,7 +15,9 @@ angular.module('genie.eventsMap')
     scope.$watch('features.sources', showAllSources);
     scope.$watch('inputs.minutes_ago', removeArtifacts);
 
+    // remove items added to map
     function removeArtifacts() {
+      ImageManagerService.clear();
       netGraphCtrl.clear();
       tagCloudCtrl.clear();
       clearBoxes();
@@ -32,7 +34,6 @@ angular.module('genie.eventsMap')
 
     scope.selectCluster = function(cluster) {
       removeArtifacts();
-      ImageManagerService.clear();
       scope.selectedCluster = cluster;
       scope.selectedEvent = null; // reset
       showCluster(cluster);
