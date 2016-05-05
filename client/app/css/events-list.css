@@ -2,8 +2,13 @@
   margin-left: 20px;
 }
 
-a.list-group-item {
-  background-color: black;
+.events-list .panel-heading.dark {
+  background-color: #000;
+  color: #fff;
+}
+
+a.list-group-item.dark {
+  background-color: #000;
 }
 
 a.list-group-item:hover {
