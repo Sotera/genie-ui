@@ -27,16 +27,17 @@
         | &nbsp;
         a( ng-click='selectCluster(cluster)' role='button'
           data-toggle='collapse' data-parent='#clusters-list'
-          data-target="{{'#tab' + $index}}" ).
+          data-target="{{'#tab' + $index}}"
+          ng-class='{highlight: isSelectedEventInCluster(cluster)}' ).
           See
           {{ cluster.weight }}
           items
     .panel-collapse.collapse( id="{{'tab' + $index}}" role='tabpanel'
-      ng-class='isClusterSelected(cluster)' )
+      ng-class='{in: isClusterSelected(cluster)}' )
       .list-group
         a.list-group-item.dark(
           ng-repeat='event in cluster.events track by event.event_id'
-          ng-click='selectEvent(event)' ng-class='isEventSelected(event)' )
+          ng-click='selectEvent(event)' ng-class='{highlight: isEventSelected(event)}' )
           span.badge( title='event weight (# of posts)') {{ event.weight }} posts
           img( ng-src='{{ event.event_source | sourceIcon }}' )
 

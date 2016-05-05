@@ -33,10 +33,14 @@ angular.module('genie.eventsMap')
     }
 
     scope.selectCluster = function(cluster) {
-      removeArtifacts();
-      scope.selectedCluster = cluster;
-      scope.selectedEvent = null; // reset
-      showCluster(cluster);
+      // none selected or cluster already selected
+      var doShow = !scope.selectedCluster || (scope.selectedCluster.id !== cluster.id);
+      if (doShow) {
+        removeArtifacts();
+        scope.selectedEvent = null; // reset
+        scope.selectedCluster = cluster;
+        showCluster(cluster);
+      }
     }
 
     scope.selectEvent = function(event) {
@@ -297,14 +301,16 @@ angular.module('genie.eventsMap')
     templateUrl: '/modules/events-map/views/events-list',
     controller: ['$scope', function($scope) {
       $scope.isEventSelected = function(event) {
-        if ($scope.selectedEvent && $scope.selectedEvent.event_id == event.event_id)
-          return 'selected';
+        return $scope.selectedEvent && $scope.selectedEvent.event_id == event.event_id;
       };
 
       $scope.isClusterSelected = function(cluster) {
-        if ($scope.selectedCluster && $scope.selectedCluster.id == cluster.id)
-          return 'in';
+        return $scope.selectedCluster && $scope.selectedCluster.id == cluster.id;
       };
+
+      $scope.isSelectedEventInCluster = function(cluster) {
+        return $scope.selectedEvent && _.contains(cluster.events, $scope.selectedEvent);
+      }
     }]
   };
 }]);

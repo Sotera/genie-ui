@@ -7,6 +7,10 @@
   color: #fff;
 }
 
+.events-list .panel a.highlight {
+  font-weight: bold;
+}
+
 a.list-group-item.dark {
   background-color: #000;
 }
@@ -19,6 +23,6 @@ div.list-group {
   overflow: auto;
 }
 
-a.list-group-item.selected {
+a.list-group-item.highlight {
   background-color: #333;
 }
