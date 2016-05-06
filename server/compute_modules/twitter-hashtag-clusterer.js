@@ -423,6 +423,7 @@ module.exports = class {
         cb();
         return;
       }
+      log('geo', geo);
       if (geo) {
         if (geo.type === 'Point') {
           if (geo.coordinates && geo.coordinates.length == 2) {
@@ -430,11 +431,15 @@ module.exports = class {
           }
         }
       }
+      log('coordinates', tweet.coordinates);
       if (!tweet.genieLoc && tweet.coordinates) {
-        tweet.genieLoc = {lng: tweet.coordinates[1], lat: tweet.coordinates[0]};
+        // geojson, lng-lat order
+        tweet.genieLoc = {lng: tweet.coordinates[0], lat: tweet.coordinates[1]};
       }
+      log('place', tweet.place);
       if (!tweet.genieLoc && tweet.place && tweet.place.bounding_box.coordinates) {
         var coords = tweet.place.bounding_box.coordinates[0][0]; // use the first one for now
+        // geojson, lng-lat order
         tweet.genieLoc = {lng: coords[0], lat: coords[1]};
       }
       // TODO: what to do when tweet has place.bounding_box.coordinates (polygon)?
@@ -464,16 +469,17 @@ module.exports = class {
         var ht = tweet.entities.hashtags;
         hashtags.push(ht[i].text = ht[i].text.toLowerCase());
       }
-      cb(null,
-        {
-          lat: tweet.genieLoc.lat
-          , lng: tweet.genieLoc.lng
-          , post_date: new Date(tweet.created_at)
-          , tweet_id: tweet.id_str
-          , username: tweet.user.screen_name
-          , full_tweet: JSON.stringify(tweet)
-          , hashtags
-        });
+      var geotweet = {
+        lat: tweet.genieLoc.lat
+        , lng: tweet.genieLoc.lng
+        , post_date: new Date(tweet.created_at)
+        , tweet_id: tweet.id_str
+        , username: tweet.user.screen_name
+        , full_tweet: JSON.stringify(tweet)
+        , hashtags
+      };
+      // log('geotweet', JSON.stringify(geotweet));
+      cb(null, geotweet);
     } catch (err) {
       log(err);
       cb(err);
