@@ -13,10 +13,10 @@ const client = new es.Client({
   type = '2016_01_tp'
   ;
 
-const minLat = 51.50,
-  minLng = -0.13,
-  maxLat = 51.52,
-  maxLng = -0.11
+const minLat = 51.40,
+  minLng = -0.17,
+  maxLat = 51.55,
+  maxLng = -0.07
   ;
 
 const fs = require('fs'),
@@ -65,7 +65,7 @@ function scroll(res) {
     lng = coords[1];
     if (lat >= minLat && lat <=maxLat && lng >= minLng && lng <= maxLng) {
       console.log(src);
-      outfile.write(JSON.stringify(src));
+      outfile.write(JSON.stringify(src) + '\n');
     }
   });
   countDocs += hits.length;
