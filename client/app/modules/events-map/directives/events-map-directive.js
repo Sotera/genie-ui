@@ -27,9 +27,9 @@ angular.module('genie.eventsMap')
 
     map.addListener('zoom_changed', function() {
       var newZoom = map.getZoom();
+      var TRIGGER = 11;
       console.log(newZoom, 'zoom');
       scope.inputs.zoom_level = newZoom;
-      var TRIGGER = 11;
       // when zoomed in, auto-hide heatmap & show sources
       if (newZoom >= TRIGGER) {
         scope.features.heatmap = false;

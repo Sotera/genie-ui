@@ -12,7 +12,7 @@ angular.module('genie.eventsMap')
     var netGraphCtrl = ctrls[0],
       tagCloudCtrl = ctrls[1];
 
-    scope.$watch('features.sources', showAllSources);
+    scope.$watch('features.sources', showAllClusters);
     scope.$watch('inputs.minutes_ago', removeArtifacts);
 
     // remove items added to map
@@ -61,23 +61,12 @@ angular.module('genie.eventsMap')
     }
 
     function showCluster(cluster) {
-      if (cluster.events[0].event_source == 'hashtag') {
-        showHashtagCluster(cluster);
-      } else {
-        showSandboxCluster(cluster);
+      if (cluster.events[0].event_source === 'hashtag') {
+        tagCloudCtrl.update(cluster.events);
       }
 
+      cluster.events.forEach(showEventMarker);
       drawBox(cluster.events);
-    }
-
-    // TODO: consolidate show*Cluster methods once we're off zika dataset
-    function showHashtagCluster(cluster) {
-      tagCloudCtrl.update(cluster.events);
-      cluster.events.forEach(showEventMarker);
-    }
-
-    function showSandboxCluster(cluster) {
-      cluster.events.forEach(showEventMarker);
     }
 
     function showEventMarker(event) {
@@ -102,10 +91,12 @@ angular.module('genie.eventsMap')
 
     function showTweetMarkers(params) {
       scope.showSpinner = true;
-      clearBoxes();
+      // clear tweet markers artifacts
+      MarkersService.clear({ artifact: 'markers', type: 'sources'});
+      MarkersService.clear({ artifact: 'infowindows', type: 'sources'});
+
       return mapService.getClusterSources(params)
       .then(function(sources) {
-        drawBox(sources);
         sources.forEach(function(src) {
           var marker = new google.maps.Marker({
             map: scope.map,
@@ -133,15 +124,11 @@ angular.module('genie.eventsMap')
     }
 
     function showSandboxImages(event) {
+      scope.showSpinner = true;
       // clear image markers artifacts
       MarkersService.clear({ artifact: 'markers', type: 'sources'});
       MarkersService.clear({ artifact: 'infowindows', type: 'sources'});
-      // if (marker.__expanded) { // has been clicked to show stuff?
-      //   marker.__expanded = false;
-      //   return;
-      // }
-      // marker.__expanded = true;
-      scope.showSpinner = true;
+
       showImageMarkers(event);
       netGraphCtrl.create(
         event,
@@ -172,7 +159,8 @@ angular.module('genie.eventsMap')
         sourceNodes.forEach(function(node) {
           var marker = new google.maps.Marker({
             position: { lat: node.lat, lng: node.lng },
-            map: scope.map
+            map: scope.map,
+            animation: google.maps.Animation.DROP
           });
 
           marker.customId = node.id; // so we can find it later
@@ -241,7 +229,9 @@ angular.module('genie.eventsMap')
       });
     }
 
-    function showAllSources() {
+    function showAllClusters() {
+      // exit if user already selected a cluster
+      if (scope.selectedCluster) return;
       removeArtifacts();
       if (scope.features.sources) {
         angular.forEach(scope.clusters, showCluster);
