@@ -46,7 +46,7 @@ function save(tweet) {
     lng: tweet.geo.coordinates[1],
     post_date: new Date(tweet.postedTime),
     tweet_id: tweetId,
-    username: tweet.actor.displayName,
+    username: tweet.actor.preferredUsername,
     full_tweet: JSON.stringify({
       id: tweetId, id_str: tweetId, text: tweet.body, user: {
         profile_image_url: tweet.actor.image
