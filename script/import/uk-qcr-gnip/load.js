@@ -33,7 +33,8 @@ function load() {
 
 function save(tweet) {
   tweet = JSON.parse(tweet)
-  const tweetId = tweet.id.match(/:[0-9]*$/)[0];
+  // gnip format doesn't expose tweet.id by itself so extract it
+  const tweetId = tweet.id.match(/:([0-9]+$)/)[1];
   let hashtags = tweet.twitter_entities.hashtags;
 
   if (!hashtags.length) return;
