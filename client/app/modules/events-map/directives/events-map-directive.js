@@ -20,7 +20,7 @@ angular.module('genie.eventsMap')
       var center = $stateParams.center.split(',');
       map.setCenter({lat: +center[0], lng: +center[1]}); // from url
     } else {
-      map.setCenter({lat: 30.25, lng: -97.75}); // default: Austin
+      map.setCenter({lat: 7.9, lng: 1.0}); // Ghana, just because
     }
     scope.inputs.zoom_level = mapOptions.zoom;
     scope.map = map;
