@@ -1,7 +1,8 @@
 'use strict';
 angular.module('genie.eventsMap')
 .directive('eventsMap', ['$window', 'StylesService', '$state', '$stateParams',
-  function($window, StylesService, $state, $stateParams) {
+  '$timeout',
+  function($window, StylesService, $state, $stateParams, $timeout) {
 
   function link(scope, elem, attrs) {
     var mapOptions = {
@@ -28,27 +29,32 @@ angular.module('genie.eventsMap')
     scope.inputs.zoom_level = mapOptions.zoom;
     scope.map = map;
 
-    map.addListener('zoom_changed', function() {
-      var newZoom = map.getZoom();
-      var TRIGGER = 11;
-      console.log(newZoom, 'zoom');
-      scope.inputs.zoom_level = newZoom;
-      // when zoomed in, auto-hide heatmap & show sources
-      if (newZoom >= TRIGGER) {
-        scope.features.heatmap = false;
-        scope.features.sources = true;
-      } else if (newZoom < TRIGGER) {
-        scope.features.heatmap = true;
-      }
-      scope.$apply();
-      // update url
-      $state.go('app.events-map.show',
-        { zoom: newZoom, center: scope.map.getCenter().toUrlValue() },
-        { notify: false }
-      );
-    });
+    map.addListener('zoom_changed', zoomChanged);
 
     map.addListener('bounds_changed', scope.getEventsInBounds);
+
+    function zoomChanged() {
+      $timeout(function() { // if triggered by angular event, run on next cycle
+        var newZoom = map.getZoom();
+        var FEATURE_TRIGGER = 11;
+        console.log(newZoom, 'zoom');
+        scope.$apply(function() {
+          scope.inputs.zoom_level = newZoom;
+          // when zoomed in, auto-hide heatmap & show sources
+          if (newZoom >= FEATURE_TRIGGER) {
+            scope.features.heatmap = false;
+            scope.features.sources = true;
+          } else if (newZoom < FEATURE_TRIGGER) {
+            scope.features.heatmap = true;
+          }
+        });
+        // update url
+        $state.go('app.events-map.show',
+          { zoom: newZoom, center: scope.map.getCenter().toUrlValue() },
+          { notify: false }
+        );
+      }, 0);
+    }
   }
 
   function resizeMap(map, elem) {

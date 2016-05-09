@@ -41,6 +41,13 @@ angular.module('genie.eventsMap')
         scope.selectedCluster = cluster;
         showCluster(cluster);
       }
+      zoomToCluster(cluster);
+    }
+
+    function zoomToCluster(cluster) {
+      var map = scope.map;
+      map.setCenter(cluster.location);
+      map.setZoom(_.max([map.getZoom(), 7])); // roughly a single country view
     }
 
     scope.selectEvent = function(event) {
@@ -68,6 +75,7 @@ angular.module('genie.eventsMap')
       cluster.events.forEach(showEventMarker);
       drawBox(cluster.events);
     }
+    scope.showCluster = _.debounce(showCluster, 500);
 
     function showEventMarker(event) {
       var marker = new google.maps.Marker({

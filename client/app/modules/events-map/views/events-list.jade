@@ -24,14 +24,12 @@
     .panel-heading.dark( role='tab' )
       .panel-title
         a( ng-click='selectCluster(cluster)' role='button'
+          ng-mouseover='showCluster(cluster)'
           data-toggle='collapse' data-parent='#clusters-list'
           data-target="{{'#tab' + $index}}"
           ng-class='{highlight: isSelectedEventInCluster(cluster)}' )
-          i.fa.fa-chevron-down
-          | &nbsp;
-          | See
-          {{ cluster.weight }}
-          | items
+          i.fa.fa-chevron-down &nbsp;
+          | See {{ cluster.weight }} items
     .panel-collapse.collapse( id="{{'tab' + $index}}" role='tabpanel'
       ng-class='{in: isClusterSelected(cluster)}' )
       .list-group
