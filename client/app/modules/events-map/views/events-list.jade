@@ -24,7 +24,6 @@
     .panel-heading.dark( role='tab' )
       .panel-title
         a( ng-click='selectCluster(cluster)' role='button'
-          ng-mouseover='showCluster(cluster)'
           data-toggle='collapse' data-parent='#clusters-list'
           data-target="{{'#tab' + $index}}"
           ng-class='{highlight: isSelectedEventInCluster(cluster)}' )

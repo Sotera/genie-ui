@@ -75,7 +75,6 @@ angular.module('genie.eventsMap')
       cluster.events.forEach(showEventMarker);
       drawBox(cluster.events);
     }
-    scope.showCluster = _.debounce(showCluster, 500);
 
     function showEventMarker(event) {
       var marker = new google.maps.Marker({
