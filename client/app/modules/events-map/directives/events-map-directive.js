@@ -16,6 +16,9 @@ angular.module('genie.eventsMap')
 
     var map = new google.maps.Map(elem[0], mapOptions);
 
+    // resize before setCenter()
+    resizeMap(map, elem);
+
     if ($stateParams.center && $stateParams.center.length) {
       var center = $stateParams.center.split(',');
       map.setCenter({lat: +center[0], lng: +center[1]}); // from url
@@ -46,8 +49,6 @@ angular.module('genie.eventsMap')
     });
 
     map.addListener('bounds_changed', scope.getEventsInBounds);
-
-    resizeMap(map, elem);
   }
 
   function resizeMap(map, elem) {
