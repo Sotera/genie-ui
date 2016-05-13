@@ -47,7 +47,7 @@ angular.module('genie.eventsMap')
     function zoomToCluster(cluster) {
       var map = scope.map;
       map.setCenter(cluster.location);
-      map.setZoom(_.max([map.getZoom(), 7])); // roughly a single country view
+      map.setZoom(_.max([map.getZoom(), 14]));
     }
 
     scope.selectEvent = function(event) {
@@ -72,8 +72,8 @@ angular.module('genie.eventsMap')
         tagCloudCtrl.update(cluster.events);
       }
 
-      cluster.events.forEach(showEventMarker);
-      drawBox(cluster.events);
+      // cluster.events.forEach(showEventMarker);
+      drawBoxes(cluster.events);
     }
 
     function showEventMarker(event) {
@@ -245,25 +245,54 @@ angular.module('genie.eventsMap')
       }
     };
 
-    function drawBox(events) {
+    scope.highlightEventBox = function(event) {
+      var box = _.detect(boxes, function(b) {
+        return b.__customId === event.event_id;
+      });
+      if (!box) return;
+      box.setOptions({
+        strokeColor: 'red',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: 'red',
+        fillOpacity: 0.25,
+        zIndex: 10
+      });
+    };
+
+    scope.unhighlightEventBox = function(event) {
+      var box = _.detect(boxes, function(b) {
+        return b.__customId === event.event_id;
+      });
+      if (!box) return;
+      box.setOptions({
+        strokeColor: 'yellow',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: 'yellow',
+        fillOpacity: 0.25,
+        zIndex: 1
+      });
+    };
+
+    function drawBoxes(events) {
       if (!(events && events.length)) return;
-      Genie.worker.run({
-        worker: 'mapUtil',
-        method: 'getBoundingBox',
-        args: { locations: events }
-      },
-      function(e) {
-        var bb = e.data.bb;
+      events.forEach(drawBox);
+    }
+
+    function drawBox(event) {
+      var bb = event.bounding_box;
         if (bb.sw.lat === bb.ne.lat) { // if a single point, make just large enough to see
           bb.ne.lat = bb.sw.lat + 0.003;
           bb.ne.lng = bb.sw.lng + 0.003;
         }
         var box = new google.maps.Rectangle({
-          strokeColor: '#FF0000',
+          strokeColor: 'yellow',
           strokeOpacity: 0.8,
           strokeWeight: 2,
-          fillColor: '#FF0000',
-          fillOpacity: 0.35,
+          fillColor: 'yellow',
+          fillOpacity: 0.25,
+          zIndex: 1,
           map: scope.map,
           bounds: { // with some extra padding
             north: bb.ne.lat + 0.002,
@@ -275,8 +304,8 @@ angular.module('genie.eventsMap')
         // box.addListener('click', function() {
         //   scope.highlightCluster(cluster);
         // });
+        box.__customId = event.event_id;
         boxes.push(box);
-      });
     }
 
     function resize(elem) {

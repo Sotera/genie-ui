@@ -34,7 +34,9 @@
       .list-group
         a.list-group-item.dark(
           ng-repeat='event in cluster.events track by event.event_id'
-          ng-click='selectEvent(event)' ng-class='{highlight: isEventSelected(event)}' )
+          ng-click='selectEvent(event)' ng-class='{highlight: isEventSelected(event)}'
+          ng-mouseover='highlightEventBox(event)'
+          ng-mouseleave='unhighlightEventBox(event)' )
           span.badge( title='event weight (# of posts)') {{ event.weight }} posts
           img( ng-src='{{ event.event_source | sourceIcon }}' )
 
