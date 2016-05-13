@@ -64,6 +64,39 @@ function getUrlFromNodeId(node){
   });
 }
 
+function getDateId(date,interval){
+  return interval == "day" ? date.toLocaleDateString():date.toLocaleDateString()+ ":" + date.getHours();
+}
+
+function buildTimeseries(nodes){
+  var dateMap = {};
+  for(var i =0; i< nodes.length; i++){
+    var node = nodes[i];
+    var date = new Date(node.time * 1000);
+    var dateToHour =  new Date(date.getYear(), date.getMonth(), date.getDay(), date.getHours());
+    var id = getDateId(date,"hour");
+    if(dateMap[id]){
+      dateMap[id][1]++;
+    }
+    else{
+      dateMap[id]=[dateToHour.getTime,1];
+    }
+  }
+  var timeseries = [];
+  for (var key in dateMap) {
+    if (dateMap.hasOwnProperty(key)) {
+      timeseries.push(dateMap[key]);
+    }
+  }
+  return {
+    rows:timeseries,
+    columns:[
+      {label:"Date",type:"date"},
+      {label:"Pics",type:"number"}
+    ]
+  }
+}
+
 function convertEvent(sourceEvent, data){
   var created = moment(sourceEvent.created_time).format('YYYY-MM-DD');
   var location = sourceEvent.location;
@@ -88,10 +121,12 @@ function convertEvent(sourceEvent, data){
     num_posts: sourceEvent.count
   };
 
+
+  destEvent.timeseries_data = buildTimeseries(data.detail.nodes);
+
   console.log("getting node image urls");
   Promise.all(data.detail.nodes.map(getUrlFromNodeId))
   .then(function(nodes){
-
     destEvent.node_to_url = nodes;
 
     esDestClient.index({

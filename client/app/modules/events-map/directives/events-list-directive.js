@@ -1,9 +1,9 @@
 'use strict';
 angular.module('genie.eventsMap')
 .directive('eventsList', ['$window', 'mapService', 'ImageManagerService',
-  'SandboxEventsSource', 'MarkersService', 'sourceIconFilter', 'StylesService',
+  'SandboxEventsSource', 'MarkersService', 'sourceIconFilter','ChartDataChangedMsg', 'StylesService',
   function($window, mapService, ImageManagerService,
-    SandboxEventsSource, MarkersService, sourceIcon, StylesService) {
+    SandboxEventsSource, MarkersService, sourceIcon,ChartDataChangedMsg, StylesService) {
 
   function link(scope, elem, attrs, ctrls) {
     resize(elem);
@@ -44,29 +44,10 @@ angular.module('genie.eventsMap')
       zoomToCluster(cluster);
     }
 
-    scope.highlightCluster = function(cluster) {
-      if (scope.map.getZoom() < 10) { // not when up close
-        var marker = new google.maps.Marker({
-          map: scope.map,
-          position: cluster.location
-        });
-
-        MarkersService.delayRemove([marker], {delay: 3000});
-      }
-    }
-
     function zoomToCluster(cluster) {
       var map = scope.map;
-      var bounds = new google.maps.LatLngBounds;
       map.setCenter(cluster.location);
-      cluster.events.forEach(function(event) {
-        var bb = event.bounding_box,
-          ne = new google.maps.LatLng({lat: bb.ne.lat, lng: bb.ne.lng}),
-          sw = new google.maps.LatLng({lat: bb.sw.lat, lng: bb.sw.lng});
-        bounds.extend(ne);
-        bounds.extend(sw);
-      });
-      map.fitBounds(bounds);
+      map.setZoom(_.max([map.getZoom(), 7])); // roughly a single country view
     }
 
     scope.selectEvent = function(event) {
@@ -91,29 +72,29 @@ angular.module('genie.eventsMap')
         tagCloudCtrl.update(cluster.events);
       }
 
-      // cluster.events.forEach(showEventMarker);
-      drawBoxes(cluster.events);
+      cluster.events.forEach(showEventMarker);
+      drawBox(cluster.events);
     }
 
-    // function showEventMarker(event) {
-    //   var marker = new google.maps.Marker({
-    //     map: scope.map,
-    //     icon: sourceIcon(event.event_source),
-    //     animation: google.maps.Animation.DROP,
-    //     position: { lat: event.lat, lng: event.lng }
-    //   });
+    function showEventMarker(event) {
+      var marker = new google.maps.Marker({
+        map: scope.map,
+        icon: sourceIcon(event.event_source),
+        animation: google.maps.Animation.DROP,
+        position: { lat: event.lat, lng: event.lng }
+      });
 
-    //   marker.addListener('click', function() {
-    //     scope.selectedEvent = event;
-    //     showEvent(event);
-    //   });
+      marker.addListener('click', function() {
+        scope.selectedEvent = event;
+        showEvent(event);
+      });
 
-    //   MarkersService.addItem({
-    //     artifact: 'markers',
-    //     type: 'events',
-    //     obj: marker
-    //   });
-    // }
+      MarkersService.addItem({
+        artifact: 'markers',
+        type: 'events',
+        obj: marker
+      });
+    }
 
     function showTweetMarkers(params) {
       scope.showSpinner = true;
@@ -264,30 +245,25 @@ angular.module('genie.eventsMap')
       }
     };
 
-    scope.highlightEventBox = function(event, options) {
-      options = options || {};
-      var box = _.detect(boxes, function(b) {
-        return b.__customId === event.event_id;
-      });
-      if (!box) return;
-      options.revert ?
-        box.setOptions(StylesService.boxDefault)
-        :
-        box.setOptions(StylesService.boxHighlight);
-    };
-
-    function drawBoxes(events) {
+    function drawBox(events) {
       if (!(events && events.length)) return;
-      events.forEach(drawBox);
-    }
-
-    function drawBox(event) {
-      var bb = event.bounding_box;
+      Genie.worker.run({
+        worker: 'mapUtil',
+        method: 'getBoundingBox',
+        args: { locations: events }
+      },
+      function(e) {
+        var bb = e.data.bb;
         if (bb.sw.lat === bb.ne.lat) { // if a single point, make just large enough to see
           bb.ne.lat = bb.sw.lat + 0.003;
           bb.ne.lng = bb.sw.lng + 0.003;
         }
         var box = new google.maps.Rectangle({
+          strokeColor: '#FF0000',
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: '#FF0000',
+          fillOpacity: 0.35,
           map: scope.map,
           bounds: { // with some extra padding
             north: bb.ne.lat + 0.002,
@@ -296,9 +272,11 @@ angular.module('genie.eventsMap')
             west: bb.sw.lng - 0.002
           }
         });
-        box.setOptions(StylesService.boxDefault);
-        box.__customId = event.event_id; // find by eventid later
+        // box.addListener('click', function() {
+        //   scope.highlightCluster(cluster);
+        // });
         boxes.push(box);
+      });
     }
 
     function resize(elem) {
