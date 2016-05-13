@@ -1,7 +1,7 @@
 'use strict';
 angular.module('genie.common')
-.directive('timeSeries', ['ChartService', 'StylesService', 'CoreService',
-  function (ChartService, StylesService, CoreService) {
+.directive('timeSeries', ['$rootScope','ChartService', 'StylesService', 'CoreService','ChartDataChangedMsg',
+  function ($rootScope,ChartService, StylesService, CoreService,ChartDataChangedMsg) {
 
   function link(scope, elem, attrs) {
     var chart = new google.visualization.AnnotationChart(elem[0]);
@@ -9,9 +9,64 @@ angular.module('genie.common')
     var slowSelectionChange = _.debounce(selectionChange, 300);
     var PERIOD = CoreService.env.period; // days
     var DAY = CoreService.env.day; // mins
-
+    var startDay = new Date($rootScope.settings.data[15].value);
+    var endDay = new Date($rootScope.settings.data[17].value);
     google.visualization.events.addListener(chart, 'select',
       slowSelectionChange);
+
+    ChartDataChangedMsg.listen(function (_event,data) {
+      console.log(data);
+    });
+
+    function tween(startDate, endDate, columns, interval) {
+      var retVal = [];
+      var current = new Date(startDate);
+
+      while (current <= endDate) {
+        var row = [];
+        columns.forEach(function(col){
+          if(col.type == 'date'){
+            row.push(current);
+          }
+          else{
+            row.push(0);
+          }
+        });
+
+        retVal.push(row);
+        var dat = new Date(current.valueOf());
+        if(interval == "day"){
+          dat.setDate(dat.getDate() + 1);
+        }
+        if(interval == "hour"){
+          dat.setHours(dat.getHours()+1);
+        }
+        current = dat;
+      }
+
+      return retVal;
+
+    }
+
+    function getDateId(date,interval){
+      return interval == "day" ? date.toLocaleDateString():date.toLocaleDateString()+ ":" + date.getHours();
+    }
+
+    function insertRowData(rows, target, interval){
+      rows.forEach(function(row,idx){
+        var rowId = getDateId(row[0],interval);
+        for(var i = 0; i<target.length; i++){
+          var targetId = getDateId(target[i][0],interval);
+          if(rowId == targetId)
+          {
+            target[i] = row;
+            break;
+          }
+        }
+      });
+
+      return target;
+    }
 
     function selectionChange() {
       var selection = chart.getSelection()[0];
@@ -55,7 +110,8 @@ angular.module('genie.common')
 
     ChartService.getData(attrs.chartName)
       .then(function(chartData) {
-        var rows = chartData.rows;
+        var rows = tween(startDay, endDay,chartData.columns,"day");
+        rows = insertRowData(chartData.rows,rows,"day");
         scope.timeSeries.selectedDate = rows[0][0];
         // can access data from graph once its in so store for later
         scope.timeSeries.rows = rows;

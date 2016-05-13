@@ -1,9 +1,9 @@
 'use strict';
 angular.module('genie.eventsMap')
 .directive('eventsList', ['$window', 'mapService', 'ImageManagerService',
-  'SandboxEventsSource', 'MarkersService', 'sourceIconFilter',
+  'SandboxEventsSource', 'MarkersService', 'sourceIconFilter','ChartDataChangedMsg',
   function($window, mapService, ImageManagerService,
-    SandboxEventsSource, MarkersService, sourceIcon) {
+    SandboxEventsSource, MarkersService, sourceIcon,ChartDataChangedMsg) {
 
   function link(scope, elem, attrs, ctrls) {
     resize(elem);
@@ -42,7 +42,7 @@ angular.module('genie.eventsMap')
         showCluster(cluster);
       }
       zoomToCluster(cluster);
-    }
+    };
 
     function zoomToCluster(cluster) {
       var map = scope.map;
@@ -55,7 +55,7 @@ angular.module('genie.eventsMap')
       ImageManagerService.clear();
       scope.selectedEvent = event;
       showEvent(event);
-    }
+    };
 
     function showEvent(event) {
       if (event.event_source == 'hashtag') {
@@ -158,6 +158,8 @@ angular.module('genie.eventsMap')
       function addMarkers(sources) {
         var source = sources[0];
         if (!source) return;
+
+        ChartDataChangedMsg.broadcast(source.timeseries_data);
 
         // retain nodes lat-lng. render_graph mutates its input.
         var sourceNodes = source.network_graph.nodes.map(function(node) {
