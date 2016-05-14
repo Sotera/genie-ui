@@ -1,9 +1,9 @@
 'use strict';
 angular.module('genie.eventsMap')
 .directive('eventsList', ['$window', 'mapService', 'ImageManagerService',
-  'SandboxEventsSource', 'MarkersService', 'sourceIconFilter',
+  'SandboxEventsSource', 'MarkersService', 'sourceIconFilter', 'StylesService',
   function($window, mapService, ImageManagerService,
-    SandboxEventsSource, MarkersService, sourceIcon) {
+    SandboxEventsSource, MarkersService, sourceIcon, StylesService) {
 
   function link(scope, elem, attrs, ctrls) {
     resize(elem);
@@ -46,8 +46,16 @@ angular.module('genie.eventsMap')
 
     function zoomToCluster(cluster) {
       var map = scope.map;
+      var bounds = new google.maps.LatLngBounds;
       map.setCenter(cluster.location);
-      map.setZoom(_.max([map.getZoom(), 7])); // roughly a single country view
+      cluster.events.forEach(function(event) {
+        var bb = event.bounding_box,
+          ne = new google.maps.LatLng({lat: bb.ne.lat, lng: bb.ne.lng}),
+          sw = new google.maps.LatLng({lat: bb.sw.lat, lng: bb.sw.lng});
+        bounds.extend(ne);
+        bounds.extend(sw);
+      });
+      map.fitBounds(bounds);
     }
 
     scope.selectEvent = function(event) {
@@ -72,8 +80,8 @@ angular.module('genie.eventsMap')
         tagCloudCtrl.update(cluster.events);
       }
 
-      cluster.events.forEach(showEventMarker);
-      drawBox(cluster.events);
+      // cluster.events.forEach(showEventMarker);
+      drawBoxes(cluster.events);
     }
 
     function showEventMarker(event) {
@@ -245,25 +253,30 @@ angular.module('genie.eventsMap')
       }
     };
 
-    function drawBox(events) {
+    scope.highlightEventBox = function(event, options) {
+      options = options || {};
+      var box = _.detect(boxes, function(b) {
+        return b.__customId === event.event_id;
+      });
+      if (!box) return;
+      options.revert ?
+        box.setOptions(StylesService.boxDefault)
+        :
+        box.setOptions(StylesService.boxHighlight);
+    };
+
+    function drawBoxes(events) {
       if (!(events && events.length)) return;
-      Genie.worker.run({
-        worker: 'mapUtil',
-        method: 'getBoundingBox',
-        args: { locations: events }
-      },
-      function(e) {
-        var bb = e.data.bb;
+      events.forEach(drawBox);
+    }
+
+    function drawBox(event) {
+      var bb = event.bounding_box;
         if (bb.sw.lat === bb.ne.lat) { // if a single point, make just large enough to see
           bb.ne.lat = bb.sw.lat + 0.003;
           bb.ne.lng = bb.sw.lng + 0.003;
         }
         var box = new google.maps.Rectangle({
-          strokeColor: '#FF0000',
-          strokeOpacity: 0.8,
-          strokeWeight: 2,
-          fillColor: '#FF0000',
-          fillOpacity: 0.35,
           map: scope.map,
           bounds: { // with some extra padding
             north: bb.ne.lat + 0.002,
@@ -272,11 +285,9 @@ angular.module('genie.eventsMap')
             west: bb.sw.lng - 0.002
           }
         });
-        // box.addListener('click', function() {
-        //   scope.highlightCluster(cluster);
-        // });
+        box.setOptions(StylesService.boxDefault);
+        box.__customId = event.event_id; // find by eventid later
         boxes.push(box);
-      });
     }
 
     function resize(elem) {
