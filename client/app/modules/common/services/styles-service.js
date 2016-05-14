@@ -3,6 +3,22 @@ angular.module('genie.common')
   .factory('StylesService', [function() {
     //TODO: store styles in settings table
     return {
+      boxHighlight: {
+        strokeColor: 'red',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: 'red',
+        fillOpacity: 0.25,
+        zIndex: this.boxDefault.zIndex + 1
+      },
+      boxDefault: {
+        strokeColor: 'yellow',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: 'yellow',
+        fillOpacity: 0.25,
+        zIndex: 1
+      },
       darkColor: '#181818',
       dark: [
         {

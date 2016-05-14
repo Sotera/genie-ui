@@ -1,9 +1,9 @@
 'use strict';
 angular.module('genie.eventsMap')
 .directive('eventsList', ['$window', 'mapService', 'ImageManagerService',
-  'SandboxEventsSource', 'MarkersService', 'sourceIconFilter',
+  'SandboxEventsSource', 'MarkersService', 'sourceIconFilter', 'StylesService',
   function($window, mapService, ImageManagerService,
-    SandboxEventsSource, MarkersService, sourceIcon) {
+    SandboxEventsSource, MarkersService, sourceIcon, StylesService) {
 
   function link(scope, elem, attrs, ctrls) {
     resize(elem);
@@ -245,34 +245,15 @@ angular.module('genie.eventsMap')
       }
     };
 
-    scope.highlightEventBox = function(event) {
+    scope.highlightEventBox = function(event, options) {
       var box = _.detect(boxes, function(b) {
         return b.__customId === event.event_id;
       });
       if (!box) return;
-      box.setOptions({
-        strokeColor: 'red',
-        strokeOpacity: 0.8,
-        strokeWeight: 2,
-        fillColor: 'red',
-        fillOpacity: 0.25,
-        zIndex: 10
-      });
-    };
-
-    scope.unhighlightEventBox = function(event) {
-      var box = _.detect(boxes, function(b) {
-        return b.__customId === event.event_id;
-      });
-      if (!box) return;
-      box.setOptions({
-        strokeColor: 'yellow',
-        strokeOpacity: 0.8,
-        strokeWeight: 2,
-        fillColor: 'yellow',
-        fillOpacity: 0.25,
-        zIndex: 1
-      });
+      options.revert ?
+        box.setOptions(StylesService.boxDefault)
+        :
+        box.setOptions(StylesService.boxHighlight);
     };
 
     function drawBoxes(events) {
@@ -287,12 +268,6 @@ angular.module('genie.eventsMap')
           bb.ne.lng = bb.sw.lng + 0.003;
         }
         var box = new google.maps.Rectangle({
-          strokeColor: 'yellow',
-          strokeOpacity: 0.8,
-          strokeWeight: 2,
-          fillColor: 'yellow',
-          fillOpacity: 0.25,
-          zIndex: 1,
           map: scope.map,
           bounds: { // with some extra padding
             north: bb.ne.lat + 0.002,
@@ -301,10 +276,8 @@ angular.module('genie.eventsMap')
             west: bb.sw.lng - 0.002
           }
         });
-        // box.addListener('click', function() {
-        //   scope.highlightCluster(cluster);
-        // });
-        box.__customId = event.event_id;
+        box.setOptions(StylesService.boxDefault);
+        box.__customId = event.event_id; // find by eventid later
         boxes.push(box);
     }
 
