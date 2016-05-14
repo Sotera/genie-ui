@@ -246,6 +246,7 @@ angular.module('genie.eventsMap')
     };
 
     scope.highlightEventBox = function(event, options) {
+      options = options || {};
       var box = _.detect(boxes, function(b) {
         return b.__customId === event.event_id;
       });

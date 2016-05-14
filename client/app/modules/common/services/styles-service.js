@@ -9,7 +9,7 @@ angular.module('genie.common')
         strokeWeight: 2,
         fillColor: 'red',
         fillOpacity: 0.25,
-        zIndex: this.boxDefault.zIndex + 1
+        zIndex: 2 // more than default
       },
       boxDefault: {
         strokeColor: 'yellow',
