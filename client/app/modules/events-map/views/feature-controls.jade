@@ -5,9 +5,10 @@
     | Heatmap&nbsp;
     span( ng-show='features.heatmap' ) On
     span( ng-show='!features.heatmap' ) Off
-  label.btn( ng-model='features.sources'
-    ng-class='{"btn-info": features.sources, "btn-default": !features.sources}'
-    uib-btn-checkbox )
-    | Sources&nbsp;
-    span( ng-show='features.sources' ) On
-    span( ng-show='!features.sources' ) Off
+  //
+    label.btn( ng-model='features.sources'
+      ng-class='{"btn-info": features.sources, "btn-default": !features.sources}'
+      uib-btn-checkbox )
+      | Sources&nbsp;
+      span( ng-show='features.sources' ) On
+      span( ng-show='!features.sources' ) Off
