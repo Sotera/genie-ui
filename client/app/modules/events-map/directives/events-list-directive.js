@@ -45,12 +45,14 @@ angular.module('genie.eventsMap')
     }
 
     scope.highlightCluster = function(cluster) {
-      var marker = new google.maps.Marker({
-        map: scope.map,
-        position: cluster.location
-      });
+      if (scope.map.getZoom() < 10) { // not when up close
+        var marker = new google.maps.Marker({
+          map: scope.map,
+          position: cluster.location
+        });
 
-      MarkersService.delayRemove([marker], {delay: 3000});
+        MarkersService.delayRemove([marker], {delay: 3000});
+      }
     }
 
     function zoomToCluster(cluster) {
