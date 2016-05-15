@@ -44,6 +44,15 @@ angular.module('genie.eventsMap')
       zoomToCluster(cluster);
     }
 
+    scope.highlightCluster = function(cluster) {
+      var marker = new google.maps.Marker({
+        map: scope.map,
+        position: cluster.location
+      });
+
+      MarkersService.delayRemove([marker], {delay: 3000});
+    }
+
     function zoomToCluster(cluster) {
       var map = scope.map;
       var bounds = new google.maps.LatLngBounds;
@@ -84,25 +93,25 @@ angular.module('genie.eventsMap')
       drawBoxes(cluster.events);
     }
 
-    function showEventMarker(event) {
-      var marker = new google.maps.Marker({
-        map: scope.map,
-        icon: sourceIcon(event.event_source),
-        animation: google.maps.Animation.DROP,
-        position: { lat: event.lat, lng: event.lng }
-      });
+    // function showEventMarker(event) {
+    //   var marker = new google.maps.Marker({
+    //     map: scope.map,
+    //     icon: sourceIcon(event.event_source),
+    //     animation: google.maps.Animation.DROP,
+    //     position: { lat: event.lat, lng: event.lng }
+    //   });
 
-      marker.addListener('click', function() {
-        scope.selectedEvent = event;
-        showEvent(event);
-      });
+    //   marker.addListener('click', function() {
+    //     scope.selectedEvent = event;
+    //     showEvent(event);
+    //   });
 
-      MarkersService.addItem({
-        artifact: 'markers',
-        type: 'events',
-        obj: marker
-      });
-    }
+    //   MarkersService.addItem({
+    //     artifact: 'markers',
+    //     type: 'events',
+    //     obj: marker
+    //   });
+    // }
 
     function showTweetMarkers(params) {
       scope.showSpinner = true;

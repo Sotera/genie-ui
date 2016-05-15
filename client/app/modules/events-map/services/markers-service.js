@@ -1,6 +1,6 @@
 'use strict';
 angular.module('genie.eventsMap')
-.factory('MarkersService', [function() {
+.factory('MarkersService', ['$timeout', function($timeout) {
 
   var artifacts = {
     markers: { sources: [], events: [] },
@@ -39,6 +39,15 @@ angular.module('genie.eventsMap')
     _clearArtifactType(options.artifact, options.type);
   }
 
+  // remove collection of markers or infowindows
+  // options: delay: in millis
+  function delayRemove(items, options) {
+    options = options || {};
+    $timeout(function() {
+      _deref(items);
+    }, options.delay || 2000);
+  }
+
   function _clearArtifactType(artifactType, type) {
     if (type) { // just the specified type
       _deref(artifacts[artifactType][type]);
@@ -72,7 +81,8 @@ angular.module('genie.eventsMap')
     clear: clear,
     clearAll: clearAll,
     addItem: addItem,
-    getItem: getItem
+    getItem: getItem,
+    delayRemove: delayRemove
   };
 
 }]);

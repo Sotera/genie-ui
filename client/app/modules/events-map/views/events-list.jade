@@ -8,9 +8,10 @@
         a( ng-click='selectCluster(cluster)' role='button'
           data-toggle='collapse' data-parent='#clusters-list'
           data-target="{{'#tab' + $index}}"
-          ng-class='{highlight: isSelectedEventInCluster(cluster)}' )
+          ng-class='{highlight: isSelectedEventInCluster(cluster)}'
+          ng-mouseover='highlightCluster(cluster)' )
           i.fa.fa-chevron-down &nbsp;
-          | See {{ cluster.weight }} items
+          | See {{ cluster.weight }} posts
     .panel-collapse.collapse( id="{{'tab' + $index}}" role='tabpanel'
       ng-class='{in: isClusterSelected(cluster)}' )
       .list-group
