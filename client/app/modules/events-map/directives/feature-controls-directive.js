@@ -1,7 +1,7 @@
 'use strict';
 angular.module('genie.eventsMap')
 
-.directive('heatmapControls', [function () {
+.directive('featureControls', [function () {
 
   function link(scope, elem, attrs) {
 
@@ -19,7 +19,7 @@ angular.module('genie.eventsMap')
   return {
     restrict: 'AE',
     link: link,
-    templateUrl: 'modules/events-map/views/heatmap-controls'
+    templateUrl: 'modules/events-map/views/feature-controls'
   };
 
 }]);
