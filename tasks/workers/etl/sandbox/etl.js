@@ -64,6 +64,47 @@ function getUrlFromNodeId(node){
   });
 }
 
+function getDateId(date,interval){
+  return interval == "day" ? date.toLocaleDateString():date.toLocaleDateString()+ ":" + date.getHours();
+}
+
+function buildTimeseries(nodes){
+  var dateMap = {};
+  var firstDate;
+  for(var i =0; i< nodes.length; i++){
+    var node = nodes[i];
+    var date = new Date(node.time * 1000);
+    if(!firstDate || node.time < firstDate){
+      firstDate = node.time;
+    }
+    var dateToHour =  new Date(date.getFullYear(), date.getMonth(), date.getDay(), date.getHours());
+    var id = getDateId(date,"hour");
+    if(dateMap[id]){
+      dateMap[id][1]++;
+    }
+    else{
+      dateMap[id]=[dateToHour.getTime(),1];
+    }
+  }
+  var timeseries = [];
+  for (var key in dateMap) {
+    if (dateMap.hasOwnProperty(key)) {
+      timeseries.push(dateMap[key]);
+    }
+  }
+  return {
+    post_date:new Date(firstDate * 1000),
+    timeseries:{
+      rows:timeseries,
+        columns:
+        [
+          {label: "Date", type: "date"},
+          {label: "Pics", type: "number"}
+        ]
+    }
+  }
+}
+
 function convertEvent(sourceEvent, data){
   var created = moment(sourceEvent.created_time).format('YYYY-MM-DD');
   var location = sourceEvent.location;
@@ -71,7 +112,6 @@ function convertEvent(sourceEvent, data){
     event_id: sourceEvent.id,
     event_source: esDestIndex,
     indexed_date: created,
-    post_date: new Date(sourceEvent.created_time.min * 1000),
     lat: location.lat.min,
     lng: location.lon.min,
     bounding_box: {
@@ -88,10 +128,13 @@ function convertEvent(sourceEvent, data){
     num_posts: sourceEvent.count
   };
 
+  var timeSeriesData = buildTimeseries(data.detail.nodes);
+  destEvent.post_date = timeSeriesData.post_date;
+  destEvent.timeseries_data = timeSeriesData.timeseries;
+
   console.log("getting node image urls");
   Promise.all(data.detail.nodes.map(getUrlFromNodeId))
   .then(function(nodes){
-
     destEvent.node_to_url = nodes;
 
     esDestClient.index({

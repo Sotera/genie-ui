@@ -1,9 +1,9 @@
 'use strict';
 angular.module('genie.eventsMap')
 .directive('eventsList', ['$window', 'mapService', 'ImageManagerService',
-  'SandboxEventsSource', 'MarkersService', 'sourceIconFilter', 'StylesService',
+  'SandboxEventsSource', 'MarkersService', 'sourceIconFilter','ChartDataChangedMsg', 'ChartDateSelectedMsg',
   function($window, mapService, ImageManagerService,
-    SandboxEventsSource, MarkersService, sourceIcon, StylesService) {
+    SandboxEventsSource, MarkersService, sourceIcon,ChartDataChangedMsg, ChartDateSelectedMsg) {
 
   function link(scope, elem, attrs, ctrls) {
     resize(elem);
@@ -14,6 +14,11 @@ angular.module('genie.eventsMap')
 
     scope.$watch('features.sources', showAllClusters);
     scope.$watch('inputs.minutes_ago', removeArtifacts);
+
+    //scope.inputs.minutes_ago = (selection.row) * DAY * PERIOD;
+    ChartDateSelectedMsg.listen(function (_event,row,date) {
+
+    });
 
     // remove items added to map
     function removeArtifacts() {
@@ -42,7 +47,7 @@ angular.module('genie.eventsMap')
         showCluster(cluster);
       }
       zoomToCluster(cluster);
-    }
+    };
 
     scope.highlightCluster = function(cluster) {
       if (scope.map.getZoom() < 10) { // not when up close
@@ -74,7 +79,7 @@ angular.module('genie.eventsMap')
       ImageManagerService.clear();
       scope.selectedEvent = event;
       showEvent(event);
-    }
+    };
 
     function showEvent(event) {
       if (event.event_source == 'hashtag') {
@@ -92,7 +97,9 @@ angular.module('genie.eventsMap')
       }
 
       // cluster.events.forEach(showEventMarker);
-      drawBoxes(cluster.events);
+      drawBox(cluster.events);
+
+      //showClusterTimeseries(cluster.events);
     }
 
     // function showEventMarker(event) {
@@ -177,6 +184,8 @@ angular.module('genie.eventsMap')
       function addMarkers(sources) {
         var source = sources[0];
         if (!source) return;
+
+        ChartDataChangedMsg.broadcast(source.timeseries_data,"hour");
 
         // retain nodes lat-lng. render_graph mutates its input.
         var sourceNodes = source.network_graph.nodes.map(function(node) {
@@ -283,22 +292,22 @@ angular.module('genie.eventsMap')
 
     function drawBox(event) {
       var bb = event.bounding_box;
-        if (bb.sw.lat === bb.ne.lat) { // if a single point, make just large enough to see
-          bb.ne.lat = bb.sw.lat + 0.003;
-          bb.ne.lng = bb.sw.lng + 0.003;
+      if (bb.sw.lat === bb.ne.lat) { // if a single point, make just large enough to see
+        bb.ne.lat = bb.sw.lat + 0.003;
+        bb.ne.lng = bb.sw.lng + 0.003;
+      }
+      var box = new google.maps.Rectangle({
+        map: scope.map,
+        bounds: { // with some extra padding
+          north: bb.ne.lat + 0.002,
+          east: bb.ne.lng + 0.002,
+          south: bb.sw.lat - 0.002,
+          west: bb.sw.lng - 0.002
         }
-        var box = new google.maps.Rectangle({
-          map: scope.map,
-          bounds: { // with some extra padding
-            north: bb.ne.lat + 0.002,
-            east: bb.ne.lng + 0.002,
-            south: bb.sw.lat - 0.002,
-            west: bb.sw.lng - 0.002
-          }
-        });
-        box.setOptions(StylesService.boxDefault);
-        box.__customId = event.event_id; // find by eventid later
-        boxes.push(box);
+      });
+      box.setOptions(StylesService.boxDefault);
+      box.__customId = event.event_id; // find by eventid later
+      boxes.push(box);
     }
 
     function resize(elem) {
