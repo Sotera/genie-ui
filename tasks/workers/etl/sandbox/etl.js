@@ -70,16 +70,20 @@ function getDateId(date,interval){
 
 function buildTimeseries(nodes){
   var dateMap = {};
+  var firstDate;
   for(var i =0; i< nodes.length; i++){
     var node = nodes[i];
     var date = new Date(node.time * 1000);
-    var dateToHour =  new Date(date.getYear(), date.getMonth(), date.getDay(), date.getHours());
+    if(!firstDate || node.time < firstDate){
+      firstDate = node.time;
+    }
+    var dateToHour =  new Date(date.getFullYear(), date.getMonth(), date.getDay(), date.getHours());
     var id = getDateId(date,"hour");
     if(dateMap[id]){
       dateMap[id][1]++;
     }
     else{
-      dateMap[id]=[dateToHour.getTime,1];
+      dateMap[id]=[dateToHour.getTime(),1];
     }
   }
   var timeseries = [];
@@ -89,11 +93,15 @@ function buildTimeseries(nodes){
     }
   }
   return {
-    rows:timeseries,
-    columns:[
-      {label:"Date",type:"date"},
-      {label:"Pics",type:"number"}
-    ]
+    post_date:new Date(firstDate * 1000),
+    timeseries:{
+      rows:timeseries,
+        columns:
+        [
+          {label: "Date", type: "date"},
+          {label: "Pics", type: "number"}
+        ]
+    }
   }
 }
 
@@ -104,7 +112,6 @@ function convertEvent(sourceEvent, data){
     event_id: sourceEvent.id,
     event_source: esDestIndex,
     indexed_date: created,
-    post_date: new Date(sourceEvent.created_time.min * 1000),
     lat: location.lat.min,
     lng: location.lon.min,
     bounding_box: {
@@ -121,8 +128,9 @@ function convertEvent(sourceEvent, data){
     num_posts: sourceEvent.count
   };
 
-
-  destEvent.timeseries_data = buildTimeseries(data.detail.nodes);
+  var timeSeriesData = buildTimeseries(data.detail.nodes);
+  destEvent.post_date = timeSeriesData.post_date;
+  destEvent.timeseries_data = timeSeriesData.timeseries;
 
   console.log("getting node image urls");
   Promise.all(data.detail.nodes.map(getUrlFromNodeId))
