@@ -1,9 +1,12 @@
 'use strict';
 angular.module('genie.eventsMap')
 .directive('eventsList', ['$window', 'mapService', 'ImageManagerService',
-  'SandboxEventsSource', 'MarkersService', 'sourceIconFilter','ChartDataChangedMsg', 'ChartDateSelectedMsg',
+  'SandboxEventsSource', 'MarkersService', 'sourceIconFilter',
+  'ChartDataChangedMsg', 'ChartDateSelectedMsg', 'StylesService',
   function($window, mapService, ImageManagerService,
-    SandboxEventsSource, MarkersService, sourceIcon,ChartDataChangedMsg, ChartDateSelectedMsg) {
+    SandboxEventsSource, MarkersService, sourceIcon,
+    ChartDataChangedMsg, ChartDateSelectedMsg,
+    StylesService) {
 
   function link(scope, elem, attrs, ctrls) {
     resize(elem);
@@ -15,7 +18,6 @@ angular.module('genie.eventsMap')
     scope.$watch('features.sources', showAllClusters);
     scope.$watch('inputs.minutes_ago', removeArtifacts);
 
-    //scope.inputs.minutes_ago = (selection.row) * DAY * PERIOD;
     ChartDateSelectedMsg.listen(function (_event,row,date) {
 
     });
@@ -100,6 +102,12 @@ angular.module('genie.eventsMap')
       drawBox(cluster.events);
 
       //showClusterTimeseries(cluster.events);
+    }
+
+    function showClusterTimeseries(events){
+      //we prolly want to aggregate the cluster and show a time series based on that too
+      //but im not going to do that right now because it's hard.
+      //ChartDataChangedMsg.broadcast(buildClusterTimeseries(events),"hour");
     }
 
     // function showEventMarker(event) {
@@ -271,7 +279,7 @@ angular.module('genie.eventsMap')
       if (scope.features.sources) {
         angular.forEach(scope.clusters, showCluster);
       }
-    };
+    }
 
     scope.highlightEventBox = function(event, options) {
       options = options || {};

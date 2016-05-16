@@ -1,7 +1,9 @@
 'use strict';
 angular.module('genie.common')
-.directive('timeSeries', ['$rootScope','ChartService', 'StylesService', 'CoreService','ChartDataChangedMsg','ChartDateSelectedMsg',
-  function ($rootScope,ChartService, StylesService, CoreService,ChartDataChangedMsg, ChartDateSelectedMsg) {
+.directive('timeSeries', ['$rootScope','ChartService', 'StylesService',
+  'CoreService','ChartDataChangedMsg','ChartDateSelectedMsg',
+  function ($rootScope, ChartService, StylesService, CoreService,
+    ChartDataChangedMsg, ChartDateSelectedMsg) {
 
   function link(scope, elem, attrs) {
     var chart;
@@ -13,10 +15,10 @@ angular.module('genie.common')
     var endDay = new Date($rootScope.getSetting('zoomLevels:endDate'));
     var chartInterval = "day";
 
-    ChartDataChangedMsg.listen(function (_event,data,interval) {
+    ChartDataChangedMsg.listen(function(_,data,interval) {
       var startDate,endDate;
       chartInterval = interval;
-      data.rows.forEach(function(row,idx){
+      data.rows.forEach(function(row){
         if(!startDate && !endDate){
           startDate = endDate = row[0];
           return;
@@ -37,44 +39,40 @@ angular.module('genie.common')
       var current = new Date(startDate);
 
       while (current <= endDate) {
-        var row = [];
-        columns.forEach(function(col){
-          if(col.type == 'date'){
-            row.push(current);
-          }
-          else{
-            row.push(0);
-          }
+        var row = columns.map(function(col){
+          return col.type === 'date' ? current : 0;
         });
 
         retVal.push(row);
         var dat = new Date(current.valueOf());
-        if(chartInterval == "day"){
+        if (chartInterval === 'day') {
           dat.setDate(dat.getDate() + 1);
         }
-        if(chartInterval == "hour"){
-          dat.setHours(dat.getHours()+1);
+        if (chartInterval === 'hour') {
+          dat.setHours(dat.getHours() + 1);
         }
         current = dat;
       }
 
       return retVal;
-
     }
 
     function getDateId(date){
-      var dateVal = typeof date.toLocaleDateString==='function'? date:new Date(date);
+      var dateVal = typeof date.toLocaleDateString === 'function' ?
+        date :
+        new Date(date);
 
-      return chartInterval == "day" ? dateVal.toLocaleDateString():dateVal.toLocaleDateString()+ ":" + dateVal.getHours();
+      return chartInterval == 'day' ?
+        dateVal.toLocaleDateString() :
+        dateVal.toLocaleDateString() + ':' + dateVal.getHours();
     }
 
     function insertRowData(rows, target){
-      rows.forEach(function(row,idx){
-        var rowId = getDateId(row[0],chartInterval);
-        for(var i = 0; i<target.length; i++){
-          var targetId = getDateId(target[i][0],chartInterval);
-          if(rowId == targetId)
-          {
+      rows.forEach(function(row) {
+        var rowId = getDateId(row[0], chartInterval);
+        for(var i=0; i<target.length; i++){
+          var targetId = getDateId(target[i][0], chartInterval);
+          if (rowId === targetId) {
             row[0] = target[i][0];
             target[i] = row;
             break;
@@ -88,11 +86,12 @@ angular.module('genie.common')
     function selectionChange() {
       var selection = chart.getSelection()[0];
       if (selection) {
-        if(chartInterval == "hour"){
-          ChartDateSelectedMsg.broadcast(selection.row, scope.timeSeries.rows[selection.row][0]);
+        if (chartInterval === 'hour') {
+          ChartDateSelectedMsg
+          .broadcast(selection.row, scope.timeSeries.rows[selection.row][0]);
         }
         scope.$apply(function() {
-          if(chartInterval=="day") {
+          if (chartInterval === 'day') {
             scope.inputs.minutes_ago = ((scope.timeSeries.rows.length-1) - (selection.row+1)) * DAY * PERIOD;
           }
           scope.timeSeries.selectedDate = scope.timeSeries.rows[selection.row][0];
@@ -101,11 +100,11 @@ angular.module('genie.common')
     }
 
     function loadData(chartData, startDate, endDate){
-      if(chart){
+      if (chart) {
         chart.clearChart();
       }
-      var rows = tween(startDate, endDate,chartData.columns,chartInterval);
-      rows = insertRowData(chartData.rows,rows,chartInterval);
+      var rows = tween(startDate, endDate,chartData.columns, chartInterval);
+      rows = insertRowData(chartData.rows, rows, chartInterval);
       scope.timeSeries.selectedDate = rows[0][0];
       // can access data from graph once its in so store for later
       scope.timeSeries.rows = rows;
