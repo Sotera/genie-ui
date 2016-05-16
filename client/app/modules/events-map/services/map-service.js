@@ -29,7 +29,7 @@ angular.module('genie.eventsMap')
         return zoomLevel;
       } else {
         zoomLevel = new ZoomLevel();
-        zoomLevel.clusters = []
+        zoomLevel.clusters = [];
         return zoomLevel; // no record found for zoom or time
       }
     });

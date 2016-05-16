@@ -15,6 +15,11 @@ angular.module('genie.eventsMap')
     scope.$watch('features.sources', showAllClusters);
     scope.$watch('inputs.minutes_ago', removeArtifacts);
 
+    //scope.inputs.minutes_ago = (selection.row) * DAY * PERIOD;
+    ChartDateSelectedMsg.listen(function (_event,row,date) {
+
+    });
+
     // remove items added to map
     function removeArtifacts() {
       ImageManagerService.clear();
@@ -74,6 +79,14 @@ angular.module('genie.eventsMap')
 
       cluster.events.forEach(showEventMarker);
       drawBox(cluster.events);
+
+      showClusterTimeseries(cluster.events);
+    }
+
+    function showClusterTimeseries(events){
+      //we prolly want to aggregate the cluster and show a time series based on that too
+      //but im not going to do that right now because it's hard.
+      //ChartDataChangedMsg.broadcast(buildClusterTimeseries(events),"hour");
     }
 
     function showEventMarker(event) {
@@ -158,6 +171,8 @@ angular.module('genie.eventsMap')
       function addMarkers(sources) {
         var source = sources[0];
         if (!source) return;
+
+        ChartDataChangedMsg.broadcast(source.timeseries_data,"hour");
 
         // retain nodes lat-lng. render_graph mutates its input.
         var sourceNodes = source.network_graph.nodes.map(function(node) {
