@@ -93,7 +93,7 @@ angular.module('genie.common')
         }
         scope.$apply(function() {
           if(chartInterval=="day") {
-            scope.inputs.minutes_ago = (scope.timeSeries.rows.length-selection.row-1) * DAY * PERIOD;
+            scope.inputs.minutes_ago = ((scope.timeSeries.rows.length-1) - (selection.row+1)) * DAY * PERIOD;
           }
           scope.timeSeries.selectedDate = scope.timeSeries.rows[selection.row][0];
         });
