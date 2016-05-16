@@ -30,6 +30,9 @@
     "num_posts": {
       "type": "number"
     },
+    "timeseries_data":{
+      "type":"object"
+    },
     "source_data": {
       "type": [
         "string"
