@@ -77,7 +77,7 @@ function buildTimeseries(nodes){
     if(!firstDate || node.time < firstDate){
       firstDate = node.time;
     }
-    var dateToHour =  new Date(date.getFullYear(), date.getMonth(), date.getDay(), date.getHours());
+    var dateToHour =  new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours());
     var id = getDateId(date,"hour");
     if(dateMap[id]){
       dateMap[id][1]++;
