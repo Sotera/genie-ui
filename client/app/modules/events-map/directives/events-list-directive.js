@@ -1,9 +1,9 @@
 'use strict';
 angular.module('genie.eventsMap')
 .directive('eventsList', ['$window', 'mapService', 'ImageManagerService',
-  'SandboxEventsSource', 'MarkersService', 'sourceIconFilter','ChartDataChangedMsg', 'StylesService',
+  'SandboxEventsSource', 'MarkersService', 'sourceIconFilter','ChartDateSelectedMsg','ChartDataChangedMsg', 'StylesService',
   function($window, mapService, ImageManagerService,
-    SandboxEventsSource, MarkersService, sourceIcon,ChartDataChangedMsg, StylesService) {
+    SandboxEventsSource, MarkersService, sourceIcon,ChartDateSelectedMsg, ChartDataChangedMsg, StylesService) {
 
   function link(scope, elem, attrs, ctrls) {
     resize(elem);
@@ -258,7 +258,7 @@ angular.module('genie.eventsMap')
       if (scope.features.sources) {
         angular.forEach(scope.clusters, showCluster);
       }
-    };
+    }
 
     function drawBox(events) {
       if (!(events && events.length)) return;
