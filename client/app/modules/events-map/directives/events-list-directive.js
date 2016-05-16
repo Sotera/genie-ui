@@ -47,7 +47,7 @@ angular.module('genie.eventsMap')
         showCluster(cluster);
       }
       zoomToCluster(cluster);
-    }
+    };
 
     function zoomToCluster(cluster) {
       var map = scope.map;
@@ -60,7 +60,7 @@ angular.module('genie.eventsMap')
       ImageManagerService.clear();
       scope.selectedEvent = event;
       showEvent(event);
-    }
+    };
 
     function showEvent(event) {
       if (event.event_source == 'hashtag') {
