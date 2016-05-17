@@ -33,16 +33,16 @@ angular.module('genie.common')
       refreshChart(data, new Date(startDate), new Date(endDate));
     });
 
-    function getCountsByDay(startDate, endDate, columns) {
-      var countsByDay = [];
+    function getCountsByInterval(startDate, endDate, columns) {
+      var countsByInterval = [];
       var current = new Date(startDate);
-
+      var fake = 0;
       while (current <= endDate) {
         var row = columns.map(function(col){
-          return col.type === 'date' ? current : 0;
+          return col.type === 'date' ? current : fake;
         });
-
-        countsByDay.push(row);
+        fake+=10;
+        countsByInterval.push(row);
         var dat = new Date(current.valueOf());
         if (chartInterval === 'day') {
           dat.setDate(dat.getDate() + 1);
@@ -53,7 +53,7 @@ angular.module('genie.common')
         current = dat;
       }
 
-      return countsByDay;
+      return countsByInterval;
     }
 
     function getDateId(date){
@@ -91,7 +91,10 @@ angular.module('genie.common')
         }
         scope.$apply(function() {
           if (chartInterval === 'day') {
-            var minsAgo = ((scope.timeSeries.rows.length) - (selection.row)) * DAY * PERIOD;
+            var start = moment(scope.getSetting('zoomLevels:endDate'));
+            var end = moment(scope.timeSeries.rows[selection.row][0]);
+            var diff = start.diff(end, "days")-1;
+            var minsAgo = diff * DAY * PERIOD;
             scope.inputs.minutes_ago = minsAgo;
           }
           scope.timeSeries.selectedDate = scope.timeSeries.rows[selection.row][0];
@@ -103,7 +106,7 @@ angular.module('genie.common')
       if (chart) {
         chart.clearChart();
       }
-      var rows = getCountsByDay(startDate, endDate, chartData.columns);
+      var rows = getCountsByInterval(startDate, endDate, chartData.columns);
       rows = insertRowData(chartData.rows, rows);
       scope.timeSeries.selectedDate = rows[0][0];
       // can't access data from graph once its plotted so store for later
@@ -115,7 +118,7 @@ angular.module('genie.common')
         });
         data.addRows(rows);
 
-        chart = new google.visualization.AnnotationChart(elem[0])
+        chart = new google.visualization.AnnotationChart(elem[0]);
         google.visualization.events.addListener(chart, 'select',
           slowSelectionChange);
 
