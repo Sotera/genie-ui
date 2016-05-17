@@ -99,7 +99,7 @@ angular.module('genie.eventsMap')
       }
 
       // cluster.events.forEach(showEventMarker);
-      drawBox(cluster.events);
+      drawBoxes(cluster.events);
 
       //showClusterTimeseries(cluster.events);
     }
@@ -193,7 +193,7 @@ angular.module('genie.eventsMap')
         var source = sources[0];
         if (!source) return;
 
-        ChartDataChangedMsg.broadcast(source.timeseries_data,"hour");
+        ChartDataChangedMsg.broadcast(source.timeseries_data, 'hour');
 
         // retain nodes lat-lng. render_graph mutates its input.
         var sourceNodes = source.network_graph.nodes.map(function(node) {

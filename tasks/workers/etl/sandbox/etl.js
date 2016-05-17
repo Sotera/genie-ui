@@ -45,7 +45,7 @@ function loadEvents() {
 }
 
 function summarizeEvents(data){
-  if (!data.events || data.events.length == 0)
+  if (!data.events || !data.events.length)
     throw new Error('Expected to find sandbox events');
 
   console.log('summarizing event data');
@@ -73,21 +73,20 @@ function getDateId(date, interval){
 function buildTimeSeries(nodes){
   var dateMap = {};
   var firstDate;
-  for(var i=0; i< nodes.length; i++){
-    var node = nodes[i];
+  nodes.forEach(node => {
     var date = new Date(node.time * 1000);
     if(!firstDate || node.time < firstDate){
       firstDate = node.time;
     }
-    var dateToHour =  new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours());
+    var dateToHour = new Date(date.getFullYear(), date.getMonth(),
+      date.getDate(), date.getHours());
     var id = getDateId(date, "hour");
-    if(dateMap[id]) {
+    if (dateMap[id]) {
       dateMap[id][1]++;
-    }
-    else {
+    } else {
       dateMap[id] = [dateToHour.getTime(),1];
     }
-  }
+  });
   var timeseries = [];
   for (var key in dateMap) {
     if (dateMap.hasOwnProperty(key)) {
@@ -98,22 +97,22 @@ function buildTimeSeries(nodes){
     post_date: new Date(firstDate * 1000),
     timeseries: {
       rows: timeseries,
-        columns:
+      columns:
         [
           {label: "Date", type: "date"},
           {label: "Pics", type: "number"}
         ]
     }
-  }
+  };
 }
 
 function convertEvent(sourceEvent, data){
-  var created = moment(sourceEvent.created_time).format('YYYY-MM-DD');
+  var created = moment(sourceEvent.created_time.min).format('YYYY-MM-DD');
   var location = sourceEvent.location;
   var destEvent = {
     event_id: sourceEvent.id,
     event_source: esDestIndex,
-    indexed_date: created,
+    indexed_date: created, // prolly not the actual indexed date?
     lat: location.lat.min,
     lng: location.lon.min,
     bounding_box: {

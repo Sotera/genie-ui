@@ -1,8 +1,8 @@
 'use strict';
 angular.module('genie.common')
-.directive('timeSeries', ['$rootScope','ChartService', 'StylesService',
+.directive('timeSeries', ['ChartService', 'StylesService',
   'CoreService','ChartDataChangedMsg','ChartDateSelectedMsg',
-  function ($rootScope, ChartService, StylesService, CoreService,
+  function (ChartService, StylesService, CoreService,
     ChartDataChangedMsg, ChartDateSelectedMsg) {
 
   function link(scope, elem, attrs) {
@@ -11,11 +11,11 @@ angular.module('genie.common')
     var slowSelectionChange = _.debounce(selectionChange, 300);
     var PERIOD = CoreService.env.period; // days
     var DAY = CoreService.env.day; // mins
-    var startDay = new Date($rootScope.getSetting('zoomLevels:startDate'));
-    var endDay = new Date($rootScope.getSetting('zoomLevels:endDate'));
+    var startDay = new Date(scope.getSetting('zoomLevels:startDate'));
+    var endDay = new Date(scope.getSetting('zoomLevels:endDate'));
     var chartInterval = "day";
 
-    ChartDataChangedMsg.listen(function(_,data,interval) {
+    ChartDataChangedMsg.listen(function(_, data, interval) {
       var startDate,endDate;
       chartInterval = interval;
       data.rows.forEach(function(row){
@@ -29,13 +29,12 @@ angular.module('genie.common')
         if(row[0] < startDate){
           startDate = row[0];
         }
-
       });
-      loadData(data, new Date(startDate), new Date(endDate));
+      refreshChart(data, new Date(startDate), new Date(endDate));
     });
 
-    function tween(startDate, endDate, columns) {
-      var retVal = [];
+    function getCountsByDay(startDate, endDate, columns) {
+      var countsByDay = [];
       var current = new Date(startDate);
 
       while (current <= endDate) {
@@ -43,7 +42,7 @@ angular.module('genie.common')
           return col.type === 'date' ? current : 0;
         });
 
-        retVal.push(row);
+        countsByDay.push(row);
         var dat = new Date(current.valueOf());
         if (chartInterval === 'day') {
           dat.setDate(dat.getDate() + 1);
@@ -54,7 +53,7 @@ angular.module('genie.common')
         current = dat;
       }
 
-      return retVal;
+      return countsByDay;
     }
 
     function getDateId(date){
@@ -92,21 +91,22 @@ angular.module('genie.common')
         }
         scope.$apply(function() {
           if (chartInterval === 'day') {
-            scope.inputs.minutes_ago = ((scope.timeSeries.rows.length-1) - (selection.row+1)) * DAY * PERIOD;
+            var minsAgo = ((scope.timeSeries.rows.length) - (selection.row)) * DAY * PERIOD;
+            scope.inputs.minutes_ago = minsAgo;
           }
           scope.timeSeries.selectedDate = scope.timeSeries.rows[selection.row][0];
         });
       }
     }
 
-    function loadData(chartData, startDate, endDate){
+    function refreshChart(chartData, startDate, endDate) {
       if (chart) {
         chart.clearChart();
       }
-      var rows = tween(startDate, endDate,chartData.columns, chartInterval);
-      rows = insertRowData(chartData.rows, rows, chartInterval);
+      var rows = getCountsByDay(startDate, endDate, chartData.columns);
+      rows = insertRowData(chartData.rows, rows);
       scope.timeSeries.selectedDate = rows[0][0];
-      // can access data from graph once its in so store for later
+      // can't access data from graph once its plotted so store for later
       scope.timeSeries.rows = rows;
       var data = new google.visualization.DataTable();
       if (rows.length) {
@@ -114,9 +114,11 @@ angular.module('genie.common')
           data.addColumn(col.type,col.label);
         });
         data.addRows(rows);
-        chart = new google.visualization.AnnotationChart(elem[0]);
+
+        chart = new google.visualization.AnnotationChart(elem[0])
         google.visualization.events.addListener(chart, 'select',
           slowSelectionChange);
+
         chart.draw(data, options);
         // show the line dot (doesn't show tooltips, wtf?)
         chart.setSelection([{row: 0, column: null}]);
@@ -155,7 +157,7 @@ angular.module('genie.common')
 
     ChartService.getData(attrs.chartName)
       .then(function(chartData) {
-        loadData(chartData, startDay, endDay);
+        refreshChart(chartData, startDay, endDay);
       });
   }
 
