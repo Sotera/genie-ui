@@ -2,7 +2,7 @@
 
 const moment = require('moment'),
   es = require('elasticsearch'),
-  esSourceType = 'greenville',
+  esSourceType = '20150620-london2',
   esSourceIndex = 'instagram_remap',
   esDestIndex = 'sandbox',
   esDestType = 'event',
@@ -86,13 +86,14 @@ function buildTimeSeries(nodes){
     });
     timeseries = _.values(dateMap);
 
+    // TODO: fix post_date +1 hack
     return {
-      post_date: new Date(firstDate * 1000),
+      post_date: moment(firstDate * 1000).add(1, 'days').toDate(),
       timeseries: {
         rows: timeseries,
         columns: [
           {label: "Date", type: "date"},
-          {label: "Pics", type: "number"}
+          {label: "Images", type: "number"}
         ]
       }
     };

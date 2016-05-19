@@ -105,7 +105,6 @@ angular.module('genie.common')
       }
       var rows = getCountsByInterval(startDate, endDate, chartData.columns);
       rows = insertRowData(chartData.rows, rows);
-      scope.timeSeries.selectedDate = rows[0][0];
       // can't access data from graph once its plotted so store for later
       scope.timeSeries.rows = rows;
       var data = new google.visualization.DataTable();
@@ -121,7 +120,7 @@ angular.module('genie.common')
 
         chart.draw(data, options);
         // show the line dot (doesn't show tooltips, wtf?)
-        chart.setSelection([{row: 0, column: null}]);
+        // chart.setSelection([{row: 0, column: null}]);
       } else {
         CoreService.alertInfo('Missing Data',
           'No time-series data: check system settings for start, end dates');
@@ -144,20 +143,27 @@ angular.module('genie.common')
         vAxis: {
           gridlines: {
             color: bgColor
-          }
+          },
+          textStyle: {color: '#FFF'}
         },
         hAxis: {
           gridlines: {
             color: bgColor
-          }
+          },
+          textStyle: {color: '#FFF'}
         }
       }
     };
 
-
+    // initial load (by day)
     ChartService.getData(attrs.chartName)
       .then(function(chartData) {
         refreshChart(chartData, startDay, endDay);
+        // show the line dot (doesn't show tooltips, wtf?)
+        var rows = chartData.rows;
+        var lastRow = rows.length;
+        chart.setSelection([{row: lastRow, column: null}]);
+        scope.timeSeries.selectedDate = rows[0][0];
       });
   }
 

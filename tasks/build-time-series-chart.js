@@ -58,10 +58,10 @@ function createChart(settings) {
       if (zoom) {
         let events = _(zoom.clusters).map('events').flatten();
         hashtagPostsCount = _(events)
-          .filter(evt => evt.event_source == 'hashtag')
+          .filter(evt => evt.event_source === 'hashtag')
           .sum('weight');
         sandboxPostsCount = _(events)
-          .filter(evt => evt.event_source == 'sandbox')
+          .filter(evt => evt.event_source === 'sandbox')
           .sum('weight');
       }
       rows.push([date.format('YYYY-MM-DD'), hashtagPostsCount, sandboxPostsCount]);
@@ -69,9 +69,9 @@ function createChart(settings) {
     let chartData = {
       rows: rows,
       columns: [
-        {"type": "date", "label": "Date"},
-        {"type": "number", "label": "Tweets"},
-        {"type": "number", "label": "Pics"}
+        {'type': 'date', 'label': 'Date'},
+        {'type': 'number', 'label': 'Hashtags'},
+        {'type': 'number', 'label': 'Images'}
       ]
     };
 
