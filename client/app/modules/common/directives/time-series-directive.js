@@ -13,10 +13,10 @@ angular.module('genie.common')
     var DAY = CoreService.env.day; // mins
     var startDay = new Date(scope.getSetting('zoomLevels:startDate'));
     var endDay = new Date(scope.getSetting('zoomLevels:endDate'));
-    var chartInterval = "day";
+    var chartInterval = 'day';
 
     ChartDataChangedMsg.listen(function(_, data, interval) {
-      var startDate,endDate;
+      var startDate, endDate;
       chartInterval = interval;
       data.rows.forEach(function(row){
         if(!startDate && !endDate){
@@ -36,12 +36,10 @@ angular.module('genie.common')
     function getCountsByInterval(startDate, endDate, columns) {
       var countsByInterval = [];
       var current = new Date(startDate);
-      var fake = 0;
       while (current <= endDate) {
         var row = columns.map(function(col){
-          return col.type === 'date' ? current : fake;
+          return col.type === 'date' ? current : 0;
         });
-        fake+=10;
         countsByInterval.push(row);
         var dat = new Date(current.valueOf());
         if (chartInterval === 'day') {
@@ -57,11 +55,10 @@ angular.module('genie.common')
     }
 
     function getDateId(date){
-      var dateVal = typeof date.toLocaleDateString === 'function' ?
-        date :
-        new Date(date);
+      // normalize string, epoch or date input to date object
+      var dateVal = new Date(date);
 
-      return chartInterval == 'day' ?
+      return chartInterval === 'day' ?
         dateVal.toLocaleDateString() :
         dateVal.toLocaleDateString() + ':' + dateVal.getHours();
     }
@@ -91,9 +88,9 @@ angular.module('genie.common')
         }
         scope.$apply(function() {
           if (chartInterval === 'day') {
-            var start = moment(scope.getSetting('zoomLevels:endDate'));
-            var end = moment(scope.timeSeries.rows[selection.row][0]);
-            var diff = start.diff(end, "days")-1;
+            var endDate = moment(scope.getSetting('zoomLevels:endDate'));
+            var selectedDate = moment(scope.timeSeries.rows[selection.row][0]);
+            var diff = endDate.diff(selectedDate, 'days')+1;
             var minsAgo = diff * DAY * PERIOD;
             scope.inputs.minutes_ago = minsAgo;
           }
@@ -114,7 +111,7 @@ angular.module('genie.common')
       var data = new google.visualization.DataTable();
       if (rows.length) {
         chartData.columns.forEach(function(col) {
-          data.addColumn(col.type,col.label);
+          data.addColumn(col.type, col.label);
         });
         data.addRows(rows);
 
