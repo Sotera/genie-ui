@@ -3,10 +3,11 @@ angular.module('genie.eventsMap')
 .directive('eventsList', ['$window', 'mapService', 'ImageManagerService',
   'SandboxEventsSource', 'MarkersService', 'sourceIconFilter',
   'ChartDataChangedMsg', 'ChartDateSelectedMsg', 'StylesService',
+  'HashtagEventsSource',
   function($window, mapService, ImageManagerService,
     SandboxEventsSource, MarkersService, sourceIcon,
     ChartDataChangedMsg, ChartDateSelectedMsg,
-    StylesService) {
+    StylesService, HashtagEventsSource) {
 
   function link(scope, elem, attrs, ctrls) {
     resize(elem);
@@ -18,9 +19,8 @@ angular.module('genie.eventsMap')
     scope.$watch('features.sources', showAllClusters);
     scope.$watch('inputs.minutes_ago', removeArtifacts);
 
-    ChartDateSelectedMsg.listen(function (_event,row,date) {
-
-    });
+    // ChartDateSelectedMsg.listen(function (_event,row,date) {
+    // });
 
     // remove items added to map
     function removeArtifacts() {
@@ -88,8 +88,28 @@ angular.module('genie.eventsMap')
         var params = [_.pick(event, ['event_id', 'event_source'])];
         showTweetMarkers(params);
         tagCloudCtrl.update([event]);
+        updateTimeSeriesChart(event);
       } else {
         showSandboxImages(event);
+      }
+    }
+
+    function updateTimeSeriesChart(event) {
+      var query = {
+        filter: {
+          where: { event_id: event.event_id }
+        }
+      };
+
+      HashtagEventsSource.find(query)
+      .$promise
+      .then(updateTimeSeries)
+      .catch(console.error);
+
+      function updateTimeSeries(sources) {
+        var source = sources[0];
+        if (!source) return;
+        ChartDataChangedMsg.broadcast(source.timeseries_data, 'hour');
       }
     }
 
@@ -97,10 +117,7 @@ angular.module('genie.eventsMap')
       if (cluster.events[0].event_source === 'hashtag') {
         tagCloudCtrl.update(cluster.events);
       }
-
-      // cluster.events.forEach(showEventMarker);
       drawBoxes(cluster.events);
-
       //showClusterTimeseries(cluster.events);
     }
 
@@ -110,26 +127,6 @@ angular.module('genie.eventsMap')
       //ChartDataChangedMsg.broadcast(buildClusterTimeseries(events),"hour");
     }
 
-    // function showEventMarker(event) {
-    //   var marker = new google.maps.Marker({
-    //     map: scope.map,
-    //     icon: sourceIcon(event.event_source),
-    //     animation: google.maps.Animation.DROP,
-    //     position: { lat: event.lat, lng: event.lng }
-    //   });
-
-    //   marker.addListener('click', function() {
-    //     scope.selectedEvent = event;
-    //     showEvent(event);
-    //   });
-
-    //   MarkersService.addItem({
-    //     artifact: 'markers',
-    //     type: 'events',
-    //     obj: marker
-    //   });
-    // }
-
     function showTweetMarkers(params) {
       scope.showSpinner = true;
       // clear tweet markers artifacts
@@ -138,14 +135,14 @@ angular.module('genie.eventsMap')
 
       return mapService.getClusterSources(params)
       .then(function(sources) {
-        sources.forEach(function(src) {
+        sources.forEach(function(source) {
           var marker = new google.maps.Marker({
             map: scope.map,
             animation: google.maps.Animation.DROP,
-            position: { lat: src.lat, lng: src.lng }
+            position: { lat: source.lat, lng: source.lng }
           });
 
-          var infowindow = createTweetInfoWindow(src);
+          var infowindow = createTweetInfoWindow(source);
           marker.addListener('click', function() {
             infowindow.open(scope.map, marker);
           });
