@@ -5,18 +5,16 @@ const app = require('../server'),
   GeoTweet = new LoopbackModelHelper('GeoTweet'),
   GeoTweetHashtagIndex = new LoopbackModelHelper('GeoTweetHashtagIndex'),
   HashtagEventsSource = new LoopbackModelHelper('HashtagEventsSource'),
-  ZoomLevel = new LoopbackModelHelper('ZoomLevel')
+  ZoomLevel = new LoopbackModelHelper('ZoomLevel'),
+  _ = require('lodash')
   ;
 
 module.exports = class {
 
   post_prepHashtagCluster(options, cb) {
-    Promise.all([
-      GeoTweet.destroyAll(),
-      GeoTweetHashtagIndex.destroyAll(),
-      HashtagEventsSource.destroyAll(),
-      ZoomLevel.destroyAll()
-    ])
+    const helpers = [GeoTweet, GeoTweetHashtagIndex,
+      HashtagEventsSource, ZoomLevel];
+    Promise.all(_.invoke(helpers, 'destroyAll'))
     .then(() => cb())
     .catch(cb);
   }
