@@ -19,7 +19,8 @@ const moment = require('moment'),
   Giver = require('./giver'),
   giver = new Giver(esSourceClient, esSourceIndex, esSourceType),
   dataMapping = require('../../../../server/util/data-mapping'),
-  eventMapping = dataMapping.getEventTypeMapping();
+  eventMapping = dataMapping.getEventTypeMapping(),
+  _ = require('lodash');
 
 module.exports = {
   run: run
@@ -64,46 +65,40 @@ function getUrlFromNodeId(node){
   });
 }
 
-function getDateId(date, interval){
-  return interval === "day" ?
-    date.toLocaleDateString() :
-    date.toLocaleDateString() + ":" + date.getHours();
-}
-
+// build 2-dimension array of items per hour
 function buildTimeSeries(nodes){
-  var dateMap = {};
-  var firstDate;
-  nodes.forEach(node => {
-    var date = new Date(node.time * 1000);
-    if(!firstDate || node.time < firstDate){
-      firstDate = node.time;
-    }
-    var dateToHour = new Date(date.getFullYear(), date.getMonth(),
-      date.getDate(), date.getHours());
-    var id = getDateId(date, "hour");
-    if (dateMap[id]) {
-      dateMap[id][1]++;
-    } else {
-      dateMap[id] = [dateToHour.getTime(),1];
-    }
-  });
-  var timeseries = [];
-  for (var key in dateMap) {
-    if (dateMap.hasOwnProperty(key)) {
-      timeseries.push(dateMap[key]);
-    }
-  }
-  return {
-    post_date: new Date(firstDate * 1000),
-    timeseries: {
-      rows: timeseries,
-      columns:
-        [
+  try {
+    var dateMap = {}, timeseries = [],
+      date, firstDate, dateToHour;
+
+    nodes.forEach(node => {
+      date = new Date(node.time * 1000);
+      if(!firstDate || node.time < firstDate){
+        firstDate = node.time;
+      }
+      dateToHour = new Date(date.getFullYear(), date.getMonth(),
+        date.getDate(), date.getHours());
+      if (dateMap[dateToHour]) {
+        dateMap[dateToHour][1]++;
+      } else {
+        dateMap[dateToHour] = [dateToHour.getTime(), 1];
+      }
+    });
+    timeseries = _.values(dateMap);
+
+    return {
+      post_date: new Date(firstDate * 1000),
+      timeseries: {
+        rows: timeseries,
+        columns: [
           {label: "Date", type: "date"},
           {label: "Pics", type: "number"}
         ]
-    }
-  };
+      }
+    };
+  } catch(ex) {
+    console.error(ex);
+  }
 }
 
 function convertEvent(sourceEvent, data){
@@ -129,7 +124,7 @@ function convertEvent(sourceEvent, data){
     num_posts: sourceEvent.count
   };
 
-  var timeSeriesData = buildTimeSeries(data.detail.nodes);
+  var timeSeriesData = buildTimeSeries(destEvent.network_graph.nodes);
   destEvent.post_date = timeSeriesData.post_date;
   destEvent.timeseries_data = timeSeriesData.timeseries;
 
@@ -153,4 +148,3 @@ function convertEvent(sourceEvent, data){
   })
   .catch(console.error);
 }
-
