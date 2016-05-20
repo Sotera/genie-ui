@@ -69,12 +69,15 @@ function getUrlFromNodeId(node){
 function buildTimeSeries(nodes){
   try {
     var dateMap = {}, timeseries = [],
-      date, firstDate, dateToHour;
+      date, firstDate, lastDate, dateToHour;
 
     nodes.forEach(node => {
       date = new Date(node.time * 1000);
       if(!firstDate || node.time < firstDate){
         firstDate = node.time;
+      }
+      if(!lastDate || node.time > lastDate){
+        lastDate = node.time;
       }
       dateToHour = new Date(date.getFullYear(), date.getMonth(),
         date.getDate(), date.getHours());
@@ -86,9 +89,10 @@ function buildTimeSeries(nodes){
     });
     timeseries = _.values(dateMap);
 
-    // TODO: fix post_date +1 hack
+    // TODO: using lastDate b/c it seems to give the 'correct'
+    // day (in the UI) altho i haven't fully vetted this.
     return {
-      post_date: moment(firstDate * 1000).add(1, 'days').toDate(),
+      post_date: moment(lastDate * 1000).toDate(),
       timeseries: {
         rows: timeseries,
         columns: [
