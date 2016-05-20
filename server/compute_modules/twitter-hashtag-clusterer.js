@@ -4,12 +4,12 @@ var now = require('performance-now');
 var Twitter = require('twitter');
 var async = require('async');
 var request = require('request');
-var moment = require('moment');
 var loopback = require('loopback');
 var clustering = require('density-clustering');
 var LoopbackModelHelper = require('../util/loopback-model-helper');
 var Random = require('random-js');
 var ensureStringArray = require('../util/ensure-string-array');
+var _ = require('lodash');
 
 var twitterKeyFilename = require('path').join(__dirname, '../../.twitter-keys.json');
 try {
@@ -193,8 +193,25 @@ module.exports = class {
               }, {lat: 0, lng: 0, post_date: 0, source_data: []});
               var lat = reduceResult.lat / numPosts;
               var lng = reduceResult.lng / numPosts;
-              var post_date = reduceResult.post_date / numPosts;
+              // var post_date = reduceResult.post_date / numPosts;
               var source_data = reduceResult.source_data;
+              var dateMap = {}, timeseries = [];
+              var firstPostDate, dateToHour, postDate;
+              clusterOfTweets.forEach(tweet => {
+                postDate = tweet.post_date;
+                if(!firstPostDate || tweet.post_date < firstPostDate){
+                  firstPostDate = tweet.post_date;
+                }
+                dateToHour = new Date(postDate.getFullYear(),
+                  postDate.getMonth(), postDate.getDate(),
+                  postDate.getHours());
+                if (dateMap[dateToHour]) {
+                  dateMap[dateToHour][1]++;
+                } else {
+                  dateMap[dateToHour] = [dateToHour.getTime(), 1];
+                }
+              });
+              timeseries = _.values(dateMap);
               //Construct EventsSource object to write to collection
               var newHashtagEventsSource = {
                 event_id: random.uuid4().toString(),
@@ -202,7 +219,7 @@ module.exports = class {
                 num_posts: numPosts,
                 source_data: source_data,
                 event_source: 'hashtag',
-                post_date: new Date(post_date),
+                post_date: firstPostDate,
                 indexed_date: new Date(),
                 bounding_box: {
                   sw: {
@@ -214,12 +231,19 @@ module.exports = class {
                     lng: e_lng,
                   }
                 },
+                timeseries_data: {
+                  rows: timeseries,
+                  columns: [
+                    {label: 'Date', type: 'date'},
+                    {label: 'Tweets', type: 'number'}
+                  ]
+                },
                 hashtag,
                 lat,
                 lng
               };
               self.hashtagEventsSourceHelper.create(newHashtagEventsSource, function (err, result) {
-                var r = result;
+                if (err) return cb(err);
               });
             });
           });

@@ -2,7 +2,7 @@
 
 const moment = require('moment'),
   es = require('elasticsearch'),
-  esSourceType = 'greenville',
+  esSourceType = '20150620-london2',
   esSourceIndex = 'instagram_remap',
   esDestIndex = 'sandbox',
   esDestType = 'event',
@@ -19,7 +19,8 @@ const moment = require('moment'),
   Giver = require('./giver'),
   giver = new Giver(esSourceClient, esSourceIndex, esSourceType),
   dataMapping = require('../../../../server/util/data-mapping'),
-  eventMapping = dataMapping.getEventTypeMapping();
+  eventMapping = dataMapping.getEventTypeMapping(),
+  _ = require('lodash');
 
 module.exports = {
   run: run
@@ -45,7 +46,7 @@ function loadEvents() {
 }
 
 function summarizeEvents(data){
-  if (!data.events || data.events.length == 0)
+  if (!data.events || !data.events.length)
     throw new Error('Expected to find sandbox events');
 
   console.log('summarizing event data');
@@ -64,14 +65,50 @@ function getUrlFromNodeId(node){
   });
 }
 
+// build 2-dimension array of items per hour
+function buildTimeSeries(nodes){
+  try {
+    var dateMap = {}, timeseries = [],
+      date, firstDate, dateToHour;
+
+    nodes.forEach(node => {
+      date = new Date(node.time * 1000);
+      if(!firstDate || node.time < firstDate){
+        firstDate = node.time;
+      }
+      dateToHour = new Date(date.getFullYear(), date.getMonth(),
+        date.getDate(), date.getHours());
+      if (dateMap[dateToHour]) {
+        dateMap[dateToHour][1]++;
+      } else {
+        dateMap[dateToHour] = [dateToHour.getTime(), 1];
+      }
+    });
+    timeseries = _.values(dateMap);
+
+    // TODO: fix post_date +1 hack
+    return {
+      post_date: moment(firstDate * 1000).add(1, 'days').toDate(),
+      timeseries: {
+        rows: timeseries,
+        columns: [
+          {label: "Date", type: "date"},
+          {label: "Images", type: "number"}
+        ]
+      }
+    };
+  } catch(ex) {
+    console.error(ex);
+  }
+}
+
 function convertEvent(sourceEvent, data){
-  var created = moment(sourceEvent.created_time).format('YYYY-MM-DD');
+  var created = moment(sourceEvent.created_time.min).format('YYYY-MM-DD');
   var location = sourceEvent.location;
   var destEvent = {
     event_id: sourceEvent.id,
     event_source: esDestIndex,
-    indexed_date: created,
-    post_date: new Date(sourceEvent.created_time.min * 1000),
+    indexed_date: created, // prolly not the actual indexed date?
     lat: location.lat.min,
     lng: location.lon.min,
     bounding_box: {
@@ -88,10 +125,13 @@ function convertEvent(sourceEvent, data){
     num_posts: sourceEvent.count
   };
 
+  var timeSeriesData = buildTimeSeries(destEvent.network_graph.nodes);
+  destEvent.post_date = timeSeriesData.post_date;
+  destEvent.timeseries_data = timeSeriesData.timeseries;
+
   console.log("getting node image urls");
   Promise.all(data.detail.nodes.map(getUrlFromNodeId))
   .then(function(nodes){
-
     destEvent.node_to_url = nodes;
 
     esDestClient.index({
@@ -109,4 +149,3 @@ function convertEvent(sourceEvent, data){
   })
   .catch(console.error);
 }
-

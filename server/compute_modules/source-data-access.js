@@ -2,6 +2,7 @@
 var log = require('debug')('compute_modules:source-data-access');
 var loopback = require('loopback');
 var LoopbackModelHelper = require('../util/loopback-model-helper');
+var _ = require('lodash');
 
 module.exports = class {
 
@@ -35,7 +36,7 @@ module.exports = class {
           author: source.username,
           image_url: tweet.user.profile_image_url,
           post_date: source.post_date
-        }
+        };
         resolve(data);
       })
     })
@@ -49,7 +50,7 @@ module.exports = class {
         return;
       }
       context.hashtagEventsSourceHelper
-      .findOne({where:{event_id:eventInfo.event_id}}, function(err,eventSource){
+      .findOne({where: {event_id: eventInfo.event_id}}, function(err,eventSource){
         if(err || !eventSource){
           resolve(null);
           return;
@@ -69,24 +70,18 @@ module.exports = class {
     var events = options.events;
 
     Promise.all(events.map(this.getEventSourceData.bind(this)))
-    .then(function(result){
-      if(!result || result.length == 0){
-        cb(null,[]);
+    .then(result => {
+      if (!result || !result.length){
+        cb(null, []);
         return;
       }
-      result = result.filter(function(n){ return n != null });
-      var retval = [];
 
-      result.forEach(function(dataSet){
-        retval = retval.concat(dataSet);
-      });
+      // remove nils and flatten
+      result = _(result).filter(n => n).flatten();
 
-      cb(null,retval);
+      cb(null, result);
     })
-    .catch(function(err) {
-      console.error(err);
-      cb(err);
-    })
+    .catch(cb);
 
   }
 

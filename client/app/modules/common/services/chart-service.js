@@ -13,9 +13,11 @@ angular.module('genie.common')
     })
     .$promise
     .then(function(chart) {
-      var data = {};
+      var data = {}, date;
       data.rows = _.map(chart.data.rows, function(row) {
-        return [new Date(row[0]), row[1], row[2]];
+        // moment() handles a date string the way we need it, not Date()
+        date = moment(row[0]).toDate();
+        return [date, row[1], row[2]];
       });
       data.columns = chart.data.columns;
       return data;

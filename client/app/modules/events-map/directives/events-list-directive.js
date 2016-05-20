@@ -1,9 +1,13 @@
 'use strict';
 angular.module('genie.eventsMap')
 .directive('eventsList', ['$window', 'mapService', 'ImageManagerService',
-  'SandboxEventsSource', 'MarkersService', 'sourceIconFilter', 'StylesService',
+  'SandboxEventsSource', 'MarkersService', 'sourceIconFilter',
+  'ChartDataChangedMsg', 'ChartDateSelectedMsg', 'StylesService',
+  'HashtagEventsSource',
   function($window, mapService, ImageManagerService,
-    SandboxEventsSource, MarkersService, sourceIcon, StylesService) {
+    SandboxEventsSource, MarkersService, sourceIcon,
+    ChartDataChangedMsg, ChartDateSelectedMsg,
+    StylesService, HashtagEventsSource) {
 
   function link(scope, elem, attrs, ctrls) {
     resize(elem);
@@ -14,6 +18,9 @@ angular.module('genie.eventsMap')
 
     scope.$watch('features.sources', showAllClusters);
     scope.$watch('inputs.minutes_ago', removeArtifacts);
+
+    // ChartDateSelectedMsg.listen(function (_event,row,date) {
+    // });
 
     // remove items added to map
     function removeArtifacts() {
@@ -42,7 +49,7 @@ angular.module('genie.eventsMap')
         showCluster(cluster);
       }
       zoomToCluster(cluster);
-    }
+    };
 
     scope.highlightCluster = function(cluster) {
       if (scope.map.getZoom() < 10) { // not when up close
@@ -74,15 +81,35 @@ angular.module('genie.eventsMap')
       ImageManagerService.clear();
       scope.selectedEvent = event;
       showEvent(event);
-    }
+    };
 
     function showEvent(event) {
       if (event.event_source == 'hashtag') {
         var params = [_.pick(event, ['event_id', 'event_source'])];
         showTweetMarkers(params);
         tagCloudCtrl.update([event]);
+        updateTimeSeriesChart(event);
       } else {
         showSandboxImages(event);
+      }
+    }
+
+    function updateTimeSeriesChart(event) {
+      var query = {
+        filter: {
+          where: { event_id: event.event_id }
+        }
+      };
+
+      HashtagEventsSource.find(query)
+      .$promise
+      .then(updateTimeSeries)
+      .catch(console.error);
+
+      function updateTimeSeries(sources) {
+        var source = sources[0];
+        if (!source) return;
+        ChartDataChangedMsg.broadcast(source.timeseries_data, 'hour');
       }
     }
 
@@ -90,30 +117,15 @@ angular.module('genie.eventsMap')
       if (cluster.events[0].event_source === 'hashtag') {
         tagCloudCtrl.update(cluster.events);
       }
-
-      // cluster.events.forEach(showEventMarker);
       drawBoxes(cluster.events);
+      //showClusterTimeseries(cluster.events);
     }
 
-    // function showEventMarker(event) {
-    //   var marker = new google.maps.Marker({
-    //     map: scope.map,
-    //     icon: sourceIcon(event.event_source),
-    //     animation: google.maps.Animation.DROP,
-    //     position: { lat: event.lat, lng: event.lng }
-    //   });
-
-    //   marker.addListener('click', function() {
-    //     scope.selectedEvent = event;
-    //     showEvent(event);
-    //   });
-
-    //   MarkersService.addItem({
-    //     artifact: 'markers',
-    //     type: 'events',
-    //     obj: marker
-    //   });
-    // }
+    function showClusterTimeseries(events){
+      //we prolly want to aggregate the cluster and show a time series based on that too
+      //but im not going to do that right now because it's hard.
+      //ChartDataChangedMsg.broadcast(buildClusterTimeseries(events),"hour");
+    }
 
     function showTweetMarkers(params) {
       scope.showSpinner = true;
@@ -123,14 +135,14 @@ angular.module('genie.eventsMap')
 
       return mapService.getClusterSources(params)
       .then(function(sources) {
-        sources.forEach(function(src) {
+        sources.forEach(function(source) {
           var marker = new google.maps.Marker({
             map: scope.map,
             animation: google.maps.Animation.DROP,
-            position: { lat: src.lat, lng: src.lng }
+            position: { lat: source.lat, lng: source.lng }
           });
 
-          var infowindow = createTweetInfoWindow(src);
+          var infowindow = createTweetInfoWindow(source);
           marker.addListener('click', function() {
             infowindow.open(scope.map, marker);
           });
@@ -177,6 +189,8 @@ angular.module('genie.eventsMap')
       function addMarkers(sources) {
         var source = sources[0];
         if (!source) return;
+
+        ChartDataChangedMsg.broadcast(source.timeseries_data, 'hour');
 
         // retain nodes lat-lng. render_graph mutates its input.
         var sourceNodes = source.network_graph.nodes.map(function(node) {
@@ -262,7 +276,7 @@ angular.module('genie.eventsMap')
       if (scope.features.sources) {
         angular.forEach(scope.clusters, showCluster);
       }
-    };
+    }
 
     scope.highlightEventBox = function(event, options) {
       options = options || {};
@@ -283,22 +297,22 @@ angular.module('genie.eventsMap')
 
     function drawBox(event) {
       var bb = event.bounding_box;
-        if (bb.sw.lat === bb.ne.lat) { // if a single point, make just large enough to see
-          bb.ne.lat = bb.sw.lat + 0.003;
-          bb.ne.lng = bb.sw.lng + 0.003;
+      if (bb.sw.lat === bb.ne.lat) { // if a single point, make just large enough to see
+        bb.ne.lat = bb.sw.lat + 0.003;
+        bb.ne.lng = bb.sw.lng + 0.003;
+      }
+      var box = new google.maps.Rectangle({
+        map: scope.map,
+        bounds: { // with some extra padding
+          north: bb.ne.lat + 0.002,
+          east: bb.ne.lng + 0.002,
+          south: bb.sw.lat - 0.002,
+          west: bb.sw.lng - 0.002
         }
-        var box = new google.maps.Rectangle({
-          map: scope.map,
-          bounds: { // with some extra padding
-            north: bb.ne.lat + 0.002,
-            east: bb.ne.lng + 0.002,
-            south: bb.sw.lat - 0.002,
-            west: bb.sw.lng - 0.002
-          }
-        });
-        box.setOptions(StylesService.boxDefault);
-        box.__customId = event.event_id; // find by eventid later
-        boxes.push(box);
+      });
+      box.setOptions(StylesService.boxDefault);
+      box.__customId = event.event_id; // find by eventid later
+      boxes.push(box);
     }
 
     function resize(elem) {

@@ -57,6 +57,9 @@
     },
     "bounding_box": {
       "type": "object"
+    },
+    "timeseries_data": {
+      "type": "object"
     }
   },
   "validations": [],
