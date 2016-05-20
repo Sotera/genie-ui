@@ -161,7 +161,7 @@ angular.module('genie.common')
         refreshChart(chartData, startDay, endDay);
         // show the line dot (doesn't show tooltips, wtf?)
         var rows = chartData.rows;
-        var lastRow = rows.length;
+        var lastRow = rows.length+1;
         chart.setSelection([{row: lastRow, column: null}]);
         scope.timeSeries.selectedDate = rows[0][0];
       });
