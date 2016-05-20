@@ -93,8 +93,16 @@ module.exports = function (app, cb) {
   var settingHelper = new LoopbackModelHelper('Setting');
   var queries = newSettings.map(function (newSetting) {
     return {where: {key: newSetting.key}};
-  })
-  settingHelper.findOrCreateMany(queries, newSettings, function(err,newSettings){
+  });
+  // settings already loaded? is the first one present?
+  settingHelper.count({ key: newSettings[0].key })
+  .then(count => {
+    if (count === 0) {
+      settingHelper.findOrCreateMany(queries, newSettings, function(err,newSettings){
+        if (err) return cb(err);
+        return cb();
+      });
+    }
     cb();
   });
 };
