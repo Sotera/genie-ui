@@ -2,6 +2,16 @@
   "name": "Setting",
   "base": "PersistedModel",
   "strict": "throw",
+  "indexes": {
+    "lookup_unique": {
+      "keys": {
+        "key": 1
+      },
+      "options": {
+        "unique": true
+      }
+    }
+  },
   "options": {
     "validateUpsert": true
   },
