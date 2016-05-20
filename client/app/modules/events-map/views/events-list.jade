@@ -14,7 +14,7 @@
           | See {{ cluster.weight }} posts
     .panel-collapse.collapse( id="{{'tab' + $index}}" role='tabpanel'
       ng-class='{in: isClusterSelected(cluster)}' )
-      .list-group( style='height:300px;overflow-y:scroll' )
+      .list-group.dark
         a.list-group-item.dark(
           ng-repeat='event in cluster.events track by event.event_id'
           ng-click='selectEvent(event)' ng-class='{highlight: isEventSelected(event)}'

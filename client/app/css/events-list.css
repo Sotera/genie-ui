@@ -11,6 +11,12 @@
   font-weight: bold;
 }
 
+.events-list .panel .list-group.dark {
+  background-color: #000;
+  height: 300px;
+  overflow-y: auto;
+}
+
 a.list-group-item.dark {
   background-color: #000;
 }
