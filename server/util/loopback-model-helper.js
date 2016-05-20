@@ -34,7 +34,7 @@ module.exports = class {
   }
 
   count(query, options, cb) {
-    this.model.count(query, options, cb);
+    return this.model.count(query, options, cb);
   }
 
   findOne(query, options, cb) {
@@ -46,7 +46,7 @@ module.exports = class {
   }
 
   updateAll(query, objectToUpdateWith, cb){
-    this.model.updateAll(query, objectToUpdateWith, cb);
+    return this.model.updateAll(query, objectToUpdateWith, cb);
   }
 
   destroyAll(query, cb){
