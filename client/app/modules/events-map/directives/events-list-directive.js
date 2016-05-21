@@ -264,7 +264,7 @@ angular.module('genie.eventsMap')
             author: tweet.author,
             url: tweet.url,
             image_url: tweet.image_url,
-            post_date: new Date(tweet.post_date).toGMTString()
+            post_date: tweet.post_date
           })
       });
     }
