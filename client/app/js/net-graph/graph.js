@@ -290,7 +290,7 @@ function init_network(data, params) {
 
     network.nodes = _.map(network.nodes, function(node, i) {
         node.community = community_assignment_result[node.name];
-        console.log(node.community);
+        // console.log(node.community);
         return node;
     }.bind(this));
 
