@@ -66,14 +66,14 @@ angular.module('genie.eventsMap')
       var map = scope.map;
       var bounds = new google.maps.LatLngBounds;
       map.setCenter(cluster.location);
-      cluster.events.forEach(function(event) {
-        var bb = event.bounding_box,
-          ne = new google.maps.LatLng({lat: bb.ne.lat, lng: bb.ne.lng}),
-          sw = new google.maps.LatLng({lat: bb.sw.lat, lng: bb.sw.lng});
-        bounds.extend(ne);
-        bounds.extend(sw);
-      });
-      map.fitBounds(bounds);
+      map.setZoom(_.max([map.getZoom(), 14]));
+      // cluster.events.forEach(function(event) {
+      //   var bb = event.bounding_box,
+      //     ne = new google.maps.LatLng({lat: bb.ne.lat, lng: bb.ne.lng}),
+      //     sw = new google.maps.LatLng({lat: bb.sw.lat, lng: bb.sw.lng});
+      //   bounds = bounds.union(new google.maps.LatLngBounds(sw, ne));
+      // });
+      // map.fitBounds(bounds);
     }
 
     scope.selectEvent = function(event) {
