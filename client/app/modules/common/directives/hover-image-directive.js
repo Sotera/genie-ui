@@ -12,9 +12,14 @@ angular.module('genie.common')
       hoverClass = origClass + '-hover';
 
     element.hover(
-      _.debounce(mouseOnImage, 333),
-      _.debounce(mouseOffImage, 333)
+      _.debounce(mouseOnImage, 667),
+      _.debounce(mouseOffImage, 667)
     );
+
+    element.dblclick(function(e) {
+      // stop here. don't get to overlay handler.
+      e.stopPropagation();
+    });
 
     function mouseOffImage(evt) {
       $body.find('.' + hoverClass).remove();
