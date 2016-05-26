@@ -36,9 +36,9 @@ angular.module('genie.eventsMap')
 
             if (source) {
               // retain nodes lat-lng. render_graph mutates its input.
-              // var sourceNodes = source.network_graph.nodes.map(function(node) {
-              //   return {id: node.id, lat: node.lat, lng: node.lon};
-              // });
+              var sourceNodes = source.network_graph.nodes.map(function(node) {
+                return {id: node.id, lat: node.lat, lng: node.lon};
+              });
               render_graph(
                 format_graph(source.network_graph),
                 {
@@ -46,7 +46,7 @@ angular.module('genie.eventsMap')
                     console.log('node:: ', node.id);
                     // ImageManagerService.markSelected(node.id);
                     // $scope.$apply();
-                    // showImageOnMap(node.id, sourceNodes, source.node_to_url);
+                    showImageOnMap(node.id, sourceNodes, source.node_to_url);
                   }
                 }
               );
@@ -64,7 +64,7 @@ angular.module('genie.eventsMap')
               function(node) { return nodeId == node.id });
             var image = {
               url: url.url,
-              size: new google.maps.Size(60, 60)
+              size: new google.maps.Size(100, 100)
             };
             var marker = new google.maps.Marker({
               position: { lat: node.lat, lng: node.lng },
