@@ -64,12 +64,13 @@ angular.module('genie.eventsMap')
               function(node) { return nodeId == node.id });
             var image = {
               url: url.url,
-              size: new google.maps.Size(100, 100)
+              scaledSize: new google.maps.Size(80, 80)
             };
             var marker = new google.maps.Marker({
               position: { lat: node.lat, lng: node.lng },
               icon: image,
-              map: $scope.map
+              map: $scope.map,
+              zIndex: Date.now() // last on top
             });
 
             setTimeout(function() {
