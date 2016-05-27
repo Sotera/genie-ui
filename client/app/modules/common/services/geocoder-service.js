@@ -9,8 +9,8 @@ angular.module('genie.common')
   };
 
   function getUrl(place) {
-    var apiKey = CoreService.env.geocoderApiKey;
-    var url = [CoreService.env.geocoderEndpoint, '?q=', place,
+    var apiKey = GenieEnv.GEOCODER_API_KEY;
+    var url = [GenieEnv.GEOCODER_ENDPOINT, '?q=', place,
       '&pretty=1&key=', apiKey]
       .join('');
     return url;

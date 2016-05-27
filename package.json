@@ -18,8 +18,10 @@
     "url": "https://github.com/sotera/genie-ui/issues"
   },
   "scripts": {
+    "env": "./script/env.js > client/app/js/env.js",
+    "postinstall": "npm run env",
     "predev": "npm install && bower install",
-    "dev": "nodemon server/server.js -w server -w common -i server/node-red -i server/datasources.json --ext js,json"
+    "dev": "npm run env && nodemon server/server.js -w server -w common -i server/node-red -i server/datasources.json --ext js,json"
   },
   "main": "server/server.js",
   "dependencies": {

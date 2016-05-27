@@ -118,7 +118,9 @@
               "GenieUI",
               "RUN_AS_NODERED=0",
               "USE_NODERED_CLUSTERING=0",
-              "NODE_ENV=production"
+              "NODE_ENV=production",
+              "GEOCODER_API_KEY=<ONDEPLOY>",
+              "GEOCODER_ENDPOINT=<ONDEPLOY>"
             ]
           }
         ]
