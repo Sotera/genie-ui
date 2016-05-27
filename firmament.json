@@ -1,17 +1,17 @@
 [
   {
     "name": "data-container",
-    "Image": "lukewendling\/data-container:1",
+    "Image": "lukewendling/data-container:1",
     "DockerFilePath": "",
     "Hostname": "data-container"
   },
   {
     "name": "elasticsearch",
-    "Image": "lukewendling\/elasticsearch:1",
+    "Image": "lukewendling/elasticsearch:1",
     "DockerFilePath": "",
     "Hostname": "elasticsearch",
     "ExposedPorts": {
-      "9200\/tcp": {
+      "9200/tcp": {
 
       }
     },
@@ -20,7 +20,7 @@
         "data-container"
       ],
       "PortBindings": {
-        "9200\/tcp": [
+        "9200/tcp": [
           {
             "HostPort": "9200"
           }
@@ -30,15 +30,15 @@
   },
   {
     "name": "mongo",
-    "Image": "jreeme\/mongo:2.6",
-    "DockerFilePath": "docker\/mongo\/2.6",
+    "Image": "jreeme/mongo:2.6",
+    "DockerFilePath": "docker/mongo/2.6",
     "Hostname": "mongo",
     "HostConfig": {
       "VolumesFrom": [
         "data-container"
       ],
       "PortBindings": {
-        "27017\/tcp": [
+        "27017/tcp": [
           {
             "HostPort": "27017"
           }
@@ -48,11 +48,11 @@
   },
   {
     "name": "genie-strongloop",
-    "Image": "lukewendling\/strong-pm:1",
+    "Image": "lukewendling/strong-pm:1",
     "DockerFilePath": "",
     "Hostname": "genie-strongloop",
     "ExposedPorts": {
-      "3001\/tcp": {}
+      "80/tcp": {}
     },
     "Env": [
     ],
@@ -62,12 +62,12 @@
         "elasticsearch:elasticsearch"
       ],
       "PortBindings": {
-        "3001\/tcp": [
+        "80/tcp": [
           {
             "HostPort": "80"
           }
         ],
-        "8701\/tcp": [
+        "8701/tcp": [
           {
             "HostPort": "8701"
           }
@@ -79,34 +79,17 @@
         "GitUrl": "https://github.com/Sotera/genie-ui.git",
         "GitSrcBranchName": "master",
         "StrongLoopBranchName": "deploy",
-        "StrongLoopServerUrl": "http:\/\/localhost:8701",
+        "StrongLoopServerUrl": "http://localhost:8701",
         "ServiceName": "GenieUI",
+        "ServicePort": 80,
+        "DoBowerInstall": true,
         "Scripts": [
-          {
-            "RelativeWorkingDir": ".",
-            "Command": "bower",
-            "Args": [
-              "install",
-              "--config.interactive=false"
-            ]
-          },
           {
             "RelativeWorkingDir": ".",
             "Command": "cp",
             "Args": [
-              "server\/config.json.template",
-              "server\/config.json"
-            ]
-          },
-          {
-            "RelativeWorkingDir": ".",
-            "Command": "slc",
-            "Args": [
-              "ctl",
-              "-C",
-              "http://localhost:8701",
-              "create",
-              "GenieUI"
+              "server/config.json.template",
+              "server/config.json"
             ]
           },
           {
@@ -129,11 +112,11 @@
   },
   {
     "name": "genie-strongloop-red",
-    "Image": "lukewendling\/strong-pm:1",
+    "Image": "lukewendling/strong-pm:1",
     "DockerFilePath": "",
     "Hostname": "genie-strongloop-red",
     "ExposedPorts": {
-      "8888\/tcp": {}
+      "8888/tcp": {}
     },
     "Env": [
     ],
@@ -144,12 +127,12 @@
         "genie-strongloop:genie-strongloop"
       ],
       "PortBindings": {
-        "8888\/tcp": [
+        "8888/tcp": [
           {
             "HostPort": "8888"
           }
         ],
-        "8701\/tcp": [
+        "8701/tcp": [
           {
             "HostPort": "8702"
           }
@@ -161,39 +144,17 @@
         "GitUrl": "https://github.com/Sotera/genie-ui.git",
         "GitSrcBranchName": "master",
         "StrongLoopBranchName": "deploy",
-        "StrongLoopServerUrl": "http:\/\/localhost:8702",
+        "StrongLoopServerUrl": "http://localhost:8702",
         "ServiceName": "NodeRed",
-
+        "ServicePort": 8888,
+        "ClusterSize": 1,
         "Scripts": [
           {
             "RelativeWorkingDir": ".",
             "Command": "cp",
             "Args": [
-              "server\/config.json.template",
-              "server\/config.json"
-            ]
-          },
-          {
-            "RelativeWorkingDir": ".",
-            "Command": "slc",
-            "Args": [
-              "ctl",
-              "-C",
-              "http://localhost:8702",
-              "create",
-              "NodeRed"
-            ]
-          },
-          {
-            "RelativeWorkingDir": ".",
-            "Command": "slc",
-            "Args": [
-              "ctl",
-              "-C",
-              "http://localhost:8702",
-              "set-size",
-              "NodeRed",
-              "1"
+              "server/config.json.template",
+              "server/config.json"
             ]
           },
           {
@@ -207,7 +168,7 @@
               "NodeRed",
               "RUN_AS_NODERED=1",
               "USE_NODERED_CLUSTERING=0",
-              "GENIE_HOST=http://genie-strongloop:3001",
+              "GENIE_HOST=http://genie-strongloop:80",
               "NODE_ENV=production"
             ]
           }
