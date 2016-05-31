@@ -12,7 +12,6 @@
     "Hostname": "elasticsearch",
     "ExposedPorts": {
       "9200/tcp": {
-
       }
     },
     "HostConfig": {
@@ -81,8 +80,15 @@
         "StrongLoopBranchName": "deploy",
         "StrongLoopServerUrl": "http://localhost:8701",
         "ServiceName": "GenieUI",
-        "ServicePort": 80,
         "DoBowerInstall": true,
+        "EnvironmentVariables": {
+          "RUN_AS_NODERED": 0,
+          "PORT":80,
+          "USE_NODERED_CLUSTERING": 0,
+          "NODE_ENV": "production",
+          "GEOCODER_API_KEY": "<ONDEPLOY>",
+          "GEOCODER_ENDPOINT": "<ONDEPLOY>"
+        },
         "Scripts": [
           {
             "RelativeWorkingDir": ".",
@@ -90,20 +96,6 @@
             "Args": [
               "server/config.json.template",
               "server/config.json"
-            ]
-          },
-          {
-            "RelativeWorkingDir": ".",
-            "Command": "slc",
-            "Args": [
-              "ctl",
-              "env-set",
-              "GenieUI",
-              "RUN_AS_NODERED=0",
-              "USE_NODERED_CLUSTERING=0",
-              "NODE_ENV=production",
-              "GEOCODER_API_KEY=<ONDEPLOY>",
-              "GEOCODER_ENDPOINT=<ONDEPLOY>"
             ]
           }
         ]
@@ -146,8 +138,14 @@
         "StrongLoopBranchName": "deploy",
         "StrongLoopServerUrl": "http://localhost:8702",
         "ServiceName": "NodeRed",
-        "ServicePort": 8888,
         "ClusterSize": 1,
+        "EnvironmentVariables": {
+          "PORT":8888,
+          "RUN_AS_NODERED": 1,
+          "USE_NODERED_CLUSTERING": 0,
+          "GENIE_HOST": "http://genie-strongloop:80",
+          "NODE_ENV": "production"
+        },
         "Scripts": [
           {
             "RelativeWorkingDir": ".",
@@ -155,21 +153,6 @@
             "Args": [
               "server/config.json.template",
               "server/config.json"
-            ]
-          },
-          {
-            "RelativeWorkingDir": ".",
-            "Command": "slc",
-            "Args": [
-              "ctl",
-              "-C",
-              "http://localhost:8702",
-              "env-set",
-              "NodeRed",
-              "RUN_AS_NODERED=1",
-              "USE_NODERED_CLUSTERING=0",
-              "GENIE_HOST=http://genie-strongloop:80",
-              "NODE_ENV=production"
             ]
           }
         ]
