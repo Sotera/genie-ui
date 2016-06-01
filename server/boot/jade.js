@@ -1,7 +1,7 @@
 'use strict';
 module.exports = function (app) {
   var path = require('path');
-  var pathToModules = path.join(__dirname, '../../client/app/js/modules');
+  var pathToModules = path.join(__dirname, '../../client/app/modules');
   app.set('view engine', 'jade');
   app.set('views', pathToModules);
 
