@@ -18,11 +18,11 @@
     "url": "https://github.com/sotera/genie-ui/issues"
   },
   "scripts": {
-    "postinstall": "npm run build",
+    "postinstall": "npm run build:all",
     "dev": "parallelshell 'npm run server:watch' 'npm run build:watch'",
-    "env": "mkdir -p client/app/build/js && ./script/env.js > client/app/build/js/env.js",
     "clean": "rm -r client/app/build/*",
-    "build": "npm run env && npm run build:js",
+    "build:env": "mkdir -p client/app/build/js && ./script/env.js > client/app/build/js/env.js",
+    "build:all": "npm run build:env && npm run build:js",
     "build:watch": "npm run watch:js",
     "build:js": "babel client/app/js --out-dir client/app/build/js",
     "watch:js": "watch 'npm run build:js' client/app/js",
