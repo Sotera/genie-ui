@@ -81,15 +81,7 @@ angular.module('genie.eventsMap')
       ImageManagerService.clear();
       scope.selectedEvent = event;
       showEvent(event);
-      muteOtherBoxes(event);
     };
-
-    function muteOtherBoxes(event) {
-      boxes.forEach(box => {
-        if (box.customId !== event.event_id)
-          box.setOptions(StylesService.boxMuted);
-      });
-    }
 
     function showEvent(event) {
       if (event.event_source == 'hashtag') {
