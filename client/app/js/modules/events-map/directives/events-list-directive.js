@@ -81,7 +81,15 @@ angular.module('genie.eventsMap')
       ImageManagerService.clear();
       scope.selectedEvent = event;
       showEvent(event);
+      muteOtherBoxes(event);
     };
+
+    function muteOtherBoxes(event) {
+      boxes.forEach(box => {
+        if (box.customId !== event.event_id)
+          box.setOptions(StylesService.boxMuted);
+      });
+    }
 
     function showEvent(event) {
       if (event.event_source == 'hashtag') {
@@ -281,11 +289,11 @@ angular.module('genie.eventsMap')
     scope.highlightEventBox = function(event, options) {
       options = options || {};
       var box = _.detect(boxes, function(b) {
-        return b.__customId === event.event_id;
+        return b.customId === event.event_id;
       });
       if (!box) return;
       options.revert ?
-        box.setOptions(StylesService.boxDefault)
+        box.setOptions(StylesService.boxMuted)
         :
         box.setOptions(StylesService.boxHighlight);
     };
@@ -310,8 +318,8 @@ angular.module('genie.eventsMap')
           west: bb.sw.lng - 0.002
         }
       });
-      box.setOptions(StylesService.boxDefault);
-      box.__customId = event.event_id; // find by eventid later
+      box.setOptions(StylesService.boxMuted);
+      box.customId = event.event_id; // find by eventid later
       boxes.push(box);
     }
 

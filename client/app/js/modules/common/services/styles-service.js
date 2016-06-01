@@ -5,7 +5,7 @@ angular.module('genie.common')
     return {
       boxHighlight: {
         strokeColor: 'red',
-        strokeOpacity: 0.8,
+        strokeOpacity: 0.7,
         strokeWeight: 2,
         fillColor: 'red',
         fillOpacity: 0.25,
@@ -13,10 +13,18 @@ angular.module('genie.common')
       },
       boxDefault: {
         strokeColor: 'yellow',
-        strokeOpacity: 0.8,
+        strokeOpacity: 0.6,
         strokeWeight: 2,
         fillColor: 'yellow',
-        fillOpacity: 0.25,
+        fillOpacity: 0.05,
+        zIndex: 1
+      },
+      boxMuted: {
+        strokeColor: 'yellow',
+        strokeOpacity: 0.4,
+        strokeWeight: 1,
+        fillColor: 'yellow',
+        fillOpacity: 0,
         zIndex: 1
       },
       darkColor: '#181818',
