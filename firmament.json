@@ -51,7 +51,7 @@
     "DockerFilePath": "",
     "Hostname": "genie-strongloop",
     "ExposedPorts": {
-      "80/tcp": {}
+      "8080/tcp": {}
     },
     "Env": [
     ],
@@ -61,9 +61,9 @@
         "elasticsearch:elasticsearch"
       ],
       "PortBindings": {
-        "80/tcp": [
+        "8080/tcp": [
           {
-            "HostPort": "80"
+            "HostPort": "8080"
           }
         ],
         "8701/tcp": [
@@ -83,7 +83,7 @@
         "DoBowerInstall": true,
         "EnvironmentVariables": {
           "RUN_AS_NODERED": 0,
-          "PORT":80,
+          "PORT": 8080,
           "USE_NODERED_CLUSTERING": 0,
           "NODE_ENV": "production",
           "GEOCODER_API_KEY": "<ONDEPLOY>",
@@ -140,10 +140,10 @@
         "ServiceName": "NodeRed",
         "ClusterSize": 1,
         "EnvironmentVariables": {
-          "PORT":8888,
+          "PORT": 8888,
           "RUN_AS_NODERED": 1,
           "USE_NODERED_CLUSTERING": 0,
-          "GENIE_HOST": "http://genie-strongloop:80",
+          "GENIE_HOST": "http://genie-strongloop:8080",
           "NODE_ENV": "production"
         },
         "Scripts": [
