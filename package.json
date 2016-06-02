@@ -24,7 +24,7 @@
     "build:env": "mkdir -p client/app/build/js && ./script/env.js > client/app/build/js/env.js",
     "build:all": "npm run build:env && npm run build:js",
     "build:watch": "npm run watch:js",
-    "build:js": "babel client/app/js --out-dir client/app/build/js",
+    "build:js": "babel client/app/js --source-maps --out-dir client/app/build/js",
     "watch:js": "watch 'npm run build:js' client/app/js",
     "server:watch": "nodemon server/server.js -w server -w common -i server/node-red -i server/datasources.json --ext js,json"
   },
