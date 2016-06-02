@@ -77,9 +77,11 @@ angular.module('genie.eventsMap')
     }
 
     scope.selectEvent = function(event) {
-      // removeArtifacts();
       ImageManagerService.clear();
+      // revert previous highlight
+      let prevEvent = scope.selectedEvent;
       scope.selectedEvent = event;
+      scope.highlightEventBox(prevEvent, { revert: true });
       showEvent(event);
     };
 
@@ -278,16 +280,16 @@ angular.module('genie.eventsMap')
       }
     }
 
-    scope.highlightEventBox = function(event, options) {
-      options = options || {};
-      var box = _.detect(boxes, function(b) {
-        return b.customId === event.event_id;
-      });
+    scope.highlightEventBox = (event, options={}) => {
+      if (!event) return;
+      let box = _.detect(boxes, b => b.customId === event.event_id);
       if (!box) return;
-      options.revert ?
-        box.setOptions(StylesService.boxMuted)
-        :
+      if (options.revert) {
+        if (scope.selectedEvent !== event)
+          box.setOptions(StylesService.boxMuted);
+      } else {
         box.setOptions(StylesService.boxHighlight);
+      }
     };
 
     function drawBoxes(events) {
