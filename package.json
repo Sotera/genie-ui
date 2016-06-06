@@ -75,6 +75,12 @@
     "loopback-explorer": "2.0.2"
   },
   "devDependencies": {
+    "babel-core": "^6.2.1",
+    "gulp": "^3.9.0",
+    "gulp-babel": "^6.1.0",
+    "gulp-cli": "^1.0.0",
+    "gulp-run": "^1.6.12",
+    "gulp-sourcemaps": "^1.6.0",
     "jsonfile": "~2.2.3",
     "nodemon": "~1.9.2",
     "parallelshell": "~2.0.0",
