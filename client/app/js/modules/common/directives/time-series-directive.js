@@ -81,20 +81,21 @@ angular.module('genie.common')
 
     function selectionChange() {
       var selection = chart.getSelection()[0];
+      var selectedDate = scope.timeSeries.rows[selection.row][0];
       if (selection) {
         if (chartInterval === 'hour') {
           ChartDateSelectedMsg
-          .broadcast(selection.row, scope.timeSeries.rows[selection.row][0]);
+          .broadcast(selection.row, selectedDate);
         }
         scope.$apply(function() {
           if (chartInterval === 'day') {
             var endDate = moment(scope.getSetting('zoomLevels:endDate'));
-            var selectedDate = moment(scope.timeSeries.rows[selection.row][0]);
-            var diff = endDate.diff(selectedDate, 'days')+1;
+            var _selectedDate = moment(selectedDate);
+            var diff = endDate.diff(_selectedDate, 'days')+1;
             var minsAgo = diff * DAY * PERIOD;
             scope.inputs.minutes_ago = minsAgo;
           }
-          scope.timeSeries.selectedDate = scope.timeSeries.rows[selection.row][0];
+          scope.timeSeries.selectedDate = selectedDate;
         });
       }
     }
@@ -161,7 +162,7 @@ angular.module('genie.common')
         refreshChart(chartData, startDay, endDay);
         // show the line dot (doesn't show tooltips, wtf?)
         var rows = chartData.rows;
-        var lastRow = rows.length+1;
+        var lastRow = rows.length;
         chart.setSelection([{row: lastRow, column: null}]);
         scope.timeSeries.selectedDate = rows[0][0];
       });
