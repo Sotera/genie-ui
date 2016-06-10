@@ -13,10 +13,12 @@ const client = new es.Client({
   type = '2016_01_tp'
   ;
 
-const minLat = 51.40,
-  minLng = -0.17,
-  maxLat = 51.55,
-  maxLng = -0.07
+const scrollWait = '10s';
+
+const minLat = 51.480,
+  minLng = -0.154,
+  maxLat = 51.515,
+  maxLng = -0.095
   ;
 
 const fs = require('fs'),
@@ -25,18 +27,45 @@ const fs = require('fs'),
 outfile.on('error', console.error);
 
 const query = {
-    // _source : ['id', 'postedTime', 'geo'],
     size    : 100,
     sort    : [
       {
         postedTime: { order: 'asc' }
       }
     ],
-    query: {
-      range: {
-        postedTime: {
-          from : '2015-06-20',
-          to   : '2015-06-21'
+    "query":{
+      "constant_score":{
+        "filter":{
+          "bool":{
+            "must":[
+              {
+                "range":{
+                  "postedTime":{
+                    "from":"2015-06-18",
+                    "to":"2015-06-21"
+                  }
+                }
+              }
+            ],
+            "should":[
+              {
+                "range":{
+                  "geo.coordinates":{
+                    "lte":51.515,
+                    "gte":51.480
+                  }
+                }
+              },
+              {
+                "range":{
+                  "geo.coordinates":{
+                    "lte":-0.095,
+                    "gte":-0.154
+                  }
+                }
+              }
+            ]
+          }
         }
       }
     }
@@ -46,7 +75,7 @@ let countDocs = 0;
 client.search({
   index : index,
   type  : type,
-  scroll: '5s',
+  scroll: scrollWait,
   body  : query
 })
 .then(scroll)
@@ -73,7 +102,7 @@ function scroll(res) {
   if (res.hits.total > countDocs) {
     return client.scroll({
       scrollId: res._scroll_id,
-      scroll: '5s'
+      scroll: scrollWait
     })
     .then(scroll)
     .catch(console.error);
