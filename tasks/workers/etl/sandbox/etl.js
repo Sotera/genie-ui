@@ -134,10 +134,10 @@ function convertEvent(sourceEvent, data){
   destEvent.post_date = timeSeriesData.post_date;
   destEvent.timeseries_data = timeSeriesData.timeseries;
 
-  console.log("getting node image urls");
+  console.log("getting post details for all nodes");
   Promise.all(data.detail.nodes.map(getPostDetails))
-  .then(function(nodes){
-    destEvent.node_to_url = nodes;
+  .then(function(posts){
+    destEvent.node_to_url = posts;
 
     esDestClient.index({
       index: esDestIndex,
