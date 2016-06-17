@@ -19,14 +19,14 @@
   },
   "scripts": {
     "postinstall": "npm run build:all",
-    "dev": "parallelshell 'npm run server:watch' 'npm run build:watch'",
+    "dev": "parallelshell 'npm run watch:server' 'npm run build:watch'",
     "clean": "rm -r client/app/build/*",
     "build:env": "mkdir -p client/app/build/js && ./script/env.js > client/app/build/js/env.js",
     "build:all": "npm run build:env && npm run build:js",
     "build:watch": "npm run watch:js",
     "build:js": "babel client/app/js --source-maps --out-dir client/app/build/js",
-    "watch:js": "watch 'npm run build:js' client/app/js",
-    "server:watch": "nodemon server/server.js -w server -w common -i server/node-red -i server/datasources.json --ext js,json"
+    "watch:js": "npm run build:js -- -w",
+    "watch:server": "nodemon server/server.js -w server -w common -i server/node-red -i server/datasources.json --ext js,json"
   },
   "main": "server/server.js",
   "dependencies": {
@@ -77,7 +77,6 @@
   "devDependencies": {
     "jsonfile": "~2.2.3",
     "nodemon": "~1.9.2",
-    "parallelshell": "~2.0.0",
-    "watch": "~0.18.0"
+    "parallelshell": "~2.0.0"
   }
 }
