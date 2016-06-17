@@ -120,13 +120,6 @@ angular.module('genie.eventsMap')
         tagCloudCtrl.update(cluster.events);
       }
       drawBoxes(cluster.events);
-      //showClusterTimeseries(cluster.events);
-    }
-
-    function showClusterTimeseries(events){
-      //we prolly want to aggregate the cluster and show a time series based on that too
-      //but im not going to do that right now because it's hard.
-      //ChartDataChangedMsg.broadcast(buildClusterTimeseries(events),"hour");
     }
 
     function showTweetMarkers(params) {
@@ -210,12 +203,20 @@ angular.module('genie.eventsMap')
           marker.addListener('click', function() {
             //clear other infowindows
             MarkersService.clear({ artifact: 'infowindows', type: 'sources'});
-            var url = _.detect(source.node_to_url,
-              function(url) { return node.id == url.nodeId });
+            var post = _.detect(source.node_to_url,
+              function(post) { return node.id == post.nodeId });
 
             var infowindow = new google.maps.InfoWindow({
               maxWidth: 160,
-              content: "<img width='160px' src='" + url.url + "'>"
+              content: _.template(" \
+                <a href='<%= url %>' target='_blank'> \
+                By: @<%= author %> \
+                <div> \
+                  <img width='160px' src='<%= image_url %>'> \
+                </div> \
+                </a> \
+                Posted: <%= moment(post_date).format('MM-DD hh:mm a') %> \
+              ")(post)
             });
             infowindow.open(scope.map, marker);
             MarkersService.addItem({
@@ -261,13 +262,7 @@ angular.module('genie.eventsMap')
               </td> \
             </tr> \
           </table> \
-          ")({
-            text: tweet.text,
-            author: tweet.author,
-            url: tweet.url,
-            image_url: tweet.image_url,
-            post_date: tweet.post_date
-          })
+          ")(tweet)
       });
     }
 

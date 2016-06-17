@@ -52,15 +52,16 @@ function summarizeEvents(data){
   console.log('summarizing event data');
   data.events.forEach(function(event){
     giver.show_ned(event.id, function(data) {
-      convertEvent(event,data);
+      convertEvent(event, data);
     });
   });
 }
 
-function getUrlFromNodeId(node){
-  return new Promise(function(resolve,reject) {
-    giver.url_from_id(node.id,function(url) {
-      resolve({nodeId: node.id, url: url});
+function getPostDetails(node){
+  return new Promise(function(resolve, reject) {
+    giver.details_for_post_id(node.id, function(obj) {
+      var details = _.extend({ nodeId: node.id }, obj);
+      resolve(details);
     });
   });
 }
@@ -134,7 +135,7 @@ function convertEvent(sourceEvent, data){
   destEvent.timeseries_data = timeSeriesData.timeseries;
 
   console.log("getting node image urls");
-  Promise.all(data.detail.nodes.map(getUrlFromNodeId))
+  Promise.all(data.detail.nodes.map(getPostDetails))
   .then(function(nodes){
     destEvent.node_to_url = nodes;
 

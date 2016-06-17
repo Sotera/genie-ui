@@ -27,11 +27,11 @@ angular.module('genie.eventsMap')
     }
   }
 
-  // nodes from network graph
-  function setImages(nodes) {
-    images = nodes.map(function(node) {
-      node.sort = Date.now(); // add sorting attr to all nodes
-      return node;
+  // posts from network graph
+  function setImages(posts) {
+    images = posts.map(function(post) {
+      post.sort = Date.now(); // add sorting attr to all nodes
+      return post;
     });
   }
 

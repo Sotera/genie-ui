@@ -90,10 +90,14 @@ Giver.prototype.show_ned = function(cluster_id, cb) {
   var _this = this;
 
   var query = {
-    "size"  : 999, // TODO: need to scroll?
-    "query" : {
-      "terms" : {
-        "_id" : this.ned.cluster_to_id[cluster_id]
+    size: 999, // TODO: need to scroll?
+    query: {
+      constant_score: {
+        filter: {
+          terms: {
+            _id: this.ned.cluster_to_id[cluster_id]
+          }
+        }
       }
     }
   };
@@ -108,15 +112,16 @@ Giver.prototype.show_ned = function(cluster_id, cb) {
     cb({
       'detail' : _this.ned.make_graph()
     });
-  });
-
+  })
+  .catch(console.error);
 };
 
-Giver.prototype.url_from_id = function(id, cb) {
-
+Giver.prototype.details_for_post_id = function(id, cb) {
   var query = {
-    "_source" : ["images.low_resolution.url", "location"],
-    "query"   : {  "match" : { "id" : id } }
+    _source: ['images.low_resolution.url', 'user.username', 'link', 'created_time'],
+    query: {
+      constant_score: { filter: { term: { id: id } } }
+    }
   };
 
   this.event_client.search({
@@ -124,8 +129,14 @@ Giver.prototype.url_from_id = function(id, cb) {
     type  : this.scrape_name,
     body  : query
   }).then(function(response) {
-    var hit = response.hits.hits[0];
-    cb(hit._source.images.low_resolution.url);
+    var hit = response.hits.hits[0],
+      src = hit._source;
+    cb({
+      url: src.link,
+      author: src.user.username,
+      image_url: src.images.low_resolution.url,
+      post_date: src.created_time * 1000
+    });
     /*{
       'loc' : {
         'lat' : hit._source.location.latitude,
@@ -134,9 +145,8 @@ Giver.prototype.url_from_id = function(id, cb) {
       'img_url' : hit._source.images.low_resolution.url,
       'id'      : hit._source.id
     });*/
-  },function(err){
-    console.log(err);
-  });
+  })
+  .catch(console.error);
 };
 
 module.exports = Giver;

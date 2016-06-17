@@ -55,15 +55,15 @@ angular.module('genie.eventsMap')
             }
           }
 
-          // TODO: simplify once the server returns combined graph nodes and urls
+          // TODO: simplify once the server returns combined graph nodes and posts
           //
-          function showImageOnMap(nodeId, nodes, urls) {
-            var url = _.detect(urls,
-              function(url) { return nodeId == url.nodeId });
+          function showImageOnMap(nodeId, nodes, posts) {
+            var post = _.detect(posts,
+              function(post) { return nodeId == post.nodeId });
             var node = _.detect(nodes,
               function(node) { return nodeId == node.id });
             var image = {
-              url: url.url,
+              url: post.image_url,
               scaledSize: new google.maps.Size(80, 80)
             };
             var marker = new google.maps.Marker({
