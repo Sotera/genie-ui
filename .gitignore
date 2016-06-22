@@ -1,7 +1,8 @@
 node_modules/
 *.log
+npm-debug*
 client/app/bower_components/
-client/app/js/env.js
+client/app/build
 providers.json
 .tmp/
 dist/
