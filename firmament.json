@@ -134,7 +134,7 @@
     "ExpressApps": [
       {
         "GitUrl": "https://github.com/Sotera/genie-ui.git",
-        "GitSrcBranchName": "master",
+        "GitSrcBranchName": "81-update-firmament.json",
         "StrongLoopBranchName": "deploy",
         "StrongLoopServerUrl": "http://localhost:8702",
         "ServiceName": "NodeRed",
