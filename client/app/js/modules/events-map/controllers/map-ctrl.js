@@ -1,42 +1,36 @@
 'use strict';
 angular.module('genie.eventsMap')
 .controller('EventsMapCtrl', ['$scope', 'mapService', 'ZoomLevel',
-  'CoreService', '$stateParams', '$state',
-  function($scope, mapService, ZoomLevel, CoreService, $stateParams, $state) {
-  console.log($stateParams.zoom)
+  'CoreService', '$state',
+  function($scope, mapService, ZoomLevel, CoreService, $state) {
 
   var PERIOD = CoreService.env.period; // days
   var DAY = CoreService.env.day; // mins
   // Set init values
-  $scope.inputs = {zoom_level: null, minutes_ago: DAY * PERIOD};
-  $scope.map = {};
-  $scope.timeSeries = {};
-  $scope.events = [];
-  $scope.clusters = [];
-  $scope.selectedCluster = null;
-  $scope.selectedEvent = null;
   var zoomLevelObj = new ZoomLevel();
   zoomLevelObj.clusters = [];
-  $scope.zoomLevelObj = zoomLevelObj;
-  $scope.features = {heatmap: true, sources: false};
+
+  angular.extend($scope, {
+    inputs: { zoom_level: null, minutes_ago: DAY * PERIOD },
+    map: {},
+    timeSeries: {},
+    events: [],
+    clusters: [],
+    selectedCluster: null,
+    selectedEvent: null,
+    zoomLevelObj: zoomLevelObj,
+    features: { heatmap: true, sources: false }
+  });
 
   // Watch user inputs and fetch zoomlevel object
-  $scope.$watchCollection(
-    function(scope) {
-      return scope.inputs;
-    },
-    getZoomLevel
-  );
+  $scope.$watchCollection('inputs', getZoomLevel);
 
   function getZoomLevel() {
     mapService.getZoomLevel($scope.inputs)
-    .then(function(zoomLevel) {
-      updateMap(zoomLevel);
-    });
+    .then(updateMap);
   }
 
   function updateMap(zoomLevelObj) {
-    if (!$scope.map) return;
     var map = $scope.map;
 
     if (!zoomLevelObj.clusters.length) {

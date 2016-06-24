@@ -4,6 +4,11 @@ angular.module('genie.eventsMap')
   '$timeout',
   function($window, StylesService, $state, $stateParams, $timeout) {
 
+  return {
+    restrict: 'A',
+    link: link
+  };
+
   function link(scope, elem, attrs) {
     var mapOptions = {
       zoom: +$stateParams.zoom || +attrs.zoom || 10,
@@ -12,7 +17,7 @@ angular.module('genie.eventsMap')
       mapTypeControl: false,
       zoomControlOptions: {
         position: google.maps.ControlPosition.TOP_LEFT
-      },
+      }
     };
 
     var map = new google.maps.Map(elem[0], mapOptions);
@@ -26,11 +31,13 @@ angular.module('genie.eventsMap')
     } else {
       map.setCenter({lat: 7.9, lng: 1.0}); // Ghana, just because
     }
-    scope.inputs.zoom_level = mapOptions.zoom;
-    scope.map = map;
+
+    angular.extend(scope, {
+      inputs: { zoom_level: mapOptions.zoom },
+      map: map
+    });
 
     map.addListener('zoom_changed', zoomChanged);
-
     map.addListener('bounds_changed', scope.getEventsInBounds);
 
     function zoomChanged() {
@@ -72,8 +79,4 @@ angular.module('genie.eventsMap')
     $(document).ready(doResize);
   }
 
-  return {
-    restrict: 'AE',
-    link: link
-  };
 }]);
