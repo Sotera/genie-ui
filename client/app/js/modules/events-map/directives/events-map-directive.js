@@ -5,8 +5,11 @@ angular.module('genie.eventsMap')
   function($window, StylesService, $state, $stateParams, $timeout) {
 
   return {
-    restrict: 'A',
-    link: link
+    restrict: 'E',
+    link: link,
+    replace: true, // gmap doesn't show without this (prob div height issue)
+    transclude: true,
+    template: '<div><ng-transclude></ng-transclude></div>'
   };
 
   function link(scope, elem, attrs) {

@@ -1,8 +1,14 @@
 'use strict';
 angular.module('genie.common')
 
-.directive('geocodeControls', ['$http',
-  function ($http) {
+.directive('geocodeControls', [function() {
+
+  return {
+    restrict: 'AE',
+    link: link,
+    controller: controller,
+    templateUrl: 'modules/common/views/geocode-controls'
+  };
 
   function link(scope, elem, attrs) {
 
@@ -41,12 +47,5 @@ angular.module('genie.common')
         });
       };
   }];
-
-  return {
-    restrict: 'AE',
-    link: link,
-    controller: controller,
-    templateUrl: 'modules/common/views/geocode-controls'
-  };
 
 }]);
