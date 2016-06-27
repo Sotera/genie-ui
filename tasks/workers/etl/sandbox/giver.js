@@ -118,7 +118,8 @@ Giver.prototype.show_ned = function(cluster_id, cb) {
 
 Giver.prototype.details_for_post_id = function(id, cb) {
   var query = {
-    _source: ['images.low_resolution.url', 'user.username', 'link', 'created_time'],
+    _source: ['images.low_resolution.url', 'user.username', 'link',
+      'created_time', 'id'],
     query: {
       constant_score: { filter: { term: { id: id } } }
     }
@@ -132,6 +133,7 @@ Giver.prototype.details_for_post_id = function(id, cb) {
     var hit = response.hits.hits[0],
       src = hit._source;
     cb({
+      id: src.id,
       url: src.link,
       author: src.user.username,
       image_url: src.images.low_resolution.url,

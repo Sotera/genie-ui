@@ -57,9 +57,11 @@ function summarizeEvents(data){
   });
 }
 
+// a 'node' is a super lean instagram post
 function getPostDetails(node){
   return new Promise(function(resolve, reject) {
     giver.details_for_post_id(node.id, function(obj) {
+      // retain 'nodeId' for legacy support
       var details = _.extend({ nodeId: node.id }, obj);
       resolve(details);
     });

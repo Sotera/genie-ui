@@ -9,12 +9,34 @@ angular.module('genie.eventsMap')
     ChartDataChangedMsg, ChartDateSelectedMsg,
     StylesService, HashtagEventsSource) {
 
+  return {
+    restrict: 'E',
+    require: ['networkGraph', 'tagCloud', 'gmapInfowindow'],
+    link: link,
+    templateUrl: '/modules/events-map/views/events-list',
+    controller: ['$scope', function($scope) {
+
+      $scope.isEventSelected = function(event) {
+        return $scope.selectedEvent && $scope.selectedEvent.event_id == event.event_id;
+      };
+
+      $scope.isClusterSelected = function(cluster) {
+        return $scope.selectedCluster && $scope.selectedCluster.id == cluster.id;
+      };
+
+      $scope.isSelectedEventInCluster = function(cluster) {
+        return $scope.selectedEvent && _.contains(cluster.events, $scope.selectedEvent);
+      }
+    }]
+  };
+
   function link(scope, elem, attrs, ctrls) {
     resize(elem);
 
     var boxes = [];
     var netGraphCtrl = ctrls[0],
-      tagCloudCtrl = ctrls[1];
+      tagCloudCtrl = ctrls[1],
+      gmapInfowindowCtrl = ctrls[2];
 
     scope.$watch('features.sources', showAllClusters);
     scope.$watch('inputs.minutes_ago', removeArtifacts);
@@ -124,12 +146,12 @@ angular.module('genie.eventsMap')
 
     function showTweetMarkers(params) {
       scope.showSpinner = true;
-      // clear tweet markers artifacts
       MarkersService.clear({ artifact: 'markers', type: 'sources'});
       MarkersService.clear({ artifact: 'infowindows', type: 'sources'});
 
       return mapService.getClusterSources(params)
       .then(function(sources) {
+        scope.sources = _.sortBy(sources, 'author');
         sources.forEach(function(source) {
           var marker = new google.maps.Marker({
             map: scope.map,
@@ -137,7 +159,11 @@ angular.module('genie.eventsMap')
             position: { lat: source.lat, lng: source.lng }
           });
 
-          var infowindow = createTweetInfoWindow(source);
+          marker.customId = source.id; // find it later
+
+          var infowindow = gmapInfowindowCtrl.createTextInfoWindow(source);
+          infowindow.customId = source.id; // find it later
+
           marker.addListener('click', function() {
             infowindow.open(scope.map, marker);
           });
@@ -163,10 +189,7 @@ angular.module('genie.eventsMap')
       MarkersService.clear({ artifact: 'infowindows', type: 'sources'});
 
       showImageMarkers(event);
-      netGraphCtrl.create(
-        event,
-        function() {scope.showSpinner = false;}
-      );
+      netGraphCtrl.create(event, () => scope.showSpinner = false);
     }
 
     function showImageMarkers(event) {
@@ -185,9 +208,12 @@ angular.module('genie.eventsMap')
         var source = sources[0];
         if (!source) return;
 
+        // sandbox stores posts in node_to_url property
+        scope.sources = _.sortBy(source.node_to_url, 'author');
+
         ChartDataChangedMsg.broadcast(source.timeseries_data, 'hour');
 
-        // retain nodes lat-lng. render_graph mutates its input.
+        // retain nodes lat-lng. render_graph() mutates its input.
         var sourceNodes = source.network_graph.nodes.map(function(node) {
           return {id: node.id, lat: node.lat, lng: node.lon};
         });
@@ -197,34 +223,22 @@ angular.module('genie.eventsMap')
             map: scope.map,
             animation: google.maps.Animation.DROP
           });
+          var post = _.detect(source.node_to_url, p => node.id == p.nodeId);
+          var infowindow = gmapInfowindowCtrl.createImageInfoWindow(post);
 
-          marker.customId = node.id; // so we can find it later
+          marker.customId = node.id; // find it later
+          infowindow.customId = node.id; // find it later
 
-          marker.addListener('click', function() {
-            //clear other infowindows
-            MarkersService.clear({ artifact: 'infowindows', type: 'sources'});
-            var post = _.detect(source.node_to_url,
-              function(post) { return node.id == post.nodeId });
-
-            var infowindow = new google.maps.InfoWindow({
-              maxWidth: 160,
-              content: _.template(" \
-                <a href='<%= url %>' target='_blank'> \
-                By: @<%= author %> \
-                <div> \
-                  <img width='160px' src='<%= image_url %>'> \
-                </div> \
-                </a> \
-                Posted: <%= moment(post_date).format('MM-DD hh:mm a') %> \
-              ")(post)
-            });
+          marker.addListener('click', () => {
             infowindow.open(scope.map, marker);
-            MarkersService.addItem({
-              artifact: 'infowindows',
-              type: 'sources',
-              obj: infowindow
-            });
           });
+
+          MarkersService.addItem({
+            artifact: 'infowindows',
+            type: 'sources',
+            obj: infowindow
+          });
+
           MarkersService.addItem({
             artifact: 'markers',
             type: 'sources',
@@ -232,38 +246,6 @@ angular.module('genie.eventsMap')
           });
         });
       }
-    }
-
-    function createTweetInfoWindow(tweet) {
-      return new google.maps.InfoWindow({
-        maxWidth: 240,
-        content: _.template(" \
-          <table> \
-            <tr> \
-              <td> \
-                <img width='60px' src='<%= image_url %>' /> \
-              </td> \
-              <td> \
-                <a style='color:black' href='<%= url %>' target='_blank'> \
-                  <%= text %> \
-                </a> \
-              </td> \
-            </tr> \
-            <tr> \
-              <td style='color:black' colspan='2'> \
-                <a href='<%= url %>' target='_blank'> \
-                  By: @<%= author %> \
-                </a> \
-              </td> \
-            </tr> \
-            <tr> \
-              <td style='color:black' colspan='2'> \
-                Posted: <%= moment(post_date).format('MM-DD hh:mm a') %> \
-              </td> \
-            </tr> \
-          </table> \
-          ")(tweet)
-      });
     }
 
     function showAllClusters() {
@@ -324,23 +306,4 @@ angular.module('genie.eventsMap')
     }
   }
 
-  return {
-    restrict: 'E',
-    require: ['networkGraph', 'tagCloud'],
-    link: link,
-    templateUrl: '/modules/events-map/views/events-list',
-    controller: ['$scope', function($scope) {
-      $scope.isEventSelected = function(event) {
-        return $scope.selectedEvent && $scope.selectedEvent.event_id == event.event_id;
-      };
-
-      $scope.isClusterSelected = function(cluster) {
-        return $scope.selectedCluster && $scope.selectedCluster.id == cluster.id;
-      };
-
-      $scope.isSelectedEventInCluster = function(cluster) {
-        return $scope.selectedEvent && _.contains(cluster.events, $scope.selectedEvent);
-      }
-    }]
-  };
 }]);

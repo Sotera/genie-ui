@@ -1,25 +1,41 @@
-#clusters-list.panel-group( role='tablist' ng-show='clusters.length' )
-  .panel.panel-info
-    .panel-heading.
-      Events for {{ timeSeries.selectedDate | date }}
-  .panel.panel-default( ng-repeat='cluster in clusters' )
-    .panel-heading.dark( role='tab' )
-      .panel-title
-        a( ng-click='selectCluster(cluster)' role='button'
-          data-toggle='collapse' data-parent='#clusters-list'
-          data-target="{{'#tab' + $index}}"
-          ng-class='{highlight: isSelectedEventInCluster(cluster)}'
-          ng-mouseover='highlightCluster(cluster)' )
-          i.fa.fa-chevron-down &nbsp;
-          | See {{ cluster.weight }} posts
-    .panel-collapse.collapse( id="{{'tab' + $index}}" role='tabpanel'
-      ng-class='{in: isClusterSelected(cluster)}' )
-      .list-group.dark
-        a.list-group-item.dark(
-          ng-repeat='event in cluster.events track by event.event_id'
-          ng-click='selectEvent(event)' ng-class='{highlight: isEventSelected(event)}'
-          ng-mouseover='highlightEventBox(event)'
-          ng-mouseleave='highlightEventBox(event, {revert: true})' )
-          span.badge( title='event weight (# of posts)') {{ event.weight }} posts
-          img( ng-src='{{ event.event_source | sourceIcon }}' )
+.events-list
+  ul.nav.nav-tabs( role='tablist' )
+    li.active
+      a.dark( data-target='#events-tab' data-toggle='tab' role='tab' ) Events
+    li
+      a.dark( data-target='#users-tab' data-toggle='tab' role='tab' ) Users
 
+  .tab-content
+    #events-tab.tab-pane.active( role='tabpanel' )
+      #clusters-list.panel-group( role='tablist' ng-show='clusters.length' )
+        .panel.panel-info
+          .panel-heading.small.
+            Events on {{ timeSeries.selectedDate | date:'shortDate' }}
+        .panel.panel-default( ng-repeat='cluster in clusters' )
+          .panel-heading.dark( role='tab' )
+            .panel-title
+              a( ng-click='selectCluster(cluster)' role='button'
+                data-toggle='collapse' data-parent='#clusters-list'
+                data-target="{{'#tab' + $index}}"
+                ng-class='{highlight: isSelectedEventInCluster(cluster)}'
+                ng-mouseover='highlightCluster(cluster)' )
+                i.fa.fa-chevron-down &nbsp;
+                | See {{ cluster.weight }} posts
+          .panel-collapse.collapse( id="{{'tab' + $index}}" role='tabpanel'
+            ng-class='{in: isClusterSelected(cluster)}' )
+            .list-group.dark
+              a.list-group-item.dark(
+                ng-repeat='event in cluster.events track by event.event_id'
+                ng-click='selectEvent(event)' ng-class='{highlight: isEventSelected(event)}'
+                ng-mouseover='highlightEventBox(event)'
+                ng-mouseleave='highlightEventBox(event, {revert: true})' )
+                span.badge {{ event.weight }} posts
+                img( ng-src='{{ event.event_source | sourceIcon }}' )
+    #users-tab.tab-pane( role='tabpanel' )
+      .list-group.dark( ng-show='sources.length' )
+        a.list-group-item.dark( ng-repeat='source in sources track by source.id'
+          id='{{ source.id }}' animate-marker )
+          span.badge @{{ source.author }}
+          | {{ source.post_date | date:'shortTime' }}
+      p( ng-hide='sources.length' style='color:#fff' ).
+        Please select an event to see users

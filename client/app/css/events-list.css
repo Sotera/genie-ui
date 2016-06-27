@@ -1,5 +1,24 @@
-.events-list .panel {
+.events-list {
   margin-left: 20px;
+}
+
+.events-list .nav-tabs {
+  border-bottom: 0;
+  margin-bottom: 3px;
+}
+
+.events-list ul.nav li.active a.dark {
+  background-color: #000;
+  color: #fff;
+}
+
+.events-list ul.nav li a.dark {
+  background-color: #000;
+  color: #999;
+}
+
+.events-list .panel-heading.small {
+  padding:3px 10px;
 }
 
 .events-list .panel-heading.dark {
@@ -11,10 +30,13 @@
   font-weight: bold;
 }
 
-.events-list .panel .list-group.dark {
-  background-color: #000;
-  height: 300px;
+.events-list .list-group {
+  height: 360px;
   overflow-y: auto;
+}
+
+.events-list .list-group.dark {
+  background-color: #000;
 }
 
 a.list-group-item.dark {

@@ -3,6 +3,19 @@ angular.module('genie.eventsMap')
 .directive('imageGrid', ['ImageManagerService', '$window', '$compile',
   function(ImageManagerService, $window, $compile) {
 
+  return {
+    restrict: 'E',
+    link: link,
+    template: '<div style="padding-bottom:15px;height:100%;overflow:auto"></div>',
+    controller: ['$scope', 'ImageManagerService',
+      function($scope, ImageManagerService) {
+        $scope.clearImages = function(type) {
+          ImageManagerService.clear(type);
+          $scope.$apply();
+        };
+    }]
+  };
+
   function link(scope, elem, attrs) {
     // selected or unselected
     var imageType = attrs.imageType;
@@ -16,12 +29,7 @@ angular.module('genie.eventsMap')
       function() {
         var images = ImageManagerService.getImages(imageType);
         if (images.length) {
-          showImages({
-            images: images,
-            elem: elem,
-            hoverDir: hoverDir,
-            scope: scope
-          });
+          showImages({ images, elem, hoverDir, scope });
         } else {
           reset(elem);
         }
@@ -57,9 +65,10 @@ angular.module('genie.eventsMap')
       var markup, compiled;
       el.removeClass('hide');
 
-      images.forEach(function(image) {
-        markup = "<img hover-image animate-marker class='grid-image' src='" + image.image_url +
-          "' id='" + image.nodeId + "' hover-dir='" + hoverDir + "'>";
+      images.forEach(image => {
+        markup = `<img hover-image animate-marker
+          class='grid-image' src='${image.image_url}'
+          id='${image.id}' hover-dir='${hoverDir}'>`
         compiled = $compile(angular.element(markup))(scope);
         frag.appendChild(compiled[0]);
       });
@@ -67,16 +76,4 @@ angular.module('genie.eventsMap')
     }
   }
 
-  return {
-    restrict: 'E',
-    link: link,
-    template: '<div style="padding-bottom:15px;height:100%;overflow:auto"></div>',
-    controller: ['$scope', 'ImageManagerService',
-      function($scope, ImageManagerService) {
-        $scope.clearImages = function(type) {
-          ImageManagerService.clear(type);
-          $scope.$apply();
-        };
-    }]
-  };
 }]);

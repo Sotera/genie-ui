@@ -14,7 +14,7 @@ spinner( show='showSpinner' ) //- boolean scope property to toggle spinner
         geocode-controls
         feature-controls
     div( style='padding-left:0' class='{{colClasses[1]}}' )
-      events-list.events-list( network-graph tag-cloud )
+      events-list( network-graph tag-cloud gmap-infowindow )
 
 .map-overlay.col-md-12( style='bottom:0;left:0' map-overlay overlay-action='shrink' )
   .col-md-4
@@ -30,8 +30,3 @@ spinner( show='showSpinner' ) //- boolean scope property to toggle spinner
 image-grid.map-overlay.truncate.hide.col-md-4(
   image-type='unselected' hover-dir='top-left' map-overlay
   overlay-action='hide' style='bottom:0;right:0;z-index:100' )
-//
-  image-grid.map-overlay.truncate.hide.col-md-4(
-    image-type='selected' hover-dir='top-left'
-    map-overlay overlay-action='hide' after-action='clearImages("selected")'
-    style='bottom:0;right:0;z-index:100' )
